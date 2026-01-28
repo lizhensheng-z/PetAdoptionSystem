@@ -1,0 +1,96 @@
+# application.yml（Spring Boot 3.2.x / JDK17）
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: pet-adoption-system
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/pet_adoption?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: # 没有就留空
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 0
+          max-wait: 3000ms
+
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境打印SQL，线上建议关闭
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID            # 雪花ID（也可 AUTO）
+      logic-delete-field: deleted   # 逻辑删除字段名
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# Springdoc / Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+# 自定义配置（建议你项目统一放这里）
+app:
+  security:
+    jwt:
+      secret: "CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32+"
+      expire-minutes: 120
+      issuer: "pet-adoption-system"
+    # token 黑名单开关（如果你用 redis 存 black list）
+    token-blacklist-enabled: true
+
+  recommend:
+    alpha: 0.55
+    beta: 0.20
+    gamma: 0.20
+    delta: 0.05
+    max-distance-km: 50
+
+  credit:
+    checkin:
+      daily-max: 1
+      base: 2
+      media-bonus: 1
+      text-bonus: 1
+    violation:
+      penalty: -20
+
+  lbs:
+    # 腾讯位置服务 Key（如你接入附近优先）
+    tencent:
+      key: ""
+      nearby-url: "https://apis.map.qq.com/ws/place/v1/search"
+
+logging:
+  level:
+    root: info
+    com.yr.pet: debug
+    org.springframework.security: info
