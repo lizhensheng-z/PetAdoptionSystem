@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yr.pet.adoption.mapper.CreditAccountMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yr.pet.adoption.model.entity.CreditAccountEntity">
+        <id column="user_id" property="userId" />
+        <result column="score" property="score" />
+        <result column="level" property="level" />
+        <result column="last_calc_time" property="lastCalcTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        user_id, score, level, last_calc_time, update_time
+    </sql>
+
+</mapper>

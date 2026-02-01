@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yr.pet.adoption.mapper.AdoptionFlowLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yr.pet.adoption.model.entity.AdoptionFlowLogEntity">
+        <id column="id" property="id" />
+        <result column="application_id" property="applicationId" />
+        <result column="from_status" property="fromStatus" />
+        <result column="to_status" property="toStatus" />
+        <result column="operator_id" property="operatorId" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, application_id, from_status, to_status, operator_id, remark, create_time
+    </sql>
+
+</mapper>
