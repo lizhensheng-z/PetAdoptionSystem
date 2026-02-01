@@ -56,6 +56,18 @@
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <version>${mybatis-plus.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>3.5.7</version>
+            <scope>test</scope>  <!-- 仅在测试阶段使用 -->
+        </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.31</version>
+            <scope>test</scope>
+        </dependency>
         <!-- MP扩展（JSON类型处理等可用到） -->
         <dependency>
             <groupId>com.baomidou</groupId>
