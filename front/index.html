@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物领养系统 - 首页原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f8f9fa; }
+        .match-gradient { background: linear-gradient(90deg, #FF8C42 0%, #FFA500 100%); }
+        .waterfall-item { break-inside: avoid; margin-bottom: 1rem; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="max-w-md mx-auto shadow-2xl min-h-screen pb-20 bg-white">
+
+<!-- 1. 顶部栏 (Top Bar) -->
+<header class="sticky top-0 z-50 bg-white px-4 py-3 flex items-center justify-between gap-3 shadow-sm">
+    <!-- 定位 -->
+    <div class="flex items-center text-gray-700 whitespace-nowrap">
+        <i class="fas fa-location-dot text-orange-500 mr-1"></i>
+        <span class="text-sm font-medium">上海市</span>
+        <i class="fas fa-chevron-down text-[10px] ml-1"></i>
+    </div>
+    <!-- 搜索框 -->
+    <div class="flex-1 relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+        <input type="text" placeholder="搜索品种、机构..."
+               class="w-full bg-gray-100 border-none rounded-full py-1.5 pl-9 pr-4 text-sm focus:ring-2 focus:ring-orange-400 outline-none">
+    </div>
+    <!-- 消息通知 -->
+    <div class="relative">
+        <i class="far fa-bell text-xl text-gray-600"></i>
+        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
+    </div>
+</header>
+
+<!-- 2. 金刚区 (King Area) -->
+<nav class="grid grid-cols-5 gap-2 px-4 py-6">
+    <a href="#" class="flex flex-col items-center">
+        <div class="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center mb-1 shadow-sm transition-transform active:scale-90">
+            <i class="fas fa-cat text-orange-500 text-xl"></i>
+        </div>
+        <span class="text-xs text-gray-600">猫猫</span>
+    </a>
+    <a href="#" class="flex flex-col items-center">
+        <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mb-1 shadow-sm transition-transform active:scale-90">
+            <i class="fas fa-dog text-blue-500 text-xl"></i>
+        </div>
+        <span class="text-xs text-gray-600">狗狗</span>
+    </a>
+    <a href="#" class="flex flex-col items-center">
+        <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mb-1 shadow-sm transition-transform active:scale-90">
+            <i class="fas fa-paw text-green-500 text-xl"></i>
+        </div>
+        <span class="text-xs text-gray-600">其他</span>
+    </a>
+    <a href="#" class="flex flex-col items-center">
+        <div class="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mb-1 shadow-sm transition-transform active:scale-90">
+            <i class="fas fa-map-marked-alt text-purple-500 text-xl"></i>
+        </div>
+        <span class="text-xs text-gray-600">附近</span>
+    </a>
+    <a href="#" class="flex flex-col items-center">
+        <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mb-1 shadow-sm transition-transform active:scale-90">
+            <i class="fas fa-heart-pulse text-red-500 text-xl"></i>
+        </div>
+        <span class="text-xs text-gray-600">急寻</span>
+    </a>
+</nav>
+
+<!-- 3. 筛选 Tab -->
+<div class="px-4 mb-4 flex gap-6 border-b border-gray-50">
+    <button class="pb-2 border-b-2 border-orange-500 text-orange-500 font-bold text-sm">推荐</button>
+    <button class="pb-2 text-gray-400 text-sm">附近优先</button>
+    <button class="pb-2 text-gray-400 text-sm">最新发布</button>
+</div>
+
+<!-- 4. 推荐流 (Waterfall Feed) -->
+<div class="px-4 columns-2 gap-4">
+
+    <!-- 卡片 1 -->
+    <div class="waterfall-item bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <div class="relative">
+            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80" alt="Pet" class="w-full h-auto">
+            <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] text-white match-gradient font-bold shadow-sm">
+                匹配度 98%
+            </div>
+        </div>
+        <div class="p-3">
+            <h3 class="font-bold text-gray-800 text-sm">咪咪 <i class="fas fa-venus text-pink-400 text-[10px]"></i></h3>
+            <p class="text-[10px] text-gray-400 mt-1">英短蓝猫 · 3个月</p>
+            <div class="mt-2 flex items-center justify-between">
+                <span class="text-[10px] text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded">健康已免疫</span>
+                <span class="text-[10px] text-gray-400"><i class="fas fa-location-arrow mr-0.5"></i>1.2km</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 卡片 2 -->
+    <div class="waterfall-item bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <div class="relative">
+            <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=400&q=80" alt="Pet" class="w-full h-auto">
+            <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] text-white bg-red-500 font-bold shadow-sm">
+                急寻领养
+            </div>
+        </div>
+        <div class="p-3">
+            <h3 class="font-bold text-gray-800 text-sm">大黄 <i class="fas fa-mars text-blue-400 text-[10px]"></i></h3>
+            <p class="text-[10px] text-gray-400 mt-1">田园犬 · 1岁</p>
+            <div class="mt-2 flex items-center justify-between">
+                <span class="text-[10px] text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">性格温顺</span>
+                <span class="text-[10px] text-gray-400"><i class="fas fa-location-arrow mr-0.5"></i>3.5km</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 卡片 3 -->
+    <div class="waterfall-item bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <div class="relative">
+            <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=400&q=80" alt="Pet" class="w-full h-auto">
+            <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] text-white match-gradient font-bold shadow-sm">
+                匹配度 85%
+            </div>
+        </div>
+        <div class="p-3">
+            <h3 class="font-bold text-gray-800 text-sm">肉丸 <i class="fas fa-mars text-blue-400 text-[10px]"></i></h3>
+            <p class="text-[10px] text-gray-400 mt-1">法斗 · 2岁</p>
+            <div class="mt-2 flex items-center justify-between">
+                <span class="text-[10px] text-green-500 bg-green-50 px-1.5 py-0.5 rounded">寻找新家</span>
+                <span class="text-[10px] text-gray-400"><i class="fas fa-location-arrow mr-0.5"></i>800m</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 卡片 4 -->
+    <div class="waterfall-item bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <div class="relative">
+            <img src="https://images.unsplash.com/photo-1533733358354-bc0100966282?auto=format&fit=crop&w=400&q=80" alt="Pet" class="w-full h-auto">
+        </div>
+        <div class="p-3">
+            <h3 class="font-bold text-gray-800 text-sm">小黑 <i class="fas fa-venus text-pink-400 text-[10px]"></i></h3>
+            <p class="text-[10px] text-gray-400 mt-1">玄猫 · 6个月</p>
+            <div class="mt-2 flex items-center justify-between">
+                <span class="text-[10px] text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded">亲人粘人</span>
+                <span class="text-[10px] text-gray-400"><i class="fas fa-location-arrow mr-0.5"></i>2.1km</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. 底部导航栏 (Bottom Nav) -->
+<footer class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-100 flex py-2 justify-around shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <div class="flex flex-col items-center text-orange-500">
+        <i class="fas fa-house text-xl"></i>
+        <span class="text-[10px] mt-0.5">首页</span>
+    </div>
+    <div class="flex flex-col items-center text-gray-400">
+        <i class="fas fa-heart text-xl"></i>
+        <span class="text-[10px] mt-0.5">收藏</span>
+    </div>
+    <div class="flex flex-col items-center -mt-6">
+        <div class="w-12 h-12 match-gradient rounded-full flex items-center justify-center border-4 border-white shadow-lg text-white">
+            <i class="fas fa-plus text-xl"></i>
+        </div>
+        <span class="text-[10px] mt-0.5 text-gray-400">发布</span>
+    </div>
+    <div class="flex flex-col items-center text-gray-400">
+        <i class="fas fa-calendar-check text-xl"></i>
+        <span class="text-[10px] mt-0.5">进度</span>
+    </div>
+    <div class="flex flex-col items-center text-gray-400">
+        <i class="fas fa-user text-xl"></i>
+        <span class="text-[10px] mt-0.5">我的</span>
+    </div>
+</footer>
+
+</body>
+</html>
