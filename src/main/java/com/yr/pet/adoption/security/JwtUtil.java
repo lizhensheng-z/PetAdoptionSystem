@@ -23,8 +23,11 @@ public class JwtUtil {
     @Value("${app.security.jwt.secret:CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32+}")
     private String secret;
     
-    @Value("${app.security.jwt.expire-minutes:120}")
+    @Value("${app.security.jwt.expire-minutes:60}")
     private Long expireMinutes;
+    
+    @Value("${app.security.jwt.refresh-expire-days:7}")
+    private Long refreshExpireDays;
     
     @Value("${app.security.jwt.issuer:pet-adoption-system}")
     private String issuer;
@@ -34,13 +37,14 @@ public class JwtUtil {
     }
     
     /**
-     * 生成JWT token
+     * 生成JWT access token
      */
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("authorities", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
+        claims.put("type", "access");
         
         return Jwts.builder()
                 .setClaims(claims)
@@ -48,6 +52,23 @@ public class JwtUtil {
                 .setIssuer(issuer)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expireMinutes * 60 * 1000))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+    
+    /**
+     * 生成JWT refresh token
+     */
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+        
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuer(issuer)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpireDays * 24 * 60 * 60 * 1000))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

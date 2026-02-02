@@ -1,6 +1,7 @@
 package com.yr.pet.adoption.service;
 
 import com.yr.pet.adoption.model.dto.RegisterRequest;
+import com.yr.pet.adoption.model.dto.UserProfileUpdateRequest;
 import com.yr.pet.adoption.model.entity.UserEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -18,6 +19,11 @@ public interface UserService extends IService<UserEntity> {
      * 根据用户名查找用户
      */
     UserEntity findByUsername(String username);
+    
+    /**
+     * 根据用户ID查找用户
+     */
+    UserEntity findById(Long id);
     
     /**
      * 用户注册
@@ -38,4 +44,19 @@ public interface UserService extends IService<UserEntity> {
      * 检查邮箱是否存在
      */
     boolean existsByEmail(String email);
+    
+    /**
+     * 更新用户最后登录时间
+     */
+    void updateLastLoginTime(Long userId);
+    
+    /**
+     * 更新用户资料
+     */
+    void updateUserProfile(Long userId, UserProfileUpdateRequest request);
+    
+    /**
+     * 将token加入黑名单
+     */
+    void addTokenToBlacklist(String username);
 }

@@ -19,6 +19,12 @@ public class LoginResponse {
     @Schema(description = "访问令牌")
     private String accessToken;
     
+    @Schema(description = "刷新令牌")
+    private String refreshToken;
+    
+    @Schema(description = "令牌有效期(秒)")
+    private Integer expiresIn;
+    
     @Schema(description = "令牌类型")
     private String tokenType = "Bearer";
     

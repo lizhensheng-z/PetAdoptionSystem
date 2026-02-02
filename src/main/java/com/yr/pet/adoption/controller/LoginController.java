@@ -1,9 +1,7 @@
 package com.yr.pet.adoption.controller;
 
 import com.yr.pet.adoption.common.R;
-import com.yr.pet.adoption.model.dto.LoginRequest;
-import com.yr.pet.adoption.model.dto.LoginResponse;
-import com.yr.pet.adoption.model.dto.RegisterRequest;
+import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.UserEntity;
 import com.yr.pet.adoption.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,10 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 认证控制器
@@ -51,10 +46,40 @@ public class LoginController {
     /**
      * 刷新令牌
      */
-    @PostMapping("/refresh")
-    @Operation(summary = "刷新令牌", description = "使用用户名刷新JWT令牌")
-    public R<LoginResponse> refresh(@RequestBody String username) {
-        LoginResponse response = authService.refreshToken(username);
+    @PostMapping("/refresh-token")
+    @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌")
+    public R<LoginResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        LoginResponse response = authService.refreshToken(refreshTokenRequest);
         return R.ok(response);
+    }
+
+    /**
+     * 用户登出
+     */
+    @PostMapping("/logout")
+    @Operation(summary = "用户登出", description = "用户登出接口，将当前token加入黑名单")
+    public R<Void> logout() {
+        authService.logout();
+        return R.ok();
+    }
+
+    /**
+     * 获取当前用户信息
+     */
+    @GetMapping("/me")
+    @Operation(summary = "获取当前用户信息", description = "获取当前登录用户的详细信息")
+    public R<UserInfoResponse> getCurrentUserInfo() {
+        UserInfoResponse userInfo = authService.getCurrentUserInfo();
+        return R.ok(userInfo);
+    }
+
+    /**
+     * 修改个人资料
+     */
+    @PutMapping("/profile")
+    @Operation(summary = "修改个人资料", description = "修改当前用户的个人资料")
+    public R<Void> updateProfile(@Valid @RequestBody UserProfileUpdateRequest request) {
+        authService.updateProfile(request);
+        return R.ok();
     }
 }
