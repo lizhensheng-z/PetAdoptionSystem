@@ -1,18 +1,12 @@
 package com.yr.pet.adoption.mapper;
 
-import com.yr.pet.adoption.model.entity.TagEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yr.pet.adoption.model.entity.TagEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * <p>
- * 标签字典表 Mapper 接口
- * </p>
- *
- * @author 榕
- * @since 2026-02-01
+ * 标签Mapper
  */
 @Mapper
 public interface TagMapper extends BaseMapper<TagEntity> {
-
 }
