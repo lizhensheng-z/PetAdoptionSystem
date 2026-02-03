@@ -29,6 +29,7 @@ public enum ErrorCode {
     LOGIN_FAILED(30005, "用户名或密码错误"),
     
     // 业务错误 40000
+    BUSINESS_ERROR(40000,"业务异常"),
     RESOURCE_NOT_FOUND(40001, "资源不存在"),
     RESOURCE_EXIST(40002, "资源已存在"),
     OPERATION_NOT_ALLOWED(40003, "操作不允许"),
@@ -39,7 +40,7 @@ public enum ErrorCode {
     DATABASE_ERROR(50001, "数据库异常"),
     NETWORK_ERROR(50002, "网络异常"),
     SERVICE_UNAVAILABLE(50003, "服务暂不可用");
-    
+
     private final Integer code;
     private final String message;
     

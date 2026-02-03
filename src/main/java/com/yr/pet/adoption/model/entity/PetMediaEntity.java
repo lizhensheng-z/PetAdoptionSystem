@@ -1,31 +1,19 @@
 package com.yr.pet.adoption.model.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import java.io.Serializable;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
+import java.io.Serializable;
 
 /**
- * <p>
  * 宠物媒体表（图/视频）
- * </p>
- *
- * @author 榕
- * @since 2026-02-01
+ * @author yr
+ * @since 2024-01-01
  */
-@Getter
-@Setter
-@Accessors(chain = true)
 @TableName("pet_media")
-public class PetMediaEntity extends Model<PetMediaEntity> {
+public class PetMediaEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -63,17 +51,68 @@ public class PetMediaEntity extends Model<PetMediaEntity> {
      * 逻辑删除：0否1是
      */
     @TableField("deleted")
-    @TableLogic
-    private Byte deleted;
+    private Integer deleted;
 
     /**
      * 创建时间
      */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @TableField("create_time")
     private LocalDateTime createTime;
 
-    @Override
-    public Serializable pkVal() {
-        return this.id;
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getPetId() {
+        return petId;
+    }
+
+    public void setPetId(Long petId) {
+        this.petId = petId;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public Integer getSort() {
+        return sort;
+    }
+
+    public void setSort(Integer sort) {
+        this.sort = sort;
+    }
+
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 }

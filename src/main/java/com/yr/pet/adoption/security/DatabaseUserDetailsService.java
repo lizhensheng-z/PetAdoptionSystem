@@ -37,15 +37,9 @@ public class DatabaseUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("用户已被禁用: " + username);
         }
         
-        // 根据用户角色设置权限
-        List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole())
-        );
+        //TODO 根据用户角色设置权限
+        List<String> permissions = Collections.singletonList("ROLE_" + user.getRole());
         
-        return new CustomUserDetails(
-                user.getUsername(),
-                user.getPasswordHash(),
-                authorities
-        );
+        return new CustomUserDetails(user, permissions);
     }
 }

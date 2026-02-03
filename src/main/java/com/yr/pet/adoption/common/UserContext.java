@@ -3,8 +3,11 @@ package com.yr.pet.adoption.common;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
+import com.yr.pet.adoption.security.CustomUserDetails;
 
 /**
  * 用户上下文信息实体类
@@ -49,4 +52,34 @@ public class UserContext {
      * 邮箱
      */
     private String email;
+    
+    /**
+     * 获取当前登录用户ID
+     */
+    public static Long getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+            return ((CustomUserDetails) authentication.getPrincipal()).getUserId();
+        }
+        return null;
+    }
+    
+    /**
+     * 获取当前登录用户上下文
+     */
+    public static UserContext getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            UserContext context = new UserContext();
+            context.setUserId(userDetails.getUserId());
+            context.setUsername(userDetails.getUsername());
+            context.setRole(userDetails.getRole());
+            context.setPermissions(userDetails.getAuthorities().stream()
+                    .map(auth -> auth.getAuthority())
+                    .collect(java.util.stream.Collectors.toList()));
+            return context;
+        }
+        return null;
+    }
 }

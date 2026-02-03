@@ -50,9 +50,18 @@ public class GlobalExceptionHandler {
     /**
      * 处理业务异常
      */
+    @ExceptionHandler(BusinessException.class)
+    public R<Void> handleBusinessException(BusinessException e) {
+        log.error("业务异常: {}", e.getMessage(), e);
+        return R.fail(e.getCode(), e.getMessage());
+    }
+
+    /**
+     * 处理运行时异常
+     */
     @ExceptionHandler(RuntimeException.class)
     public R<Void> handleRuntimeException(RuntimeException e) {
-        log.error("业务异常: {}", e.getMessage(), e);
+        log.error("运行时异常: {}", e.getMessage(), e);
         return R.fail(e.getMessage());
     }
 

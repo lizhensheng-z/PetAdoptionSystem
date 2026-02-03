@@ -1,32 +1,20 @@
 package com.yr.pet.adoption.model.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import java.io.Serializable;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
+import java.io.Serializable;
 
 /**
- * <p>
  * 宠物档案表
- * </p>
- *
- * @author 榕
- * @since 2026-02-01
+ * @author yr
+ * @since 2024-01-01
  */
-@Getter
-@Setter
-@Accessors(chain = true)
 @TableName("pet")
-public class PetEntity extends Model<PetEntity> {
+public class PetEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -88,19 +76,19 @@ public class PetEntity extends Model<PetEntity> {
      * 是否绝育：0否1是
      */
     @TableField("sterilized")
-    private Byte sterilized;
+    private Boolean sterilized;
 
     /**
      * 是否疫苗：0否1是
      */
     @TableField("vaccinated")
-    private Byte vaccinated;
+    private Boolean vaccinated;
 
     /**
      * 是否驱虫：0否1是
      */
     @TableField("dewormed")
-    private Byte dewormed;
+    private Boolean dewormed;
 
     /**
      * 健康描述
@@ -160,23 +148,210 @@ public class PetEntity extends Model<PetEntity> {
      * 逻辑删除：0否1是
      */
     @TableField("deleted")
-    @TableLogic
-    private Byte deleted;
+    private Integer deleted;
 
     /**
      * 创建时间
      */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @TableField("create_time")
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @TableField("update_time")
     private LocalDateTime updateTime;
 
-    @Override
-    public Serializable pkVal() {
-        return this.id;
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getOrgUserId() {
+        return orgUserId;
+    }
+
+    public void setOrgUserId(Long orgUserId) {
+        this.orgUserId = orgUserId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(String species) {
+        this.species = species;
+    }
+
+    public String getBreed() {
+        return breed;
+    }
+
+    public void setBreed(String breed) {
+        this.breed = breed;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public Integer getAgeMonth() {
+        return ageMonth;
+    }
+
+    public void setAgeMonth(Integer ageMonth) {
+        this.ageMonth = ageMonth;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public Boolean getSterilized() {
+        return sterilized;
+    }
+
+    public void setSterilized(Boolean sterilized) {
+        this.sterilized = sterilized;
+    }
+
+    public Boolean getVaccinated() {
+        return vaccinated;
+    }
+
+    public void setVaccinated(Boolean vaccinated) {
+        this.vaccinated = vaccinated;
+    }
+
+    public Boolean getDewormed() {
+        return dewormed;
+    }
+
+    public void setDewormed(Boolean dewormed) {
+        this.dewormed = dewormed;
+    }
+
+    public String getHealthDesc() {
+        return healthDesc;
+    }
+
+    public void setHealthDesc(String healthDesc) {
+        this.healthDesc = healthDesc;
+    }
+
+    public String getPersonalityDesc() {
+        return personalityDesc;
+    }
+
+    public void setPersonalityDesc(String personalityDesc) {
+        this.personalityDesc = personalityDesc;
+    }
+
+    public String getAdoptRequirements() {
+        return adoptRequirements;
+    }
+
+    public void setAdoptRequirements(String adoptRequirements) {
+        this.adoptRequirements = adoptRequirements;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAuditStatus() {
+        return auditStatus;
+    }
+
+    public void setAuditStatus(String auditStatus) {
+        this.auditStatus = auditStatus;
+    }
+
+    public BigDecimal getLng() {
+        return lng;
+    }
+
+    public void setLng(BigDecimal lng) {
+        this.lng = lng;
+    }
+
+    public BigDecimal getLat() {
+        return lat;
+    }
+
+    public void setLat(BigDecimal lat) {
+        this.lat = lat;
+    }
+
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
+    }
+
+    public LocalDateTime getPublishedTime() {
+        return publishedTime;
+    }
+
+    public void setPublishedTime(LocalDateTime publishedTime) {
+        this.publishedTime = publishedTime;
+    }
+
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 }
