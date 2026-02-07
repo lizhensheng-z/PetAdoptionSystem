@@ -1,31 +1,19 @@
 package com.yr.pet.adoption.model.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import java.io.Serializable;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
+import java.io.Serializable;
 
 /**
- * <p>
  * 领养申请表
- * </p>
- *
- * @author 榕
- * @since 2026-02-01
+ * @author yr
+ * @since 2024-01-01
  */
-@Getter
-@Setter
-@Accessors(chain = true)
 @TableName("adoption_application")
-public class AdoptionApplicationEntity extends Model<AdoptionApplicationEntity> {
+public class AdoptionApplicationEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -81,23 +69,106 @@ public class AdoptionApplicationEntity extends Model<AdoptionApplicationEntity> 
      * 逻辑删除：0否1是
      */
     @TableField("deleted")
-    @TableLogic
-    private Byte deleted;
+    private Integer deleted;
 
     /**
      * 创建时间
      */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @TableField("create_time")
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @TableField("update_time")
     private LocalDateTime updateTime;
 
-    @Override
-    public Serializable pkVal() {
-        return this.id;
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getPetId() {
+        return petId;
+    }
+
+    public void setPetId(Long petId) {
+        this.petId = petId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getQuestionnaireJson() {
+        return questionnaireJson;
+    }
+
+    public void setQuestionnaireJson(String questionnaireJson) {
+        this.questionnaireJson = questionnaireJson;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getRejectReason() {
+        return rejectReason;
+    }
+
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+
+    public String getOrgRemark() {
+        return orgRemark;
+    }
+
+    public void setOrgRemark(String orgRemark) {
+        this.orgRemark = orgRemark;
+    }
+
+    public LocalDateTime getDecidedTime() {
+        return decidedTime;
+    }
+
+    public void setDecidedTime(LocalDateTime decidedTime) {
+        this.decidedTime = decidedTime;
+    }
+
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 }

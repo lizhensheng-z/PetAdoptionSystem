@@ -1,16 +1,20 @@
 package com.yr.pet.adoption.service;
 
-import com.yr.pet.adoption.model.entity.AdoptionFlowLogEntity;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.yr.pet.adoption.model.vo.ApplicationFlowLogVO;
+
+import java.util.List;
 
 /**
- * <p>
- * 申请状态流转日志表 服务类
- * </p>
- *
- * @author 榕
- * @since 2026-02-01
+ * 领养申请流程日志服务接口
+ * @author yr
+ * @since 2024-01-01
  */
-public interface AdoptionFlowLogService extends IService<AdoptionFlowLogEntity> {
+public interface AdoptionFlowLogService {
 
+    /**
+     * 获取申请流程日志
+     * @param applicationId 申请ID
+     * @return 流程日志列表
+     */
+    List<ApplicationFlowLogVO> getApplicationLogs(Long applicationId);
 }
