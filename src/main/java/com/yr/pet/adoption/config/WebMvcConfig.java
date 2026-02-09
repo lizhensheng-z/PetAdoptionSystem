@@ -1,31 +1,35 @@
 package com.yr.pet.adoption.config;
 
-import com.yr.pet.adoption.security.JwtAuthenticationInterceptor;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Web MVC配置类
- * 注册JWT认证拦截器
+ * Web MVC配置
  */
 @Configuration
-@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
-    
-    private final JwtAuthenticationInterceptor jwtAuthenticationInterceptor;
-    
+
+    /**
+     * 配置跨域
+     */
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtAuthenticationInterceptor)
-                .addPathPatterns("/api/**")  // 拦截所有API请求
-                .excludePathPatterns(
-                        "/api/auth/**",           // 认证相关接口
-                        "/swagger-ui/**",         // Swagger UI
-                        "/v3/api-docs/**",        // API文档
-                        "/swagger-ui.html",       // Swagger页面
-                        "/actuator/**"            // 监控端点
-                );
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
+
+    /**
+     * 配置RestTemplate
+     */
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

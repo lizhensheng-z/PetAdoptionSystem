@@ -121,6 +121,15 @@
             <version>${hutool.version}</version>
         </dependency>
 
+        <!-- 阿里云OSS -->
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+            <version>3.16.1</version>
+        </dependency>
+
+        
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>

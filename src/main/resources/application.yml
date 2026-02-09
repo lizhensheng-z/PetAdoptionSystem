@@ -17,7 +17,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/petAdoptionSystem?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: 12345678
+    password: 123456
 
   data:
     redis:
@@ -91,6 +91,20 @@ app:
     tencent:
       key: ""
       nearby-url: "https://apis.map.qq.com/ws/place/v1/search"
+    # 高德地图API配置
+    amap:
+      key: "your_amap_api_key"
+      geocode-url: "https://restapi.amap.com/v3/geocode/geo"
+      distance-url: "https://restapi.amap.com/v3/distance"
+
+# 阿里云OSS配置
+aliyun:
+  oss:
+    endpoint: "oss-cn-beijing.aliyuncs.com"
+    accessKeyId: "your_access_key_id"
+    accessKeySecret: "your_access_key_secret"
+    bucketName: "pet-adoption-system"
+    domain: "https://pet-adoption-system.oss-cn-beijing.aliyuncs.com"
 
 logging:
   level:
