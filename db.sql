@@ -379,9 +379,15 @@ INSERT INTO sys_permission(perm_code, perm_name, perm_type, http_method, api_pat
                                                                                                                          ('app:my','用户查看我的申请','API','GET','/api/applications/my',NULL,21,1,'用户申请列表'),
                                                                                                                          ('app:cancel','用户撤回申请','API','POST','/api/applications/**/cancel',NULL,22,1,'撤回申请'),
 
-                                                                                                                         ('app:org:list','机构查看申请列表','API','GET','/api/org/applications',NULL,30,1,'机构申请管理'),
-                                                                                                                         ('app:org:detail','机构查看申请详情','API','GET','/api/org/applications/**',NULL,31,1,'申请详情'),
-                                                                                                                         ('app:org:status','机构流转申请状态','API','POST','/api/org/applications/**/status',NULL,32,1,'状态流转'),
+                                                                                                                          ('org:profile:read','机构查看资料','API','GET','/api/org/profile',NULL,25,1,'机构资料查看'),
+                                                                                                                          ('org:profile:update','机构更新资料','API','PUT','/api/org/profile',NULL,26,1,'机构资料更新'),
+                                                                                                                          ('org:statistics:read','机构查看统计','API','GET','/api/org/statistics',NULL,27,1,'机构统计查看'),
+                                                                                                                          ('org:adoptions:read','机构查看领养记录','API','GET','/api/org/adoptions',NULL,28,1,'领养记录查看'),
+                                                                                                                          ('org:followup:read','机构查看回访提醒','API','GET','/api/org/followup-reminders',NULL,29,1,'回访提醒查看'),
+
+                                                                                                                          ('app:org:list','机构查看申请列表','API','GET','/api/org/applications',NULL,30,1,'机构申请管理'),
+                                                                                                                          ('app:org:detail','机构查看申请详情','API','GET','/api/org/applications/**',NULL,31,1,'申请详情'),
+                                                                                                                          ('app:org:status','机构流转申请状态','API','POST','/api/org/applications/**/status',NULL,32,1,'状态流转'),
 
                                                                                                                          ('checkin:create','用户发布打卡','API','POST','/api/checkins',NULL,40,1,'领养后打卡'),
                                                                                                                          ('checkin:my','用户查看我的打卡','API','GET','/api/checkins/my',NULL,41,1,'打卡列表'),
@@ -412,6 +418,7 @@ WHERE r.role_code='ORG'
   AND p.perm_code IN (
                       'pet:read','behavior:write',
                       'pet:create','pet:update','pet:submit_audit','pet:remove',
+                      'org:profile:read','org:profile:update','org:statistics:read','org:adoptions:read','org:followup:read',
                       'app:org:list','app:org:detail','app:org:status'
     );
 

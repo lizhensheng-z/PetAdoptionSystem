@@ -11,21 +11,31 @@ import java.util.List;
 @Data
 public class PageResult<T> {
     
+    private List<T> list;
+    private Integer pageNo;
+    private Integer pageSize;
     private Long total;
-    private Long size;
-    private Long current;
-    private List<T> records;
+    private Integer totalPages;
     
     public PageResult() {}
     
-    public PageResult(Long total, Long size, Long current, List<T> records) {
+    public PageResult(List<T> list, Integer pageNo, Integer pageSize, Long total, Integer totalPages) {
+        this.list = list;
+        this.pageNo = pageNo;
+        this.pageSize = pageSize;
         this.total = total;
-        this.size = size;
-        this.current = current;
-        this.records = records;
+        this.totalPages = totalPages;
+    }
+    
+    public static <T> PageResult<T> of(List<T> list, Integer pageNo, Integer pageSize, Long total) {
+        Integer totalPages = (int) Math.ceil((double) total / pageSize);
+        return new PageResult<>(list, pageNo, pageSize, total, totalPages);
     }
     
     public static <T> PageResult<T> of(Long total, Long size, Long current, List<T> records) {
-        return new PageResult<>(total, size, current, records);
+        Integer pageNo = current.intValue();
+        Integer pageSize = size.intValue();
+        Integer totalPages = (int) Math.ceil((double) total / pageSize);
+        return new PageResult<>(records, pageNo, pageSize, total, totalPages);
     }
 }

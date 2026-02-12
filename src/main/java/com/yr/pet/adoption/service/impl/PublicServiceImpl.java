@@ -3,6 +3,7 @@ package com.yr.pet.adoption.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yr.pet.adoption.common.PageResult;
 import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.NoticeEntity;
 import com.yr.pet.adoption.model.entity.TagEntity;

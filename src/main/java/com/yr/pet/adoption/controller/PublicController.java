@@ -1,5 +1,6 @@
 package com.yr.pet.adoption.controller;
 
+import com.yr.pet.adoption.common.PageResult;
 import com.yr.pet.adoption.common.R;
 import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.service.PublicService;

@@ -1,40 +1,41 @@
 package com.yr.pet.adoption.model.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+
+
 
 /**
- * 机构档案响应DTO
+ * 机构资料更新请求DTO
  * @author yr
  * @since 2024-01-01
  */
-public class OrgProfileResponse {
+public class OrgProfileUpdateRequest {
 
-    private Long id;
-    private Long userId;
+    @NotBlank(message = "机构名称不能为空")
     private String orgName;
+
     private String licenseNo;
+
+    @NotBlank(message = "联系人姓名不能为空")
     private String contactName;
+
+    @Pattern(regexp = "^1[3-9]\\d{9}$|^0\\d{2,3}-?\\d{7,8}$", message = "联系电话格式不正确")
     private String contactPhone;
+
     private String address;
+
     private String province;
+
     private String city;
+
     private String district;
+
     private BigDecimal lng;
+
     private BigDecimal lat;
-    private String verifyStatus;
-    private String verifyRemark;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getOrgName() {
         return orgName;
@@ -114,45 +115,5 @@ public class OrgProfileResponse {
 
     public void setLat(BigDecimal lat) {
         this.lat = lat;
-    }
-
-    public String getVerifyStatus() {
-        return verifyStatus;
-    }
-
-    public void setVerifyStatus(String verifyStatus) {
-        this.verifyStatus = verifyStatus;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getVerifyRemark() {
-        return verifyRemark;
-    }
-
-    public void setVerifyRemark(String verifyRemark) {
-        this.verifyRemark = verifyRemark;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
     }
 }

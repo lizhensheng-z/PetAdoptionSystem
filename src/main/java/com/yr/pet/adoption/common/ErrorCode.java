@@ -31,9 +31,10 @@ public enum ErrorCode {
     // 业务错误 40000
     BUSINESS_ERROR(40000,"业务异常"),
     RESOURCE_NOT_FOUND(40001, "资源不存在"),
-    RESOURCE_EXIST(40002, "资源已存在"),
-    OPERATION_NOT_ALLOWED(40003, "操作不允许"),
-    DUPLICATE_OPERATION(40004, "重复操作"),
+    NOT_FOUND(40002, "资源不存在"),
+    RESOURCE_EXIST(40003, "资源已存在"),
+    OPERATION_NOT_ALLOWED(40004, "操作不允许"),
+    DUPLICATE_OPERATION(40005, "重复操作"),
     
     // 系统错误 50000
     SYSTEM_ERROR(50000, "系统异常"),
