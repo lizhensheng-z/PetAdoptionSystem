@@ -1,4 +1,4 @@
-package com.yr.pet.adoption.common;
+package com.yr.pet.adoption.exception;
 
 /**
  * 错误码枚举

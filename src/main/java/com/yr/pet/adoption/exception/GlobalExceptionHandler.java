@@ -1,6 +1,5 @@
 package com.yr.pet.adoption.exception;
 
-import com.yr.pet.adoption.common.ErrorCode;
 import com.yr.pet.adoption.common.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;

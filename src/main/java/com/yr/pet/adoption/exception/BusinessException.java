@@ -1,7 +1,5 @@
 package com.yr.pet.adoption.exception;
 
-import com.yr.pet.adoption.common.ErrorCode;
-
 /**
  * 业务异常类
  * @author yr

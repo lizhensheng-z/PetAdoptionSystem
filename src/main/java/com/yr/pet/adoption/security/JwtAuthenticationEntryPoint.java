@@ -1,7 +1,7 @@
 package com.yr.pet.adoption.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yr.pet.adoption.common.ErrorCode;
+import com.yr.pet.adoption.exception.ErrorCode;
 import com.yr.pet.adoption.common.R;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

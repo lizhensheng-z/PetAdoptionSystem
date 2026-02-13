@@ -1,6 +1,7 @@
 package com.yr.pet.adoption.common;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yr.pet.adoption.exception.ErrorCode;
 import lombok.Data;
 
 import java.time.LocalDateTime;
