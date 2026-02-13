@@ -393,11 +393,13 @@ INSERT INTO sys_permission(perm_code, perm_name, perm_type, http_method, api_pat
                                                                                                                          ('checkin:my','用户查看我的打卡','API','GET','/api/checkins/my',NULL,41,1,'打卡列表'),
                                                                                                                          ('credit:me','用户查看信用','API','GET','/api/credit/me',NULL,42,1,'信用查看'),
 
-                                                                                                                         ('admin:pet_audit:list','管理员查看宠物审核列表','API','GET','/api/admin/pet-audits',NULL,90,1,'审核列表'),
-                                                                                                                         ('admin:pet_audit:decision','管理员审核宠物（通过/驳回）','API','POST','/api/admin/pet-audits/**/decision',NULL,91,1,'审核操作'),
-                                                                                                                         ('admin:tag:manage','管理员管理标签库','API',NULL,'/api/admin/tags/**',NULL,92,1,'标签维护'),
-                                                                                                                         ('admin:config:manage','管理员配置参数','API',NULL,'/api/admin/config/**',NULL,93,1,'运营参数'),
-                                                                                                                         ('admin:user:manage','管理员用户管理','API',NULL,'/api/admin/users/**',NULL,94,1,'封禁/解封等');
+                                                                                                                          ('admin:pet_audit:list','管理员查看宠物审核列表','API','GET','/api/admin/pet-audits',NULL,90,1,'审核列表'),
+                                                                                                                          ('admin:pet_audit:decision','管理员审核宠物（通过/驳回）','API','POST','/api/admin/pet-audits/**/decision',NULL,91,1,'审核操作'),
+                                                                                                                          ('admin:tag:manage','管理员管理标签库','API',NULL,'/api/admin/tags/**',NULL,92,1,'标签维护'),
+                                                                                                                          ('admin:config:manage','管理员配置参数','API',NULL,'/api/admin/config/**',NULL,93,1,'运营参数'),
+                                                                                                                          ('admin:user:manage','管理员用户管理','API',NULL,'/api/admin/users/**',NULL,94,1,'封禁/解封等'),
+                                                                                                                          ('admin:permission:manage','管理员权限管理','API',NULL,'/api/admin/permissions/**',NULL,95,1,'权限CRUD'),
+                                                                                                                          ('admin:role:manage','管理员角色管理','API',NULL,'/api/admin/roles/**',NULL,96,1,'角色CRUD');
 
 -- Role -> Permission mapping
 
