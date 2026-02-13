@@ -100,12 +100,11 @@ app:
 # 阿里云OSS配置
 aliyun:
   oss:
-    endpoint: "oss-cn-beijing.aliyuncs.com"
-    accessKeyId: "your_access_key_id"
-    accessKeySecret: "your_access_key_secret"
-    bucketName: "pet-adoption-system"
-    domain: "https://pet-adoption-system.oss-cn-beijing.aliyuncs.com"
-
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
+    accessKeyId: LTAI5tD8nAtzG7n9wYHumwNv
+    accessKeySecret: t5rEzeuDb727OF7PpphZsgH6BXOe4L
+    bucketName: demo-lizhensheng
+    domain: https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com
 logging:
   level:
     root: info

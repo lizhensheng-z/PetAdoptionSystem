@@ -1,6 +1,8 @@
 package com.yr.pet.adoption.service;
 
 import com.yr.pet.adoption.model.entity.CreditAccountEntity;
+import com.yr.pet.adoption.model.dto.*;
+import com.yr.pet.adoption.common.PageResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -13,4 +15,18 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface CreditAccountService extends IService<CreditAccountEntity> {
 
+    /**
+     * 获取信用信息
+     */
+    CreditInfoResponse getCreditInfo(Long userId);
+
+    /**
+     * 获取信用流水
+     */
+    PageResult<CreditLogItem> getCreditLogs(Long userId, String reason, Integer pageNo, Integer pageSize);
+
+    /**
+     * 计算打卡信用分
+     */
+    Integer calculateCheckinScore(String content, boolean hasMedia);
 }

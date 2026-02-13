@@ -1,0 +1,197 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "宠物领养系统 - 文件上传接口",
+    "description": "宠物领养系统文件上传相关接口文档，支持多种文件类型的上传",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081",
+      "description": "本地开发环境"
+    },
+    {
+      "url": "https://api.petadoption.com",
+      "description": "生产环境"
+    }
+  ],
+  "paths": {
+    "/api/upload": {
+      "post": {
+        "tags": [
+          "文件上传"
+        ],
+        "summary": "文件上传",
+        "description": "通用文件上传接口",
+        "operationId": "upload",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "要上传的文件"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "文件类型标识",
+                    "enum": [
+                      "avatar",
+                      "pet_photo",
+                      "id_card",
+                      "license",
+                      "other"
+                    ]
+                  }
+                },
+                "required": [
+                  "file",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RVoid"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "文件过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RVoid"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "不支持的文件类型",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RVoid"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UploadResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "文件URL"
+          },
+          "filename": {
+            "type": "string",
+            "description": "文件名"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "description": "文件大小（字节）"
+          },
+          "mime": {
+            "type": "string",
+            "description": "MIME类型"
+          }
+        }
+      },
+      "RVoid": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码"
+          },
+          "message": {
+            "type": "string",
+            "description": "响应消息"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "description": "返回数据"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "时间戳"
+          }
+        }
+      },
+      "RUploadResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码"
+          },
+          "message": {
+            "type": "string",
+            "description": "响应消息"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UploadResponse"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "时间戳"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Authorization header using the Bearer scheme"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "文件上传",
+      "description": "文件上传相关接口"
+    }
+  ]
+}
