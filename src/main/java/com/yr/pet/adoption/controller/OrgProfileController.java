@@ -23,7 +23,6 @@ public class OrgProfileController {
 
     @Autowired
     private OrgProfileService orgProfileService;
-
     /**
      * 获取机构资料
      */

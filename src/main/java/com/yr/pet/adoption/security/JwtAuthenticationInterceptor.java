@@ -1,6 +1,7 @@
 package com.yr.pet.adoption.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.yr.pet.adoption.common.R;
 import com.yr.pet.adoption.common.UserContent;
 import com.yr.pet.adoption.model.entity.UserEntity;
@@ -33,7 +34,8 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
     private final DatabaseUserDetailsService userDetailsService;
     private final UserService userService;
     private final UserContent userContent;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
