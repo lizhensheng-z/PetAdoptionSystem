@@ -1,6 +1,7 @@
 package com.yr.pet.adoption.service;
 
 import com.yr.pet.adoption.model.entity.UserBehaviorEntity;
+import com.yr.pet.adoption.model.dto.BehaviorRecordRequest;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -13,4 +14,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserBehaviorService extends IService<UserBehaviorEntity> {
 
+    /**
+     * 记录用户行为
+     */
+    void recordBehavior(Long userId, BehaviorRecordRequest request);
 }

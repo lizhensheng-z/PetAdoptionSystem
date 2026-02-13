@@ -1,18 +1,66 @@
 package com.yr.pet.adoption.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.yr.pet.adoption.model.dto.FavoriteListItem;
+import com.yr.pet.adoption.service.UserFavoriteService;
+import com.yr.pet.adoption.common.R;
+import com.yr.pet.adoption.common.UserContext;
+import com.yr.pet.adoption.common.PageResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 /**
  * <p>
- * 用户收藏表 前端控制器
+ * 收藏管理接口控制器
  * </p>
  *
  * @author 榕
  * @since 2026-02-01
  */
 @RestController
-@RequestMapping("/user-favorite-entity")
+@RequestMapping("/api")
+@Tag(name = "收藏管理", description = "用户收藏相关接口")
 public class UserFavoriteController {
 
+    @Autowired
+    private UserFavoriteService userFavoriteService;
+
+    /**
+     * 添加收藏
+     */
+    @PostMapping("/favorites/{petId}")
+    @PreAuthorize("hasAuthority('favorite:manage')")
+    @Operation(summary = "添加收藏", description = "收藏指定的宠物")
+    public R addFavorite(@PathVariable Long petId) {
+        Long userId = UserContext.getUserId();
+        userFavoriteService.addFavorite(userId, petId);
+        return R.ok("收藏成功");
+    }
+
+    /**
+     * 取消收藏
+     */
+    @DeleteMapping("/favorites/{petId}")
+    @PreAuthorize("hasAuthority('favorite:manage')")
+    @Operation(summary = "取消收藏", description = "取消对指定宠物的收藏")
+    public R removeFavorite(@PathVariable Long petId) {
+        Long userId = UserContext.getUserId();
+        userFavoriteService.removeFavorite(userId, petId);
+        return R.ok("取消收藏成功");
+    }
+
+    /**
+     * 获取我的收藏列表
+     */
+    @GetMapping("/favorites/my")
+    @Operation(summary = "获取我的收藏列表", description = "获取当前用户的收藏列表")
+    public R<PageResult<FavoriteListItem>> getMyFavorites(
+            @RequestParam(defaultValue = "1") Integer pageNo,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Long userId = UserContext.getUserId();
+        PageResult<FavoriteListItem> result = userFavoriteService.getMyFavorites(userId, pageNo, pageSize);
+        return R.ok(result);
+    }
 }
