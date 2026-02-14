@@ -21,6 +21,11 @@ public interface CreditAccountService extends IService<CreditAccountEntity> {
     CreditInfoResponse getCreditInfo(Long userId);
 
     /**
+     * 获取信用详情（含历史记录）
+     */
+    CreditDetailResponse getCreditDetail(Long userId);
+
+    /**
      * 获取信用流水
      */
     PageResult<CreditLogItem> getCreditLogs(Long userId, String reason, Integer pageNo, Integer pageSize);

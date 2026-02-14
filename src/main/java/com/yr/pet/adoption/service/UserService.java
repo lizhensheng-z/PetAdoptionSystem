@@ -1,7 +1,7 @@
 package com.yr.pet.adoption.service;
 
-import com.yr.pet.adoption.model.dto.RegisterRequest;
-import com.yr.pet.adoption.model.dto.UserProfileUpdateRequest;
+import com.yr.pet.adoption.common.PageResult;
+import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.UserEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -59,4 +59,24 @@ public interface UserService extends IService<UserEntity> {
      * 将token加入黑名单
      */
     void addTokenToBlacklist(String username);
+
+    /**
+     * 获取用户详细信息（含信用分、统计数据）
+     */
+    UserDetailResponse getUserDetail(Long userId);
+
+    /**
+     * 获取用户统计数据
+     */
+    UserStatsResponse getUserStats(Long userId);
+
+    /**
+     * 获取用户偏好设置
+     */
+    UserPreferenceResponse getUserPreference(Long userId);
+
+    /**
+     * 更新用户偏好设置
+     */
+    void updateUserPreference(Long userId, UserPreferenceRequest request);
 }

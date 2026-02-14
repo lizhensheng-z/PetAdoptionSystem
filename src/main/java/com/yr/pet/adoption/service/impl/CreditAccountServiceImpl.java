@@ -152,6 +152,60 @@ public class CreditAccountServiceImpl extends ServiceImpl<CreditAccountMapper, C
     }
 
     @Override
+    public CreditDetailResponse getCreditDetail(Long userId) {
+        CreditDetailResponse response = new CreditDetailResponse();
+        
+        // 获取信用账户
+        CreditAccountEntity account = this.getById(userId);
+        int score = account != null ? account.getScore() : 0;
+        int level = account != null ? account.getLevel() : 0;
+        
+        response.setCurrentScore(score);
+        response.setLevel(getLevelName(level));
+        response.setLevelName(getLevelName(level));
+        
+        // 计算信用分变化
+        LambdaQueryWrapper<CreditLogEntity> logQuery = new LambdaQueryWrapper<CreditLogEntity>()
+                .eq(CreditLogEntity::getUserId, userId)
+                .orderByDesc(CreditLogEntity::getCreateTime)
+                .last("LIMIT 10");
+        
+        List<CreditLogEntity> logs = creditLogMapper.selectList(logQuery);
+        int scoreChange = logs.stream()
+                .mapToInt(CreditLogEntity::getDelta)
+                .sum();
+        response.setScoreChange(scoreChange);
+        
+        // 转换历史记录
+        List<CreditLogItem> history = new ArrayList<>();
+        int beforeScore = score;
+        for (CreditLogEntity log : logs) {
+            CreditLogItem item = new CreditLogItem();
+            item.setLogId(log.getId());
+            item.setUserId(log.getUserId());
+            item.setDelta(log.getDelta());
+            item.setReason(log.getReason());
+            item.setReasonDisplay(getReasonDisplay(log.getReason(), log.getDelta()));
+            item.setRefType(log.getRefType());
+            item.setRefId(log.getRefId());
+            item.setBeforeScore(beforeScore - log.getDelta());
+            item.setAfterScore(beforeScore);
+            item.setCreateTime(log.getCreateTime());
+            beforeScore = item.getBeforeScore();
+            
+            history.add(item);
+        }
+        response.setHistory(history);
+        
+        // 下一等级信息
+        int nextLevelScore = getNextLevelScore(level);
+        response.setNextLevelScore(nextLevelScore);
+        response.setScoreToNextLevel(Math.max(0, nextLevelScore - score));
+        
+        return response;
+    }
+
+    @Override
     public PageResult<CreditLogItem> getCreditLogs(Long userId, String reason, Integer pageNo, Integer pageSize) {
         LambdaQueryWrapper<CreditLogEntity> query = new LambdaQueryWrapper<CreditLogEntity>()
                 .eq(CreditLogEntity::getUserId, userId);

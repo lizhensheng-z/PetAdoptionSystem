@@ -40,6 +40,17 @@ public class CreditAccountController {
     }
 
     /**
+     * 获取信用详情（含历史记录）
+     */
+    @GetMapping("/credit/detail")
+    @Operation(summary = "获取信用详情", description = "获取当前用户的信用详情，包含历史记录和等级信息")
+    public R<CreditDetailResponse> getCreditDetail() {
+        Long userId = UserContext.getUserId();
+        CreditDetailResponse response = creditAccountService.getCreditDetail(userId);
+        return R.ok(response);
+    }
+
+    /**
      * 获取信用流水
      */
     @GetMapping("/credit/logs")

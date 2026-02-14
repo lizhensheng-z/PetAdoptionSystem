@@ -22,4 +22,143 @@
         id, pet_id, user_id, questionnaire_json, status, reject_reason, org_remark, decided_time, deleted, create_time, update_time
     </sql>
 
+    <!-- 我的申请列表结果映射 -->
+    <resultMap id="MyApplicationVOResultMap" type="com.yr.pet.adoption.model.vo.MyApplicationVO">
+        <id column="id" property="id" />
+        <result column="pet_id" property="petId" />
+        <result column="pet_name" property="petName" />
+        <result column="pet_cover_url" property="petCoverUrl" />
+        <result column="pet_species" property="petSpecies" />
+        <result column="pet_breed" property="petBreed" />
+        <result column="status" property="status" />
+        <result column="status_desc" property="statusDesc" />
+        <result column="submit_time" property="submitTime" />
+        <result column="org_name" property="orgName" />
+        <result column="org_avatar" property="orgAvatar" />
+    </resultMap>
+
+    <!-- 机构申请列表结果映射 -->
+    <resultMap id="OrgApplicationVOResultMap" type="com.yr.pet.adoption.model.vo.OrgApplicationVO">
+        <id column="id" property="id" />
+        <result column="pet_id" property="petId" />
+        <result column="pet_name" property="petName" />
+        <result column="pet_cover_url" property="petCoverUrl" />
+        <result column="user_id" property="userId" />
+        <result column="user_nickname" property="userNickname" />
+        <result column="user_avatar" property="userAvatar" />
+        <result column="user_phone" property="userPhone" />
+        <result column="user_email" property="userEmail" />
+        <result column="status" property="status" />
+        <result column="status_desc" property="statusDesc" />
+        <result column="submit_time" property="submitTime" />
+        <result column="user_credit_score" property="userCreditScore" />
+    </resultMap>
+
+    <!-- 获取我的申请列表 -->
+    <select id="selectMyApplications" resultMap="MyApplicationVOResultMap">
+        SELECT 
+            aa.id,
+            aa.pet_id,
+            p.name AS pet_name,
+            p.cover_url AS pet_cover_url,
+            p.species AS pet_species,
+            p.breed AS pet_breed,
+            aa.status,
+            CASE aa.status
+                WHEN 'SUBMITTED' THEN '已提交，待审核'
+                WHEN 'UNDER_REVIEW' THEN '审核中'
+                WHEN 'INTERVIEW' THEN '需面谈'
+                WHEN 'HOME_VISIT' THEN '家访中'
+                WHEN 'APPROVED' THEN '申请成功'
+                WHEN 'REJECTED' THEN '申请被拒'
+                WHEN 'CANCELLED' THEN '已取消'
+                ELSE '未知状态'
+            END AS status_desc,
+            aa.create_time AS submit_time,
+            o.org_name,
+            u.avatar AS org_avatar
+        FROM adoption_application aa
+        LEFT JOIN pet p ON aa.pet_id = p.id
+        LEFT JOIN sys_user o ON p.org_user_id = o.id
+        LEFT JOIN sys_user u ON p.org_user_id = u.id
+        WHERE aa.user_id = #{userId}
+        <if test="status != null and status != ''">
+            AND aa.status = #{status}
+        </if>
+        AND aa.deleted = 0
+        AND p.deleted = 0
+        <choose>
+            <when test="sortBy == 'submitTime'">
+                ORDER BY aa.create_time
+            </when>
+            <when test="sortBy == 'updateTime'">
+                ORDER BY aa.update_time
+            </when>
+            <otherwise>
+                ORDER BY aa.create_time
+            </otherwise>
+        </choose>
+        <if test="order == 'desc'">
+            DESC
+        </if>
+    </select>
+
+    <!-- 获取机构申请列表 -->
+    <select id="selectOrgApplications" resultMap="OrgApplicationVOResultMap">
+        SELECT 
+            aa.id,
+            aa.pet_id,
+            p.name AS pet_name,
+            p.cover_url AS pet_cover_url,
+            aa.user_id,
+            u.username AS user_nickname,
+            u.avatar AS user_avatar,
+            u.phone AS user_phone,
+            u.email AS user_email,
+            aa.status,
+            CASE aa.status
+                WHEN 'SUBMITTED' THEN '用户提交申请'
+                WHEN 'UNDER_REVIEW' THEN '审核中'
+                WHEN 'INTERVIEW' THEN '已安排面谈'
+                WHEN 'HOME_VISIT' THEN '已安排家访'
+                WHEN 'APPROVED' THEN '批准申请'
+                WHEN 'REJECTED' THEN '驳回申请'
+                WHEN 'CANCELLED' THEN '申请被取消'
+                ELSE '处理状态'
+            END AS status_desc,
+            aa.create_time AS submit_time,
+            COALESCE(ca.score, 0) AS user_credit_score
+        FROM adoption_application aa
+        LEFT JOIN pet p ON aa.pet_id = p.id
+        LEFT JOIN sys_user u ON aa.user_id = u.id
+        LEFT JOIN credit_account ca ON aa.user_id = ca.user_id
+        WHERE p.org_user_id = #{orgUserId}
+        <if test="petId != null">
+            AND aa.pet_id = #{petId}
+        </if>
+        <if test="status != null and status != ''">
+            AND aa.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (u.username LIKE CONCAT('%', #{keyword}, '%') 
+                 OR p.name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        AND aa.deleted = 0
+        AND p.deleted = 0
+        <choose>
+            <when test="sortBy == 'submitTime'">
+                ORDER BY aa.create_time
+            </when>
+            <when test="sortBy == 'updateTime'">
+                ORDER BY aa.update_time
+            </when>
+            <otherwise>
+                ORDER BY aa.create_time
+            </otherwise>
+        </choose>
+        <if test="order == 'desc'">
+            DESC
+        </if>
+    </select>
+
 </mapper>
