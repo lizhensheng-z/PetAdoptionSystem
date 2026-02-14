@@ -27,7 +27,7 @@ public class OrgProfileController {
      * 获取机构资料
      */
     @GetMapping("/profile")
-    @PreAuthorize("hasAuthority('org:profile:read')")
+//    @PreAuthorize("hasAuthority('org:profile:read')")
     public R<OrgProfileResponse> getProfile() {
         Long userId = UserContext.getUserId();
         OrgProfileResponse response = orgProfileService.getProfile(userId);

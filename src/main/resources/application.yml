@@ -97,7 +97,14 @@ app:
       geocode-url: "https://restapi.amap.com/v3/geocode/geo"
       distance-url: "https://restapi.amap.com/v3/distance"
 
-
+# 阿里云OSS配置
+aliyun:
+  oss:
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
+    accessKeyId: LTAI5tD8nAtzG7n9wYHumwNv
+    accessKeySecret: t5rEzeuDb727OF7PpphZsgH6BXOe4L
+    bucketName: demo-lizhensheng
+    domain: https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com
 
 logging:
   level:
