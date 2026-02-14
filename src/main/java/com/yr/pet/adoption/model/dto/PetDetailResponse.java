@@ -1,267 +1,109 @@
 package com.yr.pet.adoption.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 宠物详情响应DTO
+ * 宠物详情响应数据
  * @author yr
- * @since 2024-01-01
+ * @since 2024-02-14
  */
+@Data
+@Schema(description = "宠物详情响应数据")
 public class PetDetailResponse {
 
+    @Schema(description = "宠物ID", example = "1")
     private Long id;
-    private Long orgUserId;
-    private String orgName;
-    private OrgProfileResponse orgProfile;
+
+    @Schema(description = "宠物名称", example = "小橘")
     private String name;
+
+    @Schema(description = "物种：CAT/DOG/OTHER", example = "CAT")
     private String species;
+
+    @Schema(description = "品种", example = "橘猫")
     private String breed;
-    private String gender;
+
+    @Schema(description = "年龄（月）", example = "6")
     private Integer ageMonth;
+
+    @Schema(description = "性别：MALE/FEMALE/UNKNOWN", example = "MALE")
+    private String gender;
+
+    @Schema(description = "体型：S/M/L", example = "M")
     private String size;
+
+    @Schema(description = "毛色", example = "橘色")
     private String color;
+
+    @Schema(description = "是否绝育", example = "false")
     private Boolean sterilized;
+
+    @Schema(description = "是否疫苗", example = "true")
     private Boolean vaccinated;
+
+    @Schema(description = "是否驱虫", example = "true")
     private Boolean dewormed;
+
+    @Schema(description = "健康描述", example = "身体健康，已完成基础疫苗")
     private String healthDesc;
+
+    @Schema(description = "性格描述", example = "性格亲人，活泼好动")
     private String personalityDesc;
+
+    @Schema(description = "领养要求", example = "需要有养猫经验，定期回访")
     private String adoptRequirements;
+
+    @Schema(description = "宠物状态", example = "PUBLISHED")
     private String status;
-    private String auditStatus;
+
+    @Schema(description = "经度", example = "116.404")
+    private BigDecimal lng;
+
+    @Schema(description = "纬度", example = "39.915")
+    private BigDecimal lat;
+
+    @Schema(description = "封面图片URL", example = "https://example.com/pet-cover.jpg")
     private String coverUrl;
+
+    @Schema(description = "媒体文件列表")
+    private List<PetMediaResponse> mediaList;
+
+    @Schema(description = "宠物标签列表")
+    private List<String> tags;
+
+    @Schema(description = "发布机构用户ID", example = "1001")
+    private Long orgUserId;
+
+    @Schema(description = "发布机构名称", example = "爱心救助站")
+    private String orgName;
+
+    @Schema(description = "发布时间", example = "2024-01-20T10:00:00")
     private LocalDateTime publishedTime;
+
+    @Schema(description = "创建时间", example = "2024-01-15T08:00:00")
     private LocalDateTime createTime;
-    private List<TagResponse> tags;
-    private List<PetMediaResponse> media;
-    private LocationResponse location;
-    private PetStatisticsResponse statistics;
-    private ApplicationStatusResponse applicationStatus;
-    private Boolean isFavorited;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    /**
+     * 宠物媒体文件响应数据
+     */
+    @Data
+    @Schema(description = "宠物媒体文件响应数据")
+    public static class PetMediaResponse {
+        @Schema(description = "媒体文件ID", example = "1")
+        private Long id;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+        @Schema(description = "媒体文件URL", example = "https://example.com/pet-image.jpg")
+        private String url;
 
-    public Long getOrgUserId() {
-        return orgUserId;
-    }
+        @Schema(description = "媒体类型：IMAGE/VIDEO", example = "IMAGE")
+        private String mediaType;
 
-    public void setOrgUserId(Long orgUserId) {
-        this.orgUserId = orgUserId;
-    }
-
-    public String getOrgName() {
-        return orgName;
-    }
-
-    public void setOrgName(String orgName) {
-        this.orgName = orgName;
-    }
-
-    public OrgProfileResponse getOrgProfile() {
-        return orgProfile;
-    }
-
-    public void setOrgProfile(OrgProfileResponse orgProfile) {
-        this.orgProfile = orgProfile;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
-    public String getBreed() {
-        return breed;
-    }
-
-    public void setBreed(String breed) {
-        this.breed = breed;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public Integer getAgeMonth() {
-        return ageMonth;
-    }
-
-    public void setAgeMonth(Integer ageMonth) {
-        this.ageMonth = ageMonth;
-    }
-
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
-
-    public Boolean getSterilized() {
-        return sterilized;
-    }
-
-    public void setSterilized(Boolean sterilized) {
-        this.sterilized = sterilized;
-    }
-
-    public Boolean getVaccinated() {
-        return vaccinated;
-    }
-
-    public void setVaccinated(Boolean vaccinated) {
-        this.vaccinated = vaccinated;
-    }
-
-    public Boolean getDewormed() {
-        return dewormed;
-    }
-
-    public void setDewormed(Boolean dewormed) {
-        this.dewormed = dewormed;
-    }
-
-    public String getHealthDesc() {
-        return healthDesc;
-    }
-
-    public void setHealthDesc(String healthDesc) {
-        this.healthDesc = healthDesc;
-    }
-
-    public String getPersonalityDesc() {
-        return personalityDesc;
-    }
-
-    public void setPersonalityDesc(String personalityDesc) {
-        this.personalityDesc = personalityDesc;
-    }
-
-    public String getAdoptRequirements() {
-        return adoptRequirements;
-    }
-
-    public void setAdoptRequirements(String adoptRequirements) {
-        this.adoptRequirements = adoptRequirements;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getAuditStatus() {
-        return auditStatus;
-    }
-
-    public void setAuditStatus(String auditStatus) {
-        this.auditStatus = auditStatus;
-    }
-
-    public String getCoverUrl() {
-        return coverUrl;
-    }
-
-    public void setCoverUrl(String coverUrl) {
-        this.coverUrl = coverUrl;
-    }
-
-    public LocalDateTime getPublishedTime() {
-        return publishedTime;
-    }
-
-    public void setPublishedTime(LocalDateTime publishedTime) {
-        this.publishedTime = publishedTime;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public List<TagResponse> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<TagResponse> tags) {
-        this.tags = tags;
-    }
-
-    public List<PetMediaResponse> getMedia() {
-        return media;
-    }
-
-    public void setMedia(List<PetMediaResponse> media) {
-        this.media = media;
-    }
-
-    public LocationResponse getLocation() {
-        return location;
-    }
-
-    public void setLocation(LocationResponse location) {
-        this.location = location;
-    }
-
-    public PetStatisticsResponse getStatistics() {
-        return statistics;
-    }
-
-    public void setStatistics(PetStatisticsResponse statistics) {
-        this.statistics = statistics;
-    }
-
-    public ApplicationStatusResponse getApplicationStatus() {
-        return applicationStatus;
-    }
-
-    public void setApplicationStatus(ApplicationStatusResponse applicationStatus) {
-        this.applicationStatus = applicationStatus;
-    }
-
-    public Boolean getIsFavorited() {
-        return isFavorited;
-    }
-
-    public void setIsFavorited(Boolean isFavorited) {
-        this.isFavorited = isFavorited;
+        @Schema(description = "排序值", example = "0")
+        private Integer sort;
     }
 }

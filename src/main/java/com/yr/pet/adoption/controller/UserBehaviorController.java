@@ -31,7 +31,7 @@ public class UserBehaviorController {
      * 记录用户行为
      */
     @PostMapping("/behavior")
-    @PreAuthorize("hasAuthority('behavior:write')")
+//    @PreAuthorize("hasAuthority('behavior:write')")
     @Operation(summary = "记录用户行为", description = "记录用户的浏览、收藏、申请等行为用于推荐")
     public R recordBehavior(@Valid @RequestBody BehaviorRecordRequest request) {
         Long userId = UserContext.getUserId();

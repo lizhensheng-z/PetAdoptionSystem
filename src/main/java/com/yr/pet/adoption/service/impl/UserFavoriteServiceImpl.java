@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,53 +37,70 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Use
     private OrgProfileMapper orgProfileMapper;
     @Autowired
     private UserBehaviorMapper userBehaviorMapper;
+    @Autowired
+    private UserFavoriteMapper userFavoriteMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addFavorite(Long userId, Long petId) {
-        // 检查是否已收藏
-        LambdaQueryWrapper<UserFavoriteEntity> query = new LambdaQueryWrapper<UserFavoriteEntity>()
-                .eq(UserFavoriteEntity::getUserId, userId)
-                .eq(UserFavoriteEntity::getPetId, petId);
-        
-        UserFavoriteEntity existing = this.getOne(query);
-        if (existing != null) {
-            throw new BizException(ErrorCode.DUPLICATE_OPERATION, "已收藏该宠物");
+        if (userId == null || petId == null) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "参数不能为空");
         }
 
-        // 检查宠物是否存在
+        // 1) 查收藏记录（包含逻辑删除 deleted=1 的）
+        UserFavoriteEntity existing = userFavoriteMapper.selectAny(userId, petId);
+
+
+        if (existing != null) {
+            // 2) 未删除：重复收藏
+            if (existing.getDeleted() == null || existing.getDeleted() == 0) {
+                throw new BizException(ErrorCode.DUPLICATE_OPERATION, "已收藏该宠物");
+            }
+
+            // 3) 已逻辑删除：恢复
+            existing.setDeleted((byte) 0);
+            // 如你有需要也可以补充：existing.setUpdateTime(LocalDateTime.now());
+            this.updateById(existing);
+
+            recordBehavior(userId, petId, "FAVORITE", 3);
+            updatePetFavoriteCount(petId, 1);
+            return;
+        }
+
+        // 4) 收藏记录不存在：先校验宠物是否存在
         PetEntity pet = petMapper.selectById(petId);
         if (pet == null) {
             throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
         }
 
-        // 创建收藏记录
+        // 5) 新增收藏记录
         UserFavoriteEntity favorite = new UserFavoriteEntity();
         favorite.setUserId(userId);
         favorite.setPetId(petId);
+        favorite.setDeleted((byte) 0);
         this.save(favorite);
 
-        // 记录行为埋点
         recordBehavior(userId, petId, "FAVORITE", 3);
-
-        // 更新宠物收藏数
         updatePetFavoriteCount(petId, 1);
     }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void removeFavorite(Long userId, Long petId) {
         LambdaQueryWrapper<UserFavoriteEntity> query = new LambdaQueryWrapper<UserFavoriteEntity>()
                 .eq(UserFavoriteEntity::getUserId, userId)
-                .eq(UserFavoriteEntity::getPetId, petId);
+                .eq(UserFavoriteEntity::getPetId, petId)
+                .eq(UserFavoriteEntity::getDeleted, 0); // 只查找未删除的记录
         
-        UserFavoriteEntity existing = this.getOne(query);
+        List<UserFavoriteEntity> existingList = this.list(query);
+        UserFavoriteEntity existing = existingList.isEmpty() ? null : existingList.get(0);
+        
         if (existing == null) {
             throw new BizException(ErrorCode.NOT_FOUND, "收藏记录不存在");
         }
 
         // 逻辑删除
-        this.removeById(existing.getId());
+        existing.setDeleted((byte) 1);
+        this.updateById(existing);
 
         // 更新宠物收藏数
         updatePetFavoriteCount(petId, -1);
@@ -92,6 +110,7 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Use
     public PageResult<FavoriteListItem> getMyFavorites(Long userId, Integer pageNo, Integer pageSize) {
         LambdaQueryWrapper<UserFavoriteEntity> query = new LambdaQueryWrapper<UserFavoriteEntity>()
                 .eq(UserFavoriteEntity::getUserId, userId)
+                .eq(UserFavoriteEntity::getDeleted, 0) // 只查询未删除的收藏
                 .orderByDesc(UserFavoriteEntity::getCreateTime);
         
         Page<UserFavoriteEntity> page = new Page<>(pageNo, pageSize);
@@ -151,7 +170,8 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Use
     public boolean isFavorited(Long userId, Long petId) {
         LambdaQueryWrapper<UserFavoriteEntity> query = new LambdaQueryWrapper<UserFavoriteEntity>()
                 .eq(UserFavoriteEntity::getUserId, userId)
-                .eq(UserFavoriteEntity::getPetId, petId);
+                .eq(UserFavoriteEntity::getPetId, petId)
+                .eq(UserFavoriteEntity::getDeleted, 0); // 只统计未删除的记录
         return this.count(query) > 0;
     }
 

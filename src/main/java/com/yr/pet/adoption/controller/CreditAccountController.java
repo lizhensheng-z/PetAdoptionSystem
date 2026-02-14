@@ -31,7 +31,7 @@ public class CreditAccountController {
      * 获取我的信用信息
      */
     @GetMapping("/credit/me")
-    @PreAuthorize("hasAuthority('credit:me')")
+//    @PreAuthorize("hasAuthority('credit:me')")
     @Operation(summary = "获取我的信用信息", description = "获取当前用户的信用分、等级、徽章等信息")
     public R<CreditInfoResponse> getCreditInfo() {
         Long userId = UserContext.getUserId();
