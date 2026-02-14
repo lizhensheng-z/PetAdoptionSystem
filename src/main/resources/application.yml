@@ -12,13 +12,17 @@ spring:
   
   main:
     allow-circular-references: true
-
+  
+  # 激活开发环境配置
+  profiles:
+    active: dev
+  
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/petAdoptionSystem?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
-
+  
   data:
     redis:
       host: 127.0.0.1
@@ -32,7 +36,7 @@ spring:
           max-idle: 8
           min-idle: 0
           max-wait: 3000ms
-
+  
   jackson:
     time-zone: Asia/Shanghai
     date-format: yyyy-MM-dd HH:mm:ss
@@ -69,14 +73,14 @@ app:
       issuer: "pet-adoption-system"
     # token 黑名单开关（如果你用 redis 存 black list）
     token-blacklist-enabled: true
-
+  
   recommend:
     alpha: 0.55
     beta: 0.20
     gamma: 0.20
     delta: 0.05
     max-distance-km: 50
-
+  
   credit:
     checkin:
       daily-max: 1
@@ -85,26 +89,14 @@ app:
       text-bonus: 1
     violation:
       penalty: -20
-
+  
   lbs:
     # 腾讯位置服务 Key（如你接入附近优先）
     tencent:
       key: ""
       nearby-url: "https://apis.map.qq.com/ws/place/v1/search"
-    # 高德地图API配置
-    amap:
-      key: "your_amap_api_key"
-      geocode-url: "https://restapi.amap.com/v3/geocode/geo"
-      distance-url: "https://restapi.amap.com/v3/distance"
 
-# 阿里云OSS配置
-aliyun:
-  oss:
-    endpoint: https://oss-cn-hangzhou.aliyuncs.com
-    accessKeyId: LTAI5tD8nAtzG7n9wYHumwNv
-    accessKeySecret: t5rEzeuDb727OF7PpphZsgH6BXOe4L
-    bucketName: demo-lizhensheng
-    domain: https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com
+  # 阿里云 OSS 配置
 
 logging:
   level:

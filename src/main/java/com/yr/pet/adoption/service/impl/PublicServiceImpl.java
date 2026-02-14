@@ -11,16 +11,9 @@ import com.yr.pet.adoption.mapper.NoticeMapper;
 import com.yr.pet.adoption.mapper.TagMapper;
 import com.yr.pet.adoption.service.PublicService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -35,13 +28,6 @@ public class PublicServiceImpl implements PublicService {
     private final NoticeMapper noticeMapper;
     private final TagMapper tagMapper;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RestTemplate restTemplate;
-    
-    // 高德地图API配置
-    @Value("${app.lbs.amap.key}")
-    private String amapKey;
-    @Value("${app.lbs.amap.geocode-url}")
-    private String geocodeUrl;
     
     @Override
     public SystemConfigResponse getSystemConfig() {
@@ -267,238 +253,62 @@ public class PublicServiceImpl implements PublicService {
     
     @Override
     public GeocodeResponse geocode(GeocodeRequest request) {
-        String address = request.getAddress();
-        String city = request.getCity();
-        
-        // 构建缓存键
-        String cacheKey = "geocode:" + address + ":" + (city != null ? city : "");
-        
-        // 尝试从缓存获取
-        GeocodeResponse cachedResponse = (GeocodeResponse) redisTemplate.opsForValue().get(cacheKey);
-        if (cachedResponse != null) {
-            return cachedResponse;
-        }
-        
-        // 调用高德地图API
-        GeocodeResponse response = callAmapGeocodeAPI(address, city);
-        
-        // 存入缓存，有效期24小时
-        redisTemplate.opsForValue().set(cacheKey, response, 24, TimeUnit.HOURS);
-        
+        // 这里应该调用地图API进行地理编码
+        // 简化处理，返回示例数据
+        GeocodeResponse response = new GeocodeResponse();
+        response.setAddress(request.getAddress());
+        response.setLng(116.4074);
+        response.setLat(39.9042);
+        response.setProvince("北京市");
+        response.setCity("北京市");
+        response.setDistrict("朝阳区");
+        response.setPrecision("street");
         return response;
-    }
-    
-    /**
-     * 调用高德地图地理编码API
-     */
-    private GeocodeResponse callAmapGeocodeAPI(String address, String city) {
-        try {
-            // 构建请求URL
-            StringBuilder urlBuilder = new StringBuilder(geocodeUrl);
-            urlBuilder.append("?key=").append(amapKey);
-            urlBuilder.append("&address=").append(java.net.URLEncoder.encode(address, StandardCharsets.UTF_8.name()));
-            if (city != null) {
-                urlBuilder.append("&city=").append(java.net.URLEncoder.encode(city, StandardCharsets.UTF_8.name()));
-            }
-            urlBuilder.append("&output=json");
-            
-            // 发送请求
-            URL url = new URL(urlBuilder.toString());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            
-            // 读取响应
-            try (InputStream inputStream = connection.getInputStream()) {
-                String responseBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                
-                // 解析JSON响应
-                // 这里简化处理，实际项目中应该使用JSON解析库
-                // 例如：使用Jackson或Gson解析响应
-                
-                // 构建模拟响应
-                GeocodeResponse response = new GeocodeResponse();
-                response.setAddress(address);
-                response.setLng(116.4074);
-                response.setLat(39.9042);
-                response.setProvince("北京市");
-                response.setCity("北京市");
-                response.setDistrict("朝阳区");
-                response.setPrecision("street");
-                
-                return response;
-            } finally {
-                connection.disconnect();
-            }
-        } catch (IOException e) {
-            // 异常处理，返回默认值
-            GeocodeResponse response = new GeocodeResponse();
-            response.setAddress(address);
-            response.setLng(116.4074);
-            response.setLat(39.9042);
-            response.setProvince("北京市");
-            response.setCity("北京市");
-            response.setDistrict("朝阳区");
-            response.setPrecision("street");
-            return response;
-        }
     }
     
     @Override
     public DistanceResponse calculateDistance(DistanceRequest request) {
-        // 获取起点和终点坐标
-        double fromLat = request.getFrom().getLat();
-        double fromLng = request.getFrom().getLng();
-        double toLat = request.getTo().getLat();
-        double toLng = request.getTo().getLng();
+        // 计算两点之间的直线距离
+        double distance = calculateHaversineDistance(
+                request.getFrom().getLat(), request.getFrom().getLng(),
+                request.getTo().getLat(), request.getTo().getLng()
+        );
         
-        // 构建缓存键
-        String cacheKey = "distance:" + fromLat + ":" + fromLng + ":" + toLat + ":" + toLng;
-        
-        // 尝试从缓存获取
-        DistanceResponse cachedResponse = (DistanceResponse) redisTemplate.opsForValue().get(cacheKey);
-        if (cachedResponse != null) {
-            return cachedResponse;
-        }
-        
-        // 调用高德地图API计算距离
-        DistanceResponse response = callAmapDistanceAPI(fromLng, fromLat, toLng, toLat);
-        
-        // 存入缓存，有效期24小时
-        redisTemplate.opsForValue().set(cacheKey, response, 24, TimeUnit.HOURS);
+        DistanceResponse response = new DistanceResponse();
+        response.setDistance(distance);
+        response.setUnit("km");
+        response.setDuration((int) (distance * 2)); // 简化的时间估算
+        response.setDurationUnit("minute");
         
         return response;
-    }
-    
-    /**
-     * 调用高德地图距离计算API
-     */
-    private DistanceResponse callAmapDistanceAPI(double fromLng, double fromLat, double toLng, double toLat) {
-        try {
-            // 构建请求URL
-            StringBuilder urlBuilder = new StringBuilder("https://restapi.amap.com/v3/distance");
-            urlBuilder.append("?key=").append(amapKey);
-            urlBuilder.append("&origins=").append(fromLng).append(",").append(fromLat);
-            urlBuilder.append("&destination=").append(toLng).append(",").append(toLat);
-            urlBuilder.append("&type=0"); // 0：直线距离
-            urlBuilder.append("&output=json");
-            
-            // 发送请求
-            URL url = new URL(urlBuilder.toString());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            
-            // 读取响应
-            try (InputStream inputStream = connection.getInputStream()) {
-                String responseBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                
-                // 解析JSON响应
-                // 这里简化处理，实际项目中应该使用JSON解析库
-                // 例如：使用Jackson或Gson解析响应
-                
-                // 计算直线距离作为备选
-                double distance = calculateHaversineDistance(fromLat, fromLng, toLat, toLng);
-                
-                // 构建响应
-                DistanceResponse response = new DistanceResponse();
-                response.setDistance(distance);
-                response.setUnit("km");
-                response.setDuration((int) (distance * 2)); // 简化的时间估算
-                response.setDurationUnit("minute");
-                
-                return response;
-            } finally {
-                connection.disconnect();
-            }
-        } catch (IOException e) {
-            // 异常处理，使用直线距离计算
-            double distance = calculateHaversineDistance(fromLat, fromLng, toLat, toLng);
-            
-            DistanceResponse response = new DistanceResponse();
-            response.setDistance(distance);
-            response.setUnit("km");
-            response.setDuration((int) (distance * 2)); // 简化的时间估算
-            response.setDurationUnit("minute");
-            
-            return response;
-        }
     }
     
     @Override
     public NearbyOrgResponse getNearbyOrgs(Double lng, Double lat, Double distance, Integer pageNo, Integer pageSize) {
-        // 调用高德地图API获取周边机构
-        List<NearbyOrgResponse.NearbyOrg> orgs = callAmapNearbySearchAPI(lng, lat, distance, pageNo, pageSize);
-        
-        // 构建响应
+        // 这里应该从数据库中查询附近的机构
+        // 简化处理，返回示例数据
         NearbyOrgResponse response = new NearbyOrgResponse();
-        response.setList(orgs);
+        
+        NearbyOrgResponse.NearbyOrg org = new NearbyOrgResponse.NearbyOrg();
+        org.setId(1002L);
+        org.setOrgName("爱心救助站");
+        org.setLicenseNo("BJ20240001");
+        org.setContactPhone("010-12345678");
+        org.setAddress("北京市朝阳区xxx街xxx号");
+        org.setLng(116.4);
+        org.setLat(39.9);
+        org.setDistance(0.5);
+        org.setPetCount(18);
+        org.setAdoptionCount(12);
+        org.setRating(4.8);
+        
+        response.setList(Arrays.asList(org));
         response.setPageNo(pageNo);
         response.setPageSize(pageSize);
-        response.setTotal((long) orgs.size());
-        response.setTotalPages((orgs.size() + pageSize - 1) / pageSize);
+        response.setTotal(1L);
+        response.setTotalPages(1);
         
         return response;
-    }
-    
-    /**
-     * 调用高德地图周边搜索API
-     */
-    private List<NearbyOrgResponse.NearbyOrg> callAmapNearbySearchAPI(double lng, double lat, double distance, int pageNo, int pageSize) {
-        List<NearbyOrgResponse.NearbyOrg> orgs = new ArrayList<>();
-        
-        try {
-            // 构建请求URL
-            StringBuilder urlBuilder = new StringBuilder("https://restapi.amap.com/v3/place/around");
-            urlBuilder.append("?key=").append(amapKey);
-            urlBuilder.append("&location=").append(lng).append(",").append(lat);
-            urlBuilder.append("&keywords=宠物救助站|宠物领养|动物收容所");
-            urlBuilder.append("&radius=").append((int) (distance * 1000)); // 转换为米
-            urlBuilder.append("&page=").append(pageNo);
-            urlBuilder.append("&offset=").append(pageSize);
-            urlBuilder.append("&output=json");
-            
-            // 发送请求
-            URL url = new URL(urlBuilder.toString());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            
-            // 读取响应
-            try (InputStream inputStream = connection.getInputStream()) {
-                String responseBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                
-                // 解析JSON响应
-                // 这里简化处理，实际项目中应该使用JSON解析库
-                // 例如：使用Jackson或Gson解析响应
-                
-                // 构建模拟响应
-                NearbyOrgResponse.NearbyOrg org = new NearbyOrgResponse.NearbyOrg();
-                org.setId(1002L);
-                org.setOrgName("爱心救助站");
-                org.setLicenseNo("BJ20240001");
-                org.setContactPhone("010-12345678");
-                org.setAddress("北京市朝阳区xxx街xxx号");
-                org.setLng(116.4);
-                org.setLat(39.9);
-                org.setDistance(0.5);
-                org.setPetCount(18);
-                org.setAdoptionCount(12);
-                org.setRating(4.8);
-                
-                orgs.add(org);
-            } finally {
-                connection.disconnect();
-            }
-        } catch (IOException e) {
-            // 异常处理，返回空列表
-            // 实际项目中应该记录日志
-        }
-        
-        return orgs;
     }
     
     private SystemConfigResponse.CreditLevel createCreditLevel(int level, int minScore, int maxScore, String name, String icon) {
