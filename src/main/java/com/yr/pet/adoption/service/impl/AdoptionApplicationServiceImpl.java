@@ -60,9 +60,10 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
             throw new BusinessException("该宠物暂不接受申请");
         }
 
-        // 检查用户是否已申请过该宠物
-        if (adoptionApplicationMapper.countByUserIdAndPetId(userId, request.getPetId()) > 0) {
-            throw new BusinessException("您已申请过该宠物");
+        // 检查用户是否有有效的申请（排除已取消/已拒绝的申请）
+        int validApplications = adoptionApplicationMapper.countValidApplicationsByUserIdAndPetId(userId, request.getPetId());
+        if (validApplications > 0) {
+            throw new BusinessException("您已有进行中的申请，无法重复申请");
         }
 
         // 检查进行中的申请数量

@@ -21,10 +21,22 @@ import java.util.List;
 public interface AdoptionApplicationMapper extends BaseMapper<AdoptionApplicationEntity> {
 
     /**
-     * 统计用户申请某宠物的次数
+     * 统计用户某宠物的有效申请次数（排除已取消/已拒绝的申请）
+     */
+    @Select("SELECT COUNT(*) FROM adoption_application WHERE user_id = #{userId} AND pet_id = #{petId} AND status NOT IN ('CANCELLED', 'REJECTED') AND deleted = 0")
+    int countValidApplicationsByUserIdAndPetId(@Param("userId") Long userId, @Param("petId") Long petId);
+
+    /**
+     * 统计用户某宠物的所有申请次数（包括已取消/已拒绝）
      */
     @Select("SELECT COUNT(*) FROM adoption_application WHERE user_id = #{userId} AND pet_id = #{petId} AND deleted = 0")
-    int countByUserIdAndPetId(@Param("userId") Long userId, @Param("petId") Long petId);
+    int countAllApplicationsByUserIdAndPetId(@Param("userId") Long userId, @Param("petId") Long petId);
+
+    /**
+     * 获取用户某宠物的最新申请状态
+     */
+    @Select("SELECT status FROM adoption_application WHERE user_id = #{userId} AND pet_id = #{petId} AND deleted = 0 ORDER BY create_time DESC LIMIT 1")
+    String getLatestApplicationStatus(@Param("userId") Long userId, @Param("petId") Long petId);
 
     /**
      * 统计宠物进行中的申请数量

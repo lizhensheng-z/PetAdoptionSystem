@@ -42,7 +42,7 @@ public class UserContent {
      */
     public Long getUserId() {
         UserContext context = getUserContext();
-        return context != null ? context.getUserId() : null;
+        return context != null ? UserContext.getUserId() : null;
     }
     
     /**
