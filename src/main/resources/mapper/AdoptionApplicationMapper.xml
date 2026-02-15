@@ -75,12 +75,12 @@
                 ELSE '未知状态'
             END AS status_desc,
             aa.create_time AS submit_time,
-            o.org_name,
+            op.org_name,
             u.avatar AS org_avatar
         FROM adoption_application aa
         LEFT JOIN pet p ON aa.pet_id = p.id
-        LEFT JOIN sys_user o ON p.org_user_id = o.id
         LEFT JOIN sys_user u ON p.org_user_id = u.id
+        LEFT JOIN org_profile op ON op.user_id = u.id
         WHERE aa.user_id = #{userId}
         <if test="status != null and status != ''">
             AND aa.status = #{status}

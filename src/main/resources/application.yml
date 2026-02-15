@@ -51,9 +51,6 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID            # 雪花ID（也可 AUTO）
-      logic-delete-field: deleted   # 逻辑删除字段名
-      logic-delete-value: 1
-      logic-not-delete-value: 0
 
 # Springdoc / Swagger
 springdoc:

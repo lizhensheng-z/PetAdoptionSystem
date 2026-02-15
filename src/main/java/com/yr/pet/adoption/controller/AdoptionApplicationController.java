@@ -40,7 +40,7 @@ public class AdoptionApplicationController {
     /**
      * 用户查看我的申请列表
      */
-    @GetMapping("/api/adoption/applications")
+    @GetMapping("/api/adoption/applications/me")
     @Operation(summary = "获取我的申请列表", description = "获取当前用户的所有领养申请列表")
     public R<IPage<MyApplicationVO>> getMyApplications(
             @RequestParam(required = false) String status,
@@ -104,7 +104,7 @@ public class AdoptionApplicationController {
      */
     @GetMapping("/api/org/adoption/applications/{applicationId}")
     @Operation(summary = "机构获取申请详情", description = "机构获取指定申请的详细信息")
-    public R<ApplicationDetailVO> getOrgApplicationDetail(@PathVariable Long applicationId) {
+    public R<ApplicationDetailVO> getOrgApplicationDetail(@PathVariable @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Positive Long applicationId) {
         Long orgUserId = UserContext.getUserId();
         ApplicationDetailVO vo = adoptionApplicationService.getOrgApplicationDetail(orgUserId, applicationId);
         return R.ok(vo);

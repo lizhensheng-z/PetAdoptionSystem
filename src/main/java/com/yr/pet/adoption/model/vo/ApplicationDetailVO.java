@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ public class ApplicationDetailVO {
     private Long userId;
 
     @Schema(description = "用户昵称")
-    private String userNickname;
+    private String userName;
 
     @Schema(description = "用户头像")
     private String userAvatar;
@@ -71,4 +72,6 @@ public class ApplicationDetailVO {
 
     @Schema(description = "是否可以修改")
     private Boolean canModify;
+
+
 }

@@ -7,10 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yr.pet.adoption.mapper.AdoptionApplicationMapper;
 import com.yr.pet.adoption.mapper.AdoptionFlowLogMapper;
 import com.yr.pet.adoption.mapper.PetMapper;
+import com.yr.pet.adoption.mapper.UserMapper;
 import com.yr.pet.adoption.model.entity.AdoptionApplicationEntity;
 import com.yr.pet.adoption.model.entity.AdoptionFlowLogEntity;
 import com.yr.pet.adoption.model.entity.PetEntity;
 import com.yr.pet.adoption.model.dto.*;
+import com.yr.pet.adoption.model.entity.UserEntity;
 import com.yr.pet.adoption.model.vo.*;
 import com.yr.pet.adoption.service.AdoptionApplicationService;
 import com.yr.pet.adoption.exception.BusinessException;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +45,8 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
 
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     @Transactional
@@ -124,19 +129,53 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
             throw new BusinessException("无权查看该申请");
         }
 
-        // 这里应该查询详细信息，简化处理
+        // 查询宠物信息
+        PetEntity pet = petMapper.selectById(application.getPetId());
+        if (pet == null || pet.getDeleted() == 1) {
+            throw new BusinessException("宠物信息不存在");
+        }
+
+
+
+        // 查询用户信息
+        UserEntity user = userMapper.selectById(userId);
+        // 假设有用户信息查询逻辑
+
         ApplicationDetailVO vo = new ApplicationDetailVO();
         vo.setId(application.getId());
         vo.setPetId(application.getPetId());
         vo.setUserId(application.getUserId());
         vo.setStatus(application.getStatus());
+        vo.setStatusDesc(getStatusDisplay(application.getStatus()));
         vo.setSubmitTime(application.getCreateTime());
         vo.setRejectReason(application.getRejectReason());
         vo.setOrgRemark(application.getOrgRemark());
         vo.setDecidedTime(application.getDecidedTime());
 
+        // 设置宠物信息
+        vo.setPetName(pet.getName());
+        vo.setPetCoverUrl(pet.getCoverUrl());
+
+        // 设置用户信息
+        if (user != null) {
+            vo.setUserName(user.getUsername());
+            vo.setUserAvatar(user.getAvatar());
+            vo.setUserPhone(user.getPhone());
+            vo.setUserEmail(user.getEmail());
+        }
+
+        // 解析问卷数据
+        try {
+            if (application.getQuestionnaireJson() != null) {
+                vo.setQuestionnaire(objectMapper.readValue(application.getQuestionnaireJson(), Map.class));
+            }
+        } catch (JsonProcessingException e) {
+            vo.setQuestionnaire(null);
+        }
+
         // 设置是否可以取消
         vo.setCanCancel(List.of("SUBMITTED", "UNDER_REVIEW").contains(application.getStatus()));
+        vo.setCanModify("SUBMITTED".equals(application.getStatus()));
 
         return vo;
     }
@@ -193,21 +232,58 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
 
     @Override
     public ApplicationDetailVO getOrgApplicationDetail(Long orgUserId, Long applicationId) {
-        // 这里应该验证机构权限，简化处理
         AdoptionApplicationEntity application = adoptionApplicationMapper.selectById(applicationId);
         if (application == null || application.getDeleted() == 1) {
             throw new BusinessException("申请不存在");
         }
+
+        // 验证机构权限 - 确保宠物属于该机构
+        PetEntity pet = petMapper.selectById(application.getPetId());
+        if (pet == null || !pet.getOrgUserId().equals(orgUserId)) {
+            throw new BusinessException("无权查看该申请");
+        }
+
+        // 查询申请人信息（修复：使用申请人ID而非当前用户ID）
+        UserEntity applicant = userMapper.selectById(application.getUserId());
 
         ApplicationDetailVO vo = new ApplicationDetailVO();
         vo.setId(application.getId());
         vo.setPetId(application.getPetId());
         vo.setUserId(application.getUserId());
         vo.setStatus(application.getStatus());
+        vo.setStatusDesc(getStatusDisplay(application.getStatus()));
         vo.setSubmitTime(application.getCreateTime());
         vo.setRejectReason(application.getRejectReason());
         vo.setOrgRemark(application.getOrgRemark());
         vo.setDecidedTime(application.getDecidedTime());
+
+        // 设置宠物信息
+        vo.setPetName(pet.getName());
+        vo.setPetCoverUrl(pet.getCoverUrl());
+
+        // 设置申请人信息（修复：使用正确的用户信息）
+        if (applicant != null) {
+            vo.setUserName(applicant.getUsername());
+            vo.setUserAvatar(applicant.getAvatar());
+            vo.setUserPhone(applicant.getPhone());
+            vo.setUserEmail(applicant.getEmail());
+        }
+
+        // 解析问卷数据
+        try {
+            if (application.getQuestionnaireJson() != null) {
+                vo.setQuestionnaire(objectMapper.readValue(application.getQuestionnaireJson(), Map.class));
+            }
+        } catch (JsonProcessingException e) {
+            vo.setQuestionnaire(null);
+        }
+
+        // 设置权限标识（机构视角）
+        vo.setCanCancel(false); // 机构不能取消用户申请
+        
+        // 机构可以修改状态：当申请处于可处理状态时
+        boolean canUpdateStatus = List.of("SUBMITTED", "UNDER_REVIEW", "INTERVIEW", "HOME_VISIT").contains(application.getStatus());
+        vo.setCanModify(canUpdateStatus);
 
         return vo;
     }
@@ -277,7 +353,7 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
                     .stream()
                     .filter(app -> !app.getId().equals(applicationId) && 
                            List.of("SUBMITTED", "UNDER_REVIEW", "INTERVIEW", "HOME_VISIT").contains(app.getStatus()))
-                    .collect(java.util.stream.Collectors.toList());
+                    .toList();
 
             for (AdoptionApplicationEntity otherApp : otherApplications) {
                 otherApp.setStatus("REJECTED");
@@ -316,6 +392,26 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
     }
 
     /**
+     * 获取状态显示文本
+     */
+    private String getStatusDisplay(String status) {
+        if (status == null) {
+            return "未知状态";
+        }
+
+        return switch (status) {
+            case "SUBMITTED" -> "已提交";
+            case "UNDER_REVIEW" -> "审核中";
+            case "INTERVIEW" -> "已约面谈";
+            case "HOME_VISIT" -> "家访中";
+            case "APPROVED" -> "已通过";
+            case "REJECTED" -> "已拒绝";
+            case "CANCELLED" -> "已取消";
+            default -> status;
+        };
+    }
+
+    /**
      * 验证状态转换是否有效
      */
     private boolean isValidStatusTransition(String fromStatus, String toStatus) {
@@ -323,21 +419,13 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
             return false;
         }
 
-        switch (fromStatus) {
-            case "SUBMITTED":
-                return List.of("UNDER_REVIEW", "REJECTED", "CANCELLED").contains(toStatus);
-            case "UNDER_REVIEW":
-                return List.of("INTERVIEW", "REJECTED", "CANCELLED").contains(toStatus);
-            case "INTERVIEW":
-                return List.of("HOME_VISIT", "APPROVED", "REJECTED", "CANCELLED").contains(toStatus);
-            case "HOME_VISIT":
-                return List.of("APPROVED", "REJECTED", "CANCELLED").contains(toStatus);
-            case "APPROVED":
-            case "REJECTED":
-            case "CANCELLED":
-                return false; // 终止状态
-            default:
-                return false;
-        }
+        return switch (fromStatus) {
+            case "SUBMITTED" -> List.of("UNDER_REVIEW", "REJECTED", "CANCELLED").contains(toStatus);
+            case "UNDER_REVIEW" -> List.of("INTERVIEW", "REJECTED", "CANCELLED").contains(toStatus);
+            case "INTERVIEW" -> List.of("HOME_VISIT", "APPROVED", "REJECTED", "CANCELLED").contains(toStatus);
+            case "HOME_VISIT" -> List.of("APPROVED", "REJECTED", "CANCELLED").contains(toStatus);
+            case "APPROVED", "REJECTED", "CANCELLED" -> false; // 终止状态
+            default -> false;
+        };
     }
 }

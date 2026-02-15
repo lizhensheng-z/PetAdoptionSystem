@@ -48,10 +48,9 @@ public class UserFavoriteEntity extends Model<UserFavoriteEntity> {
     private Long petId;
 
     /**
-     * 逻辑删除：0否1是
+     * 逻辑删除：0否1是（已废弃，改为物理删除）
      */
     @TableField("deleted")
-    @TableLogic
     private Byte deleted;
 
     /**

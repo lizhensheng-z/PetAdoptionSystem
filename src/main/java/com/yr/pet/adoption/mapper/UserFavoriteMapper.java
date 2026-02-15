@@ -24,6 +24,6 @@ public interface UserFavoriteMapper extends BaseMapper<UserFavoriteEntity> {
           AND pet_id = #{petId}
         LIMIT 1
     """)
-    UserFavoriteEntity selectAny(@Param("userId") Long userId,
-                                 @Param("petId") Long petId);
+    UserFavoriteEntity selectByUserAndPet(@Param("userId") Long userId,
+                                          @Param("petId") Long petId);
 }
