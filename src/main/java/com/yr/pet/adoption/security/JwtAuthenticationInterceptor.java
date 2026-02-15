@@ -102,26 +102,28 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
         }
     }
 
-    @Override
+@Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        userContent.clear();
-        // 可选：SecurityContextHolder.clearContext();
+        // 注意：不在这里清理用户上下文，由专门清理上下文的拦截器处理
+        // 避免在请求处理过程中上下文被过早清理
     }
 
-    /**
+/**
      * 判断是否需要跳过认证
      */
     private boolean shouldSkipAuthentication(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
-        // 公开接口
-        if (requestUri.startsWith("/api/auth/") ||
-                requestUri.startsWith("/swagger-ui/") ||
-                requestUri.startsWith("/v3/api-docs/") ||
-                requestUri.equals("/swagger-ui.html") ||
-                requestUri.startsWith("/actuator/") ||
-                requestUri.startsWith("/error")) {
+        // 公开接口 - 只排除特定的认证相关接口
+        if (requestUri.equals("/api/auth/login") ||
+            requestUri.equals("/api/auth/register") ||
+            requestUri.equals("/api/auth/refresh-token") ||
+            requestUri.startsWith("/swagger-ui/") ||
+            requestUri.startsWith("/v3/api-docs/") ||
+            requestUri.equals("/swagger-ui.html") ||
+            requestUri.startsWith("/actuator/") ||
+            requestUri.startsWith("/error")) {
             return true;
         }
 

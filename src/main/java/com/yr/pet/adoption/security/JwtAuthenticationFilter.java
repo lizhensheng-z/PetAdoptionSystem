@@ -109,23 +109,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 设置用户上下文信息到ThreadLocal
-            if (userDetails instanceof CustomUserDetails) {
-                CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
-                List<String> permissions = userDetails.getAuthorities().stream()
-                        .map(auth -> auth.getAuthority())
-                        .collect(Collectors.toList());
-                
-                // 创建UserEntity用于ThreadLocal设置
-                UserEntity user = new UserEntity();
-                user.setId(customUserDetails.getUserId());
-                user.setUsername(customUserDetails.getUsername());
-                user.setRole(customUserDetails.getRole());
-                
-                userContent.setUser(user, permissions);
-
-                log.debug("用户 {} 认证成功，角色: {}", username, customUserDetails.getRole());
-            }
+// 注意：用户上下文设置由 JwtAuthenticationInterceptor 处理
+            // 为了保持向后兼容，这里仍然设置SecurityContext，但UserContent在拦截器中设置
+            log.debug("用户 {} 认证成功，角色: {}", username, userDetails.getAuthorities());
 
         } catch (Exception e) {
             log.error("JWT token 验证失败: {}", e.getMessage());
@@ -133,19 +119,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    /**
+/**
      * 判断是否需要跳过认证
+     * 注意：这个方法应该与SecurityConfig中配置的公开路径保持一致
      */
     private boolean shouldSkipAuthentication(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
-        // 公开接口 - 只开放特定的认证相关接口
+        // 公开接口 - 与SecurityConfig中的配置保持一致
         if (requestUri.equals("/api/auth/login") ||
             requestUri.equals("/api/auth/register") ||
-            requestUri.equals("/api/auth/refresh-token") ||
-            requestUri.equals("/api/auth/logout") ||
-            requestUri.startsWith("/swagger-ui/") ||
+            requestUri.equals("/api/auth/refresh-token")) {
+            return true;
+        }
+
+        // /api/auth/me 和 /api/auth/logout 需要认证
+        // /api/auth/profile PUT请求也需要认证
+
+        // 文档和监控接口
+        if (requestUri.startsWith("/swagger-ui/") ||
             requestUri.startsWith("/v3/api-docs/") ||
             requestUri.equals("/swagger-ui.html") ||
             requestUri.startsWith("/actuator/") ||
