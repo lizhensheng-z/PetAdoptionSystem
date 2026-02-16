@@ -30,8 +30,7 @@ public class PageResult<T> {
     @Schema(description = "总页数", example = "9")
     private Integer totalPages;
 
-    public PageResult() {
-    }
+
 
     public PageResult(List<T> list, Integer pageNo, Integer pageSize, Long total, Integer totalPages) {
         this.list = list;
@@ -47,5 +46,9 @@ public class PageResult<T> {
         this.pageSize = pageSize;
         this.total = total;
         this.totalPages = (int) Math.ceil((double) total / pageSize);
+    }
+
+    public PageResult() {
+
     }
 }
