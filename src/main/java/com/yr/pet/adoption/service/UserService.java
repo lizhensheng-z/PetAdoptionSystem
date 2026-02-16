@@ -5,6 +5,9 @@ import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.UserEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+
 /**
  * <p>
  * 系统用户表（领养人/机构/管理员） 服务类
@@ -79,4 +82,34 @@ public interface UserService extends IService<UserEntity> {
      * 更新用户偏好设置
      */
     void updateUserPreference(Long userId, UserPreferenceRequest request);
+
+    /**
+     * 获取用户列表（管理员专用）
+     */
+    PageResult<UserAdminResponse> getUserList(UserListRequest request);
+
+    /**
+     * 获取用户详情（管理员专用）
+     */
+    UserDetailAdminResponse getUserDetails(Long userId);
+
+    /**
+     * 更新用户信息（管理员专用）
+     */
+    void updateUser(Long userId, UserUpdateRequest request);
+
+    /**
+     * 批量更新用户状态
+     */
+    void batchUpdateUserStatus(List<Long> userIds, String status);
+
+    /**
+     * 批量删除用户（软删除）
+     */
+    void batchDeleteUsers(List<Long> userIds);
+
+    /**
+     * 导出用户数据
+     */
+    void exportUsers(UserListRequest request, HttpServletResponse response);
 }

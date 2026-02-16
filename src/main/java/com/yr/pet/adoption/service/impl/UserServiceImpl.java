@@ -1,6 +1,8 @@
 package com.yr.pet.adoption.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yr.pet.adoption.common.PageResult;
@@ -15,11 +17,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+
+import java.io.IOException;
+import java.io.OutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -237,6 +247,207 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         } catch (JsonProcessingException e) {
             throw new BizException(ErrorCode.SYSTEM_ERROR, "用户偏好设置失败");
         }
+    }
+
+    @Override
+    public PageResult<UserAdminResponse> getUserList(UserListRequest request) {
+        LambdaQueryWrapper<UserEntity> queryWrapper = new LambdaQueryWrapper<>();
+        
+        // 搜索条件
+        if (StringUtils.hasText(request.getKeyword())) {
+            queryWrapper.and(wrapper -> wrapper
+                    .like(UserEntity::getUsername, request.getKeyword())
+                    .or()
+                    .like(UserEntity::getPhone, request.getKeyword())
+                    .or()
+                    .like(UserEntity::getEmail, request.getKeyword()));
+        }
+        
+        // 角色筛选
+        if (StringUtils.hasText(request.getRole())) {
+            queryWrapper.eq(UserEntity::getRole, request.getRole());
+        }
+        
+        // 状态筛选
+        if (StringUtils.hasText(request.getStatus())) {
+            queryWrapper.eq(UserEntity::getStatus, request.getStatus());
+        }
+        
+        // 创建时间范围
+        if (StringUtils.hasText(request.getStartDate())) {
+            queryWrapper.ge(UserEntity::getCreateTime, LocalDateTime.parse(request.getStartDate() + "T00:00:00"));
+        }
+        if (StringUtils.hasText(request.getEndDate())) {
+            queryWrapper.le(UserEntity::getCreateTime, LocalDateTime.parse(request.getEndDate() + "T23:59:59"));
+        }
+        
+        // 排序
+        String sortBy = request.getSortBy();
+        String order = request.getOrder();
+        if ("asc".equalsIgnoreCase(order)) {
+            queryWrapper.orderByAsc(UserEntity::getCreateTime);
+        } else {
+            queryWrapper.orderByDesc(UserEntity::getCreateTime);
+        }
+        
+        // 排除已删除的用户
+        queryWrapper.eq(UserEntity::getDeleted, 0);
+        
+        // 分页查询
+        Page<UserEntity> page = new Page<>(request.getPage(), request.getPageSize());
+        IPage<UserEntity> userPage = page(page, queryWrapper);
+        
+        // 转换结果
+        List<UserAdminResponse> userList = userPage.getRecords().stream()
+                .map(this::convertToAdminResponse)
+                .collect(Collectors.toList());
+        
+        return new PageResult<>(
+                userList,
+                (int) userPage.getCurrent(),
+                (int) userPage.getSize(),
+                 userPage.getTotal(),
+                (int) userPage.getPages()
+        );
+    }
+
+    @Override
+    public UserDetailAdminResponse getUserDetails(Long userId) {
+        UserEntity user = findById(userId);
+        if (user == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "用户不存在");
+        }
+        return convertToDetailAdminResponse(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUser(Long userId, UserUpdateRequest request) {
+        UserEntity user = findById(userId);
+        if (user == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "用户不存在");
+        }
+        
+        // 检查手机号是否已存在（排除当前用户）
+        if (StringUtils.hasText(request.getPhone()) && !request.getPhone().equals(user.getPhone())) {
+            if (existsByPhone(request.getPhone())) {
+                throw new BizException(ErrorCode.RESOURCE_EXIST, "手机号已存在");
+            }
+        }
+        
+        // 检查邮箱是否已存在（排除当前用户）
+        if (StringUtils.hasText(request.getEmail()) && !request.getEmail().equals(user.getEmail())) {
+            if (existsByEmail(request.getEmail())) {
+                throw new BizException(ErrorCode.RESOURCE_EXIST, "邮箱已存在");
+            }
+        }
+        
+        lambdaUpdate()
+                .eq(UserEntity::getId, userId)
+                .set(StringUtils.hasText(request.getPhone()), UserEntity::getPhone, request.getPhone())
+                .set(StringUtils.hasText(request.getEmail()), UserEntity::getEmail, request.getEmail())
+                .set(StringUtils.hasText(request.getRole()), UserEntity::getRole, request.getRole())
+                .set(StringUtils.hasText(request.getAvatar()), UserEntity::getAvatar, request.getAvatar())
+                .set(StringUtils.hasText(request.getStatus()), UserEntity::getStatus, request.getStatus())
+                .set(UserEntity::getUpdateTime, LocalDateTime.now())
+                .update();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchUpdateUserStatus(List<Long> userIds, String status) {
+        if (userIds == null || userIds.isEmpty()) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "用户ID列表不能为空");
+        }
+        
+        if (!"NORMAL".equals(status) && !"BANNED".equals(status)) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "状态值无效");
+        }
+        
+        lambdaUpdate()
+                .in(UserEntity::getId, userIds)
+                .set(UserEntity::getStatus, status)
+                .set(UserEntity::getUpdateTime, LocalDateTime.now())
+                .update();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteUsers(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "用户ID列表不能为空");
+        }
+        
+        lambdaUpdate()
+                .in(UserEntity::getId, userIds)
+                .set(UserEntity::getDeleted, 1)
+                .set(UserEntity::getUpdateTime, LocalDateTime.now())
+                .update();
+    }
+
+    @Override
+    public void exportUsers(UserListRequest request, HttpServletResponse response) {
+        // 设置不分页，获取所有数据
+        request.setPage(1);
+        request.setPageSize(10000);
+        PageResult<UserAdminResponse> result = getUserList(request);
+        
+        // 这里简化处理，实际应该使用Excel导出库如EasyExcel
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("用户ID,用户名,手机号,邮箱,角色,状态,创建时间,最后登录时间\n");
+            
+            for (UserAdminResponse user : result.getList()) {
+                sb.append(user.getId()).append(",")
+                  .append(user.getUsername()).append(",")
+                  .append(user.getPhone()).append(",")
+                  .append(user.getEmail()).append(",")
+                  .append(user.getRoleName()).append(",")
+                  .append(user.getStatusName()).append(",")
+                  .append(user.getCreateTime()).append(",")
+                  .append(user.getLastLoginTime() != null ? user.getLastLoginTime() : "")
+                  .append("\n");
+            }
+            
+            byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+            OutputStream os = response.getOutputStream();
+            os.write(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF}); // UTF-8 BOM
+            os.write(bytes);
+            os.flush();
+        } catch (IOException e) {
+            throw new BizException(ErrorCode.SYSTEM_ERROR, "导出失败");
+        }
+    }
+
+    private UserAdminResponse convertToAdminResponse(UserEntity user) {
+        UserAdminResponse response = new UserAdminResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setPhone(user.getPhone());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+        response.setAvatar(user.getAvatar());
+        response.setStatus(user.getStatus());
+        response.setLastLoginTime(user.getLastLoginTime());
+        response.setCreateTime(user.getCreateTime());
+        response.setUpdateTime(user.getUpdateTime());
+        return response;
+    }
+
+    private UserDetailAdminResponse convertToDetailAdminResponse(UserEntity user) {
+        UserDetailAdminResponse response = new UserDetailAdminResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setPhone(user.getPhone());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+        response.setAvatar(user.getAvatar());
+        response.setStatus(user.getStatus());
+        response.setPreferenceJson(user.getPreferenceJson());
+        response.setLastLoginTime(user.getLastLoginTime());
+        response.setCreateTime(user.getCreateTime());
+        response.setUpdateTime(user.getUpdateTime());
+        return response;
     }
 
     private String getCreditLevelName(Integer level) {
