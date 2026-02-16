@@ -235,7 +235,7 @@ public class OrgProfileServiceImpl extends ServiceImpl<OrgProfileMapper, OrgProf
         UserEntity user = userMapper.selectById(entity.getUserId());
         if (user != null) {
             record.setUserName(user.getUsername());
-            record.setUserPhone(maskPhoneNumber(user.getPhone()));
+            record.setUserPhone(user.getPhone());
         }
         
         // 获取用户信用

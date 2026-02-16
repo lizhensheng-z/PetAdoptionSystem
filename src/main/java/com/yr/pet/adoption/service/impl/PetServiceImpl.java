@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yr.pet.adoption.common.PageResult;
+import com.yr.pet.adoption.common.RedisUtil;
 import com.yr.pet.adoption.exception.BizException;
 import com.yr.pet.adoption.exception.ErrorCode;
 import com.yr.pet.adoption.mapper.*;
@@ -29,6 +30,10 @@ import java.util.stream.Collectors;
 @Service
 public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements PetService {
 
+    private static final String PET_APPLICATION_COUNT_KEY = "pet:application:count:";
+    private static final String PET_FAVORITE_COUNT_KEY = "pet:favorite:count:";
+    private static final long CACHE_EXPIRE_TIME = 3600; // 1小时
+
     @Autowired
     private PetMediaMapper petMediaMapper;
     
@@ -40,6 +45,15 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
     
     @Autowired
     private OrgProfileMapper orgProfileMapper;
+    
+    @Autowired
+    private RedisUtil redisUtil;
+    
+    @Autowired
+    private AdoptionApplicationMapper adoptionApplicationMapper;
+    
+    @Autowired
+    private UserFavoriteMapper userFavoriteMapper;
 
     @Override
     public PageResult<PetListResponse> getPetList(PetListRequest request) {
@@ -132,10 +146,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
             throw new BizException(ErrorCode.RESOURCE_NOT_FOUND, "宠物不存在");
         }
         
-        // 检查宠物状态
-        if (!"PUBLISHED".equals(pet.getStatus()) || !"APPROVED".equals(pet.getAuditStatus())) {
-            throw new BizException(ErrorCode.RESOURCE_NOT_FOUND, "宠物不存在或已下架");
-        }
+
 
         return convertToDetailResponse(pet);
     }
@@ -328,6 +339,8 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
             response.setDistance(distance);
         }
 
+
+
         return response;
     }
 
@@ -351,6 +364,8 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         if (orgProfile != null) {
             response.setOrgName(orgProfile.getOrgName());
         }
+
+
 
         return response;
     }
@@ -492,8 +507,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
     @Override
     public PetCreateResponse createPetV2(Long orgUserId, PetCreateRequestV2 request) {
         // 1. 验证机构用户身份
-        OrgProfileEntity orgProfile = orgProfileMapper.selectByUserId(orgUserId);
-
+        OrgProfileEntity orgProfile = orgProfileMapper.selectById(orgUserId);
         if (orgProfile == null) {
             throw new BizException(ErrorCode.NOT_FOUND, "机构资料不存在");
         }
@@ -510,8 +524,11 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         pet.setColor(request.getColor());
         pet.setAdoptRequirements(request.getAdoptRequirements());
         
+        // 计算总月龄
 
-        pet.setAgeMonth(request.getAgeMonth());
+            pet.setAgeMonth(request.getAgeMonth());
+
+
         // 设置健康信息
         if (request.getHealth() != null) {
             PetCreateRequestV2.Health health = request.getHealth();
@@ -574,7 +591,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         return response;
     }
 
-@Override
+    @Override
     public void updatePet(Long orgUserId, Long petId, PetUpdateRequest request) {
         // 1. 验证宠物是否存在且属于当前机构
         PetEntity pet = this.getById(petId);
@@ -628,7 +645,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         this.removeById(petId);
     }
 
-@Override
+    @Override
     public PageResult<OrgPetListResponse> getOrgPetList(Long orgUserId, OrgPetQueryRequest request) {
         // 1. 构建查询条件
         LambdaQueryWrapper<PetEntity> queryWrapper = new LambdaQueryWrapper<>();
@@ -836,8 +853,8 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         mediaWrapper.eq(PetMediaEntity::getPetId, petId)
                    .eq(PetMediaEntity::getDeleted, 0);
         long mediaCount = petMediaMapper.selectCount(mediaWrapper);
-        if (mediaCount < 1) {
-            throw new BizException(ErrorCode.PARAM_ERROR, "请至少上传1张宠物照片");
+        if (mediaCount < 3) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "请至少上传3张宠物照片");
         }
 
         // 6. 更新宠物状态
@@ -847,12 +864,94 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
     }
 
     /**
+     * 获取宠物申请数量（带Redis缓存）
+     */
+    private Integer getApplicationCount(Long petId) {
+        String key = PET_APPLICATION_COUNT_KEY + petId;
+        
+        // 先从Redis获取
+        Object count = redisUtil.get(key);
+        if (count != null) {
+            return (Integer) count;
+        }
+        
+        // Redis中没有，从数据库查询
+        LambdaQueryWrapper<AdoptionApplicationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AdoptionApplicationEntity::getPetId, petId);
+        int applicationCount = adoptionApplicationMapper.selectCount(wrapper).intValue();
+        
+        // 存入Redis，设置过期时间
+        redisUtil.set(key, applicationCount, CACHE_EXPIRE_TIME);
+        
+        return applicationCount;
+    }
+    
+    /**
+     * 获取宠物收藏数量（带Redis缓存）
+     */
+    private Integer getFavoriteCount(Long petId) {
+        String key = PET_FAVORITE_COUNT_KEY + petId;
+        
+        // 先从Redis获取
+        Object count = redisUtil.get(key);
+        if (count != null) {
+            return (Integer) count;
+        }
+        
+        // Redis中没有，从数据库查询
+        LambdaQueryWrapper<UserFavoriteEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserFavoriteEntity::getPetId, petId);
+        int favoriteCount = userFavoriteMapper.selectCount(wrapper).intValue();
+        
+        // 存入Redis，设置过期时间
+        redisUtil.set(key, favoriteCount, CACHE_EXPIRE_TIME);
+        
+        return favoriteCount;
+    }
+    
+    /**
+     * 清除宠物申请数量缓存
+     */
+    public void clearApplicationCountCache(Long petId) {
+        String key = PET_APPLICATION_COUNT_KEY + petId;
+        redisUtil.del(key);
+    }
+    
+    /**
+     * 清除宠物收藏数量缓存
+     */
+    public void clearFavoriteCountCache(Long petId) {
+        String key = PET_FAVORITE_COUNT_KEY + petId;
+        redisUtil.del(key);
+    }
+    
+    /**
+     * 增加宠物申请数量（用于申请创建时）
+     */
+    public void incrementApplicationCount(Long petId) {
+        String key = PET_APPLICATION_COUNT_KEY + petId;
+        redisUtil.incr(key, 1);
+    }
+    
+    /**
+     * 增加/减少宠物收藏数量（用于收藏操作时）
+     */
+    public void updateFavoriteCount(Long petId, int delta) {
+        String key = PET_FAVORITE_COUNT_KEY + petId;
+        if (delta > 0) {
+            redisUtil.incr(key, delta);
+        } else {
+            redisUtil.decr(key, Math.abs(delta));
+        }
+    }
+
+    /**
      * 将PetEntity转换为OrgPetListResponse
      */
     private OrgPetListResponse convertToOrgPetListResponse(PetEntity pet) {
         OrgPetListResponse response = new OrgPetListResponse();
         BeanUtils.copyProperties(pet, response);
-
+  
         // 设置封面图片
         if (pet.getCoverUrl() != null) {
             response.setCoverUrl(pet.getCoverUrl());
@@ -864,8 +963,9 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
             }
         }
 
-        // 设置申请数量
-        // TODO: 统计该宠物的申请数量
+        // 设置申请数量和收藏数量
+        response.setApplicationCount(getApplicationCount(pet.getId()));
+        response.setFavoriteCount(getFavoriteCount(pet.getId()));
 
         return response;
     }

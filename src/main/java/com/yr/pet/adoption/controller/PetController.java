@@ -1,7 +1,6 @@
 package com.yr.pet.adoption.controller;
 
-import com.yr.pet.adoption.common.R;
-import com.yr.pet.adoption.common.PageResult;
+import com.yr.pet.adoption.common.*;
 import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.service.PetService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +17,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
+
 /**
  * 宠物管理控制器
  * @author yr
@@ -29,8 +29,12 @@ import java.util.List;
 @Validated
 public class PetController {
 
-@Autowired
+    @Autowired
     private PetService petService;
+    @Autowired
+    private UserContextHolder userContextHolder;
+    @Autowired
+    private UserContent userContent;
 
     /**
      * 获取宠物列表（支持筛选、分页、排序）
@@ -73,7 +77,7 @@ public class PetController {
             @RequestParam(required = false) BigDecimal lat) {
         
         // 简化实现：目前不获取用户ID，实际应该根据token获取
-        Long userId = null;
+        Long userId = UserContext.getUserId();
         PageResult<PetListResponse> result = petService.getRecommendPets(userId, page, pageSize, lng, lat);
         return R.ok(result);
     }
@@ -128,7 +132,7 @@ public class PetController {
     @PostMapping("/org/createPet")
     @Operation(summary = "机构创建宠物", description = "机构创建新的宠物档案，支持嵌套JSON格式")
     public R<PetCreateResponse> createPetV2(@Valid @RequestBody PetCreateRequestV2 request) {
-        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        Long userId = UserContext.getUserId();
         PetCreateResponse response = petService.createPetV2(userId, request);
         return R.ok(response);
     }
@@ -183,7 +187,7 @@ public class PetController {
     @GetMapping("/org/my-pets")
     @Operation(summary = "机构获取宠物列表", description = "机构获取自己发布的宠物列表")
     public R<PageResult<OrgPetListResponse>> getOrgPetList(@Valid OrgPetQueryRequest request) {
-        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        Long userId = UserContext.getUserId();
         PageResult<OrgPetListResponse> result = petService.getOrgPetList(userId, request);
         return R.ok(result);
     }

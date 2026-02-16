@@ -44,7 +44,7 @@
         <result column="pet_name" property="petName" />
         <result column="pet_cover_url" property="petCoverUrl" />
         <result column="user_id" property="userId" />
-        <result column="user_nickname" property="userNickname" />
+        <result column="user_name" property="userName" />
         <result column="user_avatar" property="userAvatar" />
         <result column="user_phone" property="userPhone" />
         <result column="user_email" property="userEmail" />
@@ -111,7 +111,7 @@
             p.name AS pet_name,
             p.cover_url AS pet_cover_url,
             aa.user_id,
-            u.username AS user_nickname,
+            u.username AS user_name,
             u.avatar AS user_avatar,
             u.phone AS user_phone,
             u.email AS user_email,
