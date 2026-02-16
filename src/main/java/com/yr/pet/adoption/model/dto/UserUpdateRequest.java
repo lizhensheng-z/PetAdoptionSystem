@@ -1,5 +1,6 @@
 package com.yr.pet.adoption.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -12,6 +13,7 @@ import lombok.Data;
  */
 @Data
 @Schema(description = "用户信息更新请求")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserUpdateRequest {
 
     @Schema(description = "手机号", example = "13800000001")

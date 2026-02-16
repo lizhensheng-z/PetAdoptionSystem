@@ -13,4 +13,18 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface TagService extends IService<TagEntity> {
 
+    /**
+     * 检查标签名称是否已存在
+     * @param name 标签名称
+     * @return 是否存在
+     */
+    boolean existsByName(String name);
+
+    /**
+     * 检查标签名称是否已存在（排除指定ID）
+     * @param name 标签名称
+     * @param excludeId 排除的标签ID
+     * @return 是否存在
+     */
+    boolean existsByNameExcludeId(String name, Long excludeId);
 }

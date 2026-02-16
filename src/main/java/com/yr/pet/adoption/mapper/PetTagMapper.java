@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.yr.pet.adoption.model.entity.PetTagEntity;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public interface PetTagMapper extends BaseMapper<PetTagEntity> {
     /**
      * 删除宠物的所有标签关联
      */
-    @Select("UPDATE pet_tag SET deleted = 1 WHERE pet_id = #{petId}")
+    @Update("UPDATE pet_tag SET deleted = 1 WHERE pet_id = #{petId}")
     void deleteByPetId(@Param("petId") Long petId);
 
     /**

@@ -1,5 +1,6 @@
 package com.yr.pet.adoption.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yr.pet.adoption.model.entity.TagEntity;
 import com.yr.pet.adoption.mapper.TagMapper;
 import com.yr.pet.adoption.service.TagService;
@@ -17,4 +18,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagServiceImpl extends ServiceImpl<TagMapper, TagEntity> implements TagService {
 
+    @Override
+    public boolean existsByName(String name) {
+        LambdaQueryWrapper<TagEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TagEntity::getName, name);
+        return this.count(wrapper) > 0;
+    }
+
+    @Override
+    public boolean existsByNameExcludeId(String name, Long excludeId) {
+        LambdaQueryWrapper<TagEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TagEntity::getName, name)
+               .ne(TagEntity::getId, excludeId);
+        return this.count(wrapper) > 0;
+    }
 }
