@@ -123,6 +123,7 @@ CREATE TABLE org_profile (
                              district VARCHAR(64) NULL COMMENT '区/县',
                              lng DECIMAL(10,6) NULL COMMENT '经度',
                              lat DECIMAL(10,6) NULL COMMENT '纬度',
+                             cover_url VARCHAR(512) NULL COMMENT '机构封面/图片URL',
                              verify_status VARCHAR(16) NOT NULL DEFAULT 'PENDING' COMMENT '机构认证状态：PENDING/APPROVED/REJECTED（可选启用）',
                              verify_remark VARCHAR(255) NULL COMMENT '认证备注/驳回原因',
                              deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0否1是',
@@ -132,6 +133,7 @@ CREATE TABLE org_profile (
                              INDEX idx_city(city) COMMENT '城市索引',
                              INDEX idx_lng_lat(lng, lat) COMMENT '经纬度索引'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='救助机构资料表';
+
 
 -- ============================================================
 -- C. 宠物信息域

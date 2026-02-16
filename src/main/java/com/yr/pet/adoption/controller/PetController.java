@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ import java.util.List;
 @Validated
 public class PetController {
 
-    @Autowired
+@Autowired
     private PetService petService;
 
     /**
@@ -90,7 +91,7 @@ public class PetController {
         return R.ok(suggestions);
     }
 
-    /**
+/**
      * 获取相似宠物列表
      */
     @GetMapping("/{id}/similar")
@@ -104,5 +105,100 @@ public class PetController {
         
         List<SimilarPetResponse> similarPets = petService.getSimilarPets(id, limit);
         return R.ok(similarPets);
+    }
+
+// ==================== 机构宠物管理接口 ====================
+
+    /**
+     *   弃用
+     * 机构创建/发布宠物
+     */
+//    @Deprecated
+//    @PostMapping("/org/createPet")
+//    @Operation(summary = "机构创建宠物", description = "机构创建新的宠物档案")
+//    public R<PetCreateResponse> createPet(@Valid @RequestBody PetCreateRequest request) {
+//        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+//        PetCreateResponse response = petService.createPet(userId, request);
+//        return R.ok(response);
+//    }
+
+    /**
+     * 机构创建/发布宠物 V2 - 支持嵌套结构
+     */
+    @PostMapping("/org/createPet")
+    @Operation(summary = "机构创建宠物", description = "机构创建新的宠物档案，支持嵌套JSON格式")
+    public R<PetCreateResponse> createPetV2(@Valid @RequestBody PetCreateRequestV2 request) {
+        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        PetCreateResponse response = petService.createPetV2(userId, request);
+        return R.ok(response);
+    }
+
+    /**
+     * 机构更新宠物信息
+     */
+    @PutMapping("/org/{id}")
+    @Operation(summary = "机构更新宠物信息", description = "机构更新指定宠物的详细信息")
+    public R<Void> updatePet(
+            @Parameter(description = "宠物ID", required = true)
+            @PathVariable @NotNull @Min(1) Long id,
+            @Valid @RequestBody PetUpdateRequest request) {
+
+        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        petService.updatePet(userId, id, request);
+        return R.ok();
+    }
+
+    /**
+     * 机构删除/下架宠物
+     */
+    @DeleteMapping("/org/{id}")
+    @Operation(summary = "机构删除宠物", description = "机构删除指定宠物")
+    public R<Void> deletePet(
+            @Parameter(description = "宠物ID", required = true)
+            @PathVariable @NotNull @Min(1) Long id) {
+
+        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        petService.deletePet(userId, id);
+        return R.ok();
+    }
+
+    /**
+     * 提交宠物审核
+     */
+    @PostMapping("/org/pets/{id}/submit-audit")
+//    @PreAuthorize("hasAuthority('pet:submit_audit')")
+    @Operation(summary = "提交宠物审核", description = "将宠物档案提交到管理员审核")
+    public R<Void> submitPetAudit(
+            @Parameter(description = "宠物ID", required = true)
+            @PathVariable @NotNull @Min(1) Long id) {
+        
+        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        petService.submitPetAudit(userId, id);
+        return R.ok();
+    }
+
+    /**
+     * 机构获取自己的宠物列表
+     */
+    @GetMapping("/org/my-pets")
+    @Operation(summary = "机构获取宠物列表", description = "机构获取自己发布的宠物列表")
+    public R<PageResult<OrgPetListResponse>> getOrgPetList(@Valid OrgPetQueryRequest request) {
+        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        PageResult<OrgPetListResponse> result = petService.getOrgPetList(userId, request);
+        return R.ok(result);
+    }
+
+    /**
+     * 机构获取宠物详情
+     */
+    @GetMapping("/org/detail/{id}")
+    @Operation(summary = "机构获取宠物详情", description = "机构获取指定宠物的详细信息")
+    public R<PetDetailResponse> getOrgPetDetail(
+            @Parameter(description = "宠物ID", required = true)
+            @PathVariable @NotNull @Min(1) Long id) {
+
+        Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
+        PetDetailResponse detail = petService.getOrgPetDetail(userId, id);
+        return R.ok(detail);
     }
 }

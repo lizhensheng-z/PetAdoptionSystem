@@ -115,6 +115,12 @@ public class OrgProfileEntity extends Model<OrgProfileEntity> {
     private String verifyRemark;
 
     /**
+     * 认证备注/驳回原因
+     */
+    @TableField("cover_url")
+    private String coverUrl;
+
+    /**
      * 逻辑删除：0否1是
      */
     @TableField("deleted")

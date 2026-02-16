@@ -8,11 +8,7 @@ import com.yr.pet.adoption.common.PageResult;
 import com.yr.pet.adoption.exception.BizException;
 import com.yr.pet.adoption.exception.ErrorCode;
 import com.yr.pet.adoption.mapper.*;
-import com.yr.pet.adoption.model.dto.PetDetailResponse;
-import com.yr.pet.adoption.model.dto.PetListRequest;
-import com.yr.pet.adoption.model.dto.PetListResponse;
-import com.yr.pet.adoption.model.dto.PetSuggestResponse;
-import com.yr.pet.adoption.model.dto.SimilarPetResponse;
+import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.*;
 import com.yr.pet.adoption.service.PetService;
 import org.springframework.beans.BeanUtils;
@@ -418,7 +414,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
             .collect(Collectors.toList());
     }
 
-    /**
+/**
      * 计算两点之间的距离（公里）
      */
     private BigDecimal calculateDistance(BigDecimal lng1, BigDecimal lat1, BigDecimal lng2, BigDecimal lat2) {
@@ -442,5 +438,435 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         double distance = earthRadius * c;
 
         return BigDecimal.valueOf(distance).setScale(1, RoundingMode.HALF_UP);
+    }
+
+    // ==================== 机构宠物管理方法实现 ====================
+
+    @Override
+    public PetCreateResponse createPet(Long orgUserId, PetCreateRequest request) {
+        // 1. 验证机构用户身份
+        OrgProfileEntity orgProfile = orgProfileMapper.selectById(orgUserId);
+        if (orgProfile == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "机构资料不存在");
+        }
+
+        // 2. 创建宠物实体
+        PetEntity pet = new PetEntity();
+        BeanUtils.copyProperties(request, pet);
+
+        // 设置机构用户ID
+        pet.setOrgUserId(orgUserId);
+
+        // 设置状态为草稿
+        pet.setStatus("DRAFT");
+        pet.setAuditStatus("NONE");
+
+        // 设置默认位置（如果未提供，使用机构位置）
+        if (pet.getLng() == null && orgProfile.getLng() != null) {
+            pet.setLng(orgProfile.getLng());
+        }
+        if (pet.getLat() == null && orgProfile.getLat() != null) {
+            pet.setLat(orgProfile.getLat());
+        }
+
+        pet.setDeleted(0);
+
+        // 3. 保存宠物信息
+        this.save(pet);
+
+        // 4. 处理标签关联
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            savePetTags(pet.getId(), request.getTagIds());
+        }
+
+        // 5. 返回创建结果
+        PetCreateResponse response = new PetCreateResponse();
+        response.setId(pet.getId());
+        response.setStatus(pet.getStatus());
+        response.setAuditStatus(pet.getAuditStatus());
+        response.setCreateTime(pet.getCreateTime());
+
+        return response;
+    }
+
+    @Override
+    public PetCreateResponse createPetV2(Long orgUserId, PetCreateRequestV2 request) {
+        // 1. 验证机构用户身份
+        OrgProfileEntity orgProfile = orgProfileMapper.selectByUserId(orgUserId);
+
+        if (orgProfile == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "机构资料不存在");
+        }
+
+        // 2. 创建宠物实体
+        PetEntity pet = new PetEntity();
+        
+        // 复制基本属性
+        pet.setName(request.getName());
+        pet.setSpecies(request.getSpecies());
+        pet.setBreed(request.getBreed());
+        pet.setGender(request.getGender());
+        pet.setSize(request.getSize());
+        pet.setColor(request.getColor());
+        pet.setAdoptRequirements(request.getAdoptRequirements());
+        
+
+        pet.setAgeMonth(request.getAgeMonth());
+        // 设置健康信息
+        if (request.getHealth() != null) {
+            PetCreateRequestV2.Health health = request.getHealth();
+            pet.setSterilized(health.getSterilized());
+            pet.setVaccinated(health.getVaccinated());
+            pet.setDewormed(health.getDewormed());
+            pet.setHealthDesc(health.getHealthDesc());
+        }
+
+        // 设置性格描述
+        if (request.getPersonality() != null) {
+            pet.setPersonalityDesc(request.getPersonality().getDesc());
+        }
+
+        // 设置位置信息
+        if (request.getLocation() != null) {
+            PetCreateRequestV2.Location location = request.getLocation();
+            pet.setLng(location.getLng());
+            pet.setLat(location.getLat());
+        }
+
+        // 设置封面URL
+        if (request.getCoverUrl() != null) {
+            pet.setCoverUrl(request.getCoverUrl());
+        }
+
+        // 设置机构用户ID
+        pet.setOrgUserId(orgUserId);
+
+        // 设置状态（使用请求中的状态或默认为草稿）
+        pet.setStatus(request.getStatus() != null ? request.getStatus() : "DRAFT");
+        pet.setAuditStatus(request.getAuditStatus() != null ? request.getAuditStatus() : "NONE");
+
+        // 设置默认位置（如果未提供，使用机构位置）
+        if (pet.getLng() == null && orgProfile.getLng() != null) {
+            pet.setLng(orgProfile.getLng());
+        }
+        if (pet.getLat() == null && orgProfile.getLat() != null) {
+            pet.setLat(orgProfile.getLat());
+        }
+
+        pet.setDeleted(0);
+
+        // 3. 保存宠物信息
+        this.save(pet);
+
+        // 4. 处理标签关联
+        List<Long> tagIds = request.getPersonality().getTags();
+        if (tagIds != null && !tagIds.isEmpty()) {
+            savePetTags(pet.getId(), tagIds);
+        }
+
+        // 5. 返回创建结果
+        PetCreateResponse response = new PetCreateResponse();
+        response.setId(pet.getId());
+        response.setStatus(pet.getStatus());
+        response.setAuditStatus(pet.getAuditStatus());
+        response.setCreateTime(pet.getCreateTime());
+
+        return response;
+    }
+
+@Override
+    public void updatePet(Long orgUserId, Long petId, PetUpdateRequest request) {
+        // 1. 验证宠物是否存在且属于当前机构
+        PetEntity pet = this.getById(petId);
+        if (pet == null || pet.getDeleted() == 1) {
+            throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
+        }
+
+        if (!pet.getOrgUserId().equals(orgUserId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权修改该宠物信息");
+        }
+
+        // 2. 检查宠物状态,已发布的宠物不能直接修改
+        if ("PUBLISHED".equals(pet.getStatus())) {
+            throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "已发布的宠物不能直接修改，请先下架");
+        }
+
+        // 3. 更新宠物信息
+        BeanUtils.copyProperties(request, pet);
+        this.updateById(pet);
+
+        // 4. 更新标签关联
+        if (request.getTagIds() != null) {
+            // 删除旧标签
+            LambdaQueryWrapper<PetTagEntity> deleteWrapper = new LambdaQueryWrapper<>();
+            deleteWrapper.eq(PetTagEntity::getPetId, petId);
+            petTagMapper.delete(deleteWrapper);
+
+            // 添加新标签
+            if (!request.getTagIds().isEmpty()) {
+                savePetTags(petId, request.getTagIds());
+            }
+        }
+    }
+
+    @Override
+    public void deletePet(Long orgUserId, Long petId) {
+        // 1. 验证宠物是否存在且属于当前机构
+        PetEntity pet = this.getById(petId);
+        if (pet == null || pet.getDeleted() == 1) {
+            throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
+        }
+        
+        if (!pet.getOrgUserId().equals(orgUserId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权删除该宠物");
+        }
+
+        // 2. 检查是否有进行中的领养申请
+        // TODO: 可以在这里添加检查逻辑
+
+        // 3. 逻辑删除宠物
+        this.removeById(petId);
+    }
+
+@Override
+    public PageResult<OrgPetListResponse> getOrgPetList(Long orgUserId, OrgPetQueryRequest request) {
+        // 1. 构建查询条件
+        LambdaQueryWrapper<PetEntity> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 只查询当前机构的宠物
+        queryWrapper.eq(PetEntity::getOrgUserId, orgUserId)
+                   .eq(PetEntity::getDeleted, 0);
+
+        // 状态筛选
+        if (StringUtils.hasText(request.getStatus())) {
+            queryWrapper.eq(PetEntity::getStatus, request.getStatus());
+        }
+
+        // 审核状态筛选
+        if (StringUtils.hasText(request.getAuditStatus())) {
+            queryWrapper.eq(PetEntity::getAuditStatus, request.getAuditStatus());
+        }
+
+        // 排序
+        if ("createTime".equals(request.getSortBy())) {
+            if ("asc".equalsIgnoreCase(request.getOrder())) {
+                queryWrapper.orderByAsc(PetEntity::getCreateTime);
+            } else {
+                queryWrapper.orderByDesc(PetEntity::getCreateTime);
+            }
+        } else {
+            // 默认按创建时间降序
+            queryWrapper.orderByDesc(PetEntity::getCreateTime);
+        }
+
+        // 2. 分页查询
+        Page<PetEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        IPage<PetEntity> petPage = this.page(page, queryWrapper);
+
+        // 3. 转换为响应数据
+        List<OrgPetListResponse> petList = petPage.getRecords().stream()
+            .map(pet -> convertToOrgPetListResponse(pet))
+            .collect(Collectors.toList());
+
+        return new PageResult<>(
+            petList,
+            (int) petPage.getCurrent(),
+            (int) petPage.getSize(),
+            petPage.getTotal()
+        );
+    }
+
+    @Override
+    public PetDetailResponse getOrgPetDetail(Long orgUserId, Long petId) {
+        // 1. 验证宠物是否存在且属于当前机构
+        PetEntity pet = this.getById(petId);
+        if (pet == null || pet.getDeleted() == 1) {
+            throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
+        }
+        
+        if (!pet.getOrgUserId().equals(orgUserId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权查看该宠物信息");
+        }
+
+        // 2. 返回宠物详情
+        return convertToDetailResponse(pet);
+    }
+
+    /**
+     * 保存宠物标签关联
+     */
+    private void savePetTags(Long petId, List<Long> tagIds) {
+        List<PetTagEntity> petTags = tagIds.stream()
+            .map(tagId -> {
+                PetTagEntity petTag = new PetTagEntity();
+                petTag.setPetId(petId);
+                petTag.setTagId(tagId);
+                return petTag;
+            })
+            .collect(Collectors.toList());
+
+        // 逐个插入（简化实现，实际可以使用批量插入优化）
+        for (PetTagEntity petTag : petTags) {
+            petTagMapper.insert(petTag);
+        }
+    }
+
+    @Override
+    public PetMediaEntity savePetMedia(Long orgUserId, Long petId, PetMediaRequest request) {
+        // 1. 验证宠物是否存在且属于当前机构
+        PetEntity pet = this.getById(petId);
+        if (pet == null || pet.getDeleted() == 1) {
+            throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
+        }
+        
+        if (!pet.getOrgUserId().equals(orgUserId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权操作该宠物");
+        }
+
+        // 2. 创建媒体实体
+        PetMediaEntity media = new PetMediaEntity();
+        media.setPetId(petId);
+        media.setUrl(request.getUrl());
+        media.setMediaType(request.getMediaType());
+        media.setSort(request.getSort());
+        media.setDeleted(0);
+
+        // 3. 保存媒体信息
+        petMediaMapper.insert(media);
+
+        // 4. 如果是封面图，更新宠物封面URL
+        if (Boolean.TRUE.equals(request.getIsCover())) {
+            pet.setCoverUrl(request.getUrl());
+            this.updateById(pet);
+        }
+
+        return media;
+    }
+
+    @Override
+    public void deletePetMedia(Long orgUserId, Long petId, Long mediaId) {
+        // 1. 验证宠物是否存在且属于当前机构
+        PetEntity pet = this.getById(petId);
+        if (pet == null || pet.getDeleted() == 1) {
+            throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
+        }
+        
+        if (!pet.getOrgUserId().equals(orgUserId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权操作该宠物");
+        }
+
+        // 2. 验证媒体是否存在
+        PetMediaEntity media = petMediaMapper.selectById(mediaId);
+        if (media == null || media.getDeleted() == 1) {
+            throw new BizException(ErrorCode.NOT_FOUND, "媒体文件不存在");
+        }
+
+        // 3. 检查是否是唯一的封面图
+        if (pet.getCoverUrl() != null && pet.getCoverUrl().equals(media.getUrl())) {
+            // 检查是否还有其他媒体文件
+            LambdaQueryWrapper<PetMediaEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(PetMediaEntity::getPetId, petId)
+                   .ne(PetMediaEntity::getId, mediaId)
+                   .eq(PetMediaEntity::getDeleted, 0);
+            
+            long count = petMediaMapper.selectCount(wrapper);
+            if (count == 0) {
+                throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "不能删除唯一的封面图，请先设置其他图片为封面");
+            }
+        }
+
+        // 4. 逻辑删除媒体文件
+        media.setDeleted(1);
+        petMediaMapper.updateById(media);
+
+        // 5. 如果删除的是封面图，更新宠物封面URL
+        if (pet.getCoverUrl() != null && pet.getCoverUrl().equals(media.getUrl())) {
+            // 查找新的封面图
+            LambdaQueryWrapper<PetMediaEntity> newCoverWrapper = new LambdaQueryWrapper<>();
+            newCoverWrapper.eq(PetMediaEntity::getPetId, petId)
+                          .eq(PetMediaEntity::getDeleted, 0)
+                          .orderByAsc(PetMediaEntity::getSort)
+                          .last("LIMIT 1");
+            
+            PetMediaEntity newCover = petMediaMapper.selectOne(newCoverWrapper);
+            if (newCover != null) {
+                pet.setCoverUrl(newCover.getUrl());
+            } else {
+                pet.setCoverUrl(null);
+            }
+            this.updateById(pet);
+        }
+    }
+
+    @Override
+    public void submitPetAudit(Long orgUserId, Long petId) {
+        // 1. 验证宠物是否存在且属于当前机构
+        PetEntity pet = this.getById(petId);
+        if (pet == null || pet.getDeleted() == 1) {
+            throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
+        }
+        
+        if (!pet.getOrgUserId().equals(orgUserId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权操作该宠物");
+        }
+
+        // 2. 检查宠物状态
+        if (!"DRAFT".equals(pet.getStatus())) {
+            throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "只有草稿状态的宠物才能提交审核");
+        }
+
+        // 3. 检查必填信息是否完整
+        if (!StringUtils.hasText(pet.getName()) || 
+            !StringUtils.hasText(pet.getSpecies()) || 
+            !StringUtils.hasText(pet.getBreed()) ||
+            pet.getAgeMonth() == null ||
+            !StringUtils.hasText(pet.getGender()) ||
+            !StringUtils.hasText(pet.getSize()) ||
+            !StringUtils.hasText(pet.getColor())) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "请完善宠物基本信息");
+        }
+
+        // 4. 检查是否有封面图
+        if (!StringUtils.hasText(pet.getCoverUrl())) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "请上传宠物封面图");
+        }
+
+        // 5. 检查媒体文件数量
+        LambdaQueryWrapper<PetMediaEntity> mediaWrapper = new LambdaQueryWrapper<>();
+        mediaWrapper.eq(PetMediaEntity::getPetId, petId)
+                   .eq(PetMediaEntity::getDeleted, 0);
+        long mediaCount = petMediaMapper.selectCount(mediaWrapper);
+        if (mediaCount < 1) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "请至少上传1张宠物照片");
+        }
+
+        // 6. 更新宠物状态
+        pet.setStatus("PENDING_AUDIT");
+        pet.setAuditStatus("PENDING");
+        this.updateById(pet);
+    }
+
+    /**
+     * 将PetEntity转换为OrgPetListResponse
+     */
+    private OrgPetListResponse convertToOrgPetListResponse(PetEntity pet) {
+        OrgPetListResponse response = new OrgPetListResponse();
+        BeanUtils.copyProperties(pet, response);
+
+        // 设置封面图片
+        if (pet.getCoverUrl() != null) {
+            response.setCoverUrl(pet.getCoverUrl());
+        } else {
+            // 如果没有设置封面,使用第一张图片
+            List<String> images = getPetImages(pet.getId());
+            if (!images.isEmpty()) {
+                response.setCoverUrl(images.get(0));
+            }
+        }
+
+        // 设置申请数量
+        // TODO: 统计该宠物的申请数量
+
+        return response;
     }
 }

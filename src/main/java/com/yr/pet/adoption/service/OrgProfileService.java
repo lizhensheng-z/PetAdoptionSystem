@@ -35,8 +35,40 @@ public interface OrgProfileService extends IService<OrgProfileEntity> {
      */
     PageResult<OrgAdoptionRecord> getAdoptionRecords(Long userId, Long petId, Long targetUserId, String month, Integer pageNo, Integer pageSize);
 
-    /**
+/**
      * 获取回访提醒
      */
     FollowupReminderResponse getFollowupReminders(Long userId);
+
+    // ==================== 机构首页Dashboard接口 ====================
+
+    /**
+     * 获取机构首页统计数据
+     */
+    DashboardStatisticsResponse getDashboardStatistics(Long userId);
+
+    /**
+     * 获取机构待办事项列表
+     */
+    TodoListResponse getDashboardTodos(Long userId, String type, Integer limit);
+
+    /**
+     * 获取机构最近宠物列表
+     */
+    RecentPetListResponse getRecentPets(Long userId, Integer limit);
+
+    /**
+     * 获取机构最近申请列表
+     */
+    RecentApplicationListResponse getRecentApplications(Long userId, Integer limit);
+
+    /**
+     * 获取机构回访提醒列表
+     */
+    FollowupReminderListResponse getFollowupReminderList(Long userId, String status, Integer limit);
+
+    /**
+     * 获取机构首页综合数据
+     */
+    DashboardHomeResponse getDashboardHome(Long userId);
 }

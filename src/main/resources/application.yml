@@ -37,6 +37,13 @@ spring:
           min-idle: 0
           max-wait: 3000ms
   
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      file-size-threshold: 10MB
+  
   jackson:
     time-zone: Asia/Shanghai
     date-format: yyyy-MM-dd HH:mm:ss

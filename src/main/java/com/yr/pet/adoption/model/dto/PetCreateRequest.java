@@ -26,6 +26,9 @@ public class PetCreateRequest {
     private String gender;
 
     private Integer ageMonth;
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("ageYears")
+    private Integer ageYears;
 
     private String size;
 
@@ -93,6 +96,18 @@ public class PetCreateRequest {
 
     public void setAgeMonth(Integer ageMonth) {
         this.ageMonth = ageMonth;
+    }
+
+    public Integer getAgeYears() {
+        return ageYears;
+    }
+
+    public void setAgeYears(Integer ageYears) {
+        this.ageYears = ageYears;
+        // 如果提供了ageYears，将其转换为ageMonth
+        if (ageYears != null && ageMonth == null) {
+            this.ageMonth = ageYears * 12;
+        }
     }
 
     public String getSize() {
