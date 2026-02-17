@@ -100,12 +100,12 @@ public class UserFavoriteController {
     /**
      * 检查收藏状态
      */
-    @GetMapping("/favorites/check")
+    @GetMapping("/favorites/check/{petId}")
 //    @PreAuthorize("hasAuthority('favorite:manage')")
     @Operation(summary = "检查收藏状态", description = "检查指定宠物是否已被当前用户收藏")
     public R<FavoriteCheckResponse> checkFavoriteStatus(
             @Parameter(description = "宠物ID", required = true, example = "1")
-            @RequestParam @NotNull @Min(1) Long petId) {
+            @PathVariable @NotNull @Min(1) Long petId) {
         
         Long userId = UserContext.getUserId();
         boolean isFavorited = userFavoriteService.isFavorited(userId, petId);
