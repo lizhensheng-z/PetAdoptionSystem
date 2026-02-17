@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
@@ -12,6 +14,7 @@ import java.io.Serializable;
  * @author yr
  * @since 2024-01-01
  */
+@Data
 @TableName("pet_media")
 public class PetMediaEntity implements Serializable {
 

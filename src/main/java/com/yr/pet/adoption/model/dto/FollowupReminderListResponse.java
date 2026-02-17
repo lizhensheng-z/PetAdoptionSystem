@@ -1,21 +1,19 @@
 package com.yr.pet.adoption.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
 import java.util.List;
 
 /**
- * 回访提醒列表响应DTO
- * @author yr
- * @since 2024-02-15
+ * 回访提醒列表响应
+ * @author 宗平
+ * @since 2026-02-17
  */
+@Data
+@Schema(description = "回访提醒列表响应")
 public class FollowupReminderListResponse {
-
-    private List<FollowupReminderItem> list;
-
-    public List<FollowupReminderItem> getList() {
-        return list;
-    }
-
-    public void setList(List<FollowupReminderItem> list) {
-        this.list = list;
-    }
+    
+    @Schema(description = "回访提醒列表")
+    private List<FollowupReminderResponse> list;
 }

@@ -1,30 +1,22 @@
 package com.yr.pet.adoption.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
 import java.util.List;
 
 /**
- * 待办事项列表响应DTO
- * @author yr
- * @since 2024-02-15
+ * 待办事项列表响应
+ * @author 宗平
+ * @since 2026-02-17
  */
+@Data
+@Schema(description = "待办事项列表响应")
 public class TodoListResponse {
-
-    private List<TodoItem> todos;
+    
+    @Schema(description = "待办事项列表")
+    private List<TodoItemResponse> todos;
+    
+    @Schema(description = "待办事项总数", example = "15")
     private Integer totalCount;
-
-    public List<TodoItem> getTodos() {
-        return todos;
-    }
-
-    public void setTodos(List<TodoItem> todos) {
-        this.todos = todos;
-    }
-
-    public Integer getTotalCount() {
-        return totalCount;
-    }
-
-    public void setTotalCount(Integer totalCount) {
-        this.totalCount = totalCount;
-    }
 }

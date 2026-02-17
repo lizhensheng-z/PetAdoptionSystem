@@ -39,4 +39,13 @@ public class UserInfoResponse {
     
     @Schema(description = "权限列表")
     private List<String> permissions;
+    
+    @Schema(description = "机构名称")
+    private String orgName;
+    
+    @Schema(description = "机构认证状态")
+    private String orgStatus;
+    
+    @Schema(description = "机构资料是否完整")
+    private Boolean orgProfileComplete;
 }

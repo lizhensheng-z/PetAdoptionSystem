@@ -1,9 +1,12 @@
 package com.yr.pet.adoption.service;
 
 import com.yr.pet.adoption.common.UserContent;
+import com.yr.pet.adoption.mapper.OrgProfileMapper;
 import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.UserEntity;
+import com.yr.pet.adoption.model.entity.OrgProfileEntity;
 import com.yr.pet.adoption.security.JwtUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -30,6 +34,8 @@ public class AuthService {
     private  JwtUtil jwtUtil;
     @Resource
     private  UserService userService;
+    @Resource
+    private OrgProfileMapper orgProfileMapper;
     @Resource
     private  UserContent userContent;
     
@@ -59,17 +65,39 @@ public class AuthService {
         // 更新最后登录时间
         userService.updateLastLoginTime(user.getId());
         
-        return new LoginResponse(
-                token,
-                refreshToken,
-                3600, // 1小时有效期
-                "Bearer",
-                user.getId(),
-                user.getUsername(),
-                user.getRole(),
-                permissions,
-                user.getAvatar()
-        );
+        // 构建响应
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        
+        LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
+        userInfo.setId(user.getId());
+        userInfo.setUsername(user.getUsername());
+        userInfo.setRole(user.getRole());
+        userInfo.setAvatar(user.getAvatar());
+        userInfo.setPhone(user.getPhone());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setPermissions(permissions);
+        userInfo.setLastLoginTime(user.getLastLoginTime());
+        
+        // 如果是机构用户，查询机构状态
+        if ("ORG".equals(user.getRole())) {
+            OrgProfileEntity orgProfile = orgProfileMapper.selectOne(
+                new LambdaQueryWrapper<OrgProfileEntity>()
+                    .eq(OrgProfileEntity::getUserId, user.getId())
+                    .eq(OrgProfileEntity::getDeleted, 0)
+            );
+            
+            if (orgProfile != null) {
+                userInfo.setOrgStatus(orgProfile.getVerifyStatus());
+                userInfo.setOrgProfileComplete(isOrgProfileComplete(orgProfile));
+            } else {
+                userInfo.setOrgStatus("PENDING");
+                userInfo.setOrgProfileComplete(false);
+            }
+        }
+        
+        response.setUser(userInfo);
+        return response;
     }
     
     /**
@@ -96,17 +124,39 @@ public class AuthService {
                     .map(auth -> auth.getAuthority())
                     .toList();
             
-            return new LoginResponse(
-                    newAccessToken,
-                    refreshToken,
-                    3600,
-                    "Bearer",
-                    user.getId(),
-                    user.getUsername(),
-                    user.getRole(),
-                    permissions,
-                    user.getAvatar()
-            );
+            // 构建响应
+            LoginResponse response = new LoginResponse();
+            response.setToken(newAccessToken);
+            
+            LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
+            userInfo.setId(user.getId());
+            userInfo.setUsername(user.getUsername());
+            userInfo.setRole(user.getRole());
+            userInfo.setAvatar(user.getAvatar());
+            userInfo.setPhone(user.getPhone());
+            userInfo.setEmail(user.getEmail());
+            userInfo.setPermissions(permissions);
+            userInfo.setLastLoginTime(user.getLastLoginTime());
+            
+            // 如果是机构用户，查询机构状态
+            if ("ORG".equals(user.getRole())) {
+                OrgProfileEntity orgProfile = orgProfileMapper.selectOne(
+                    new LambdaQueryWrapper<OrgProfileEntity>()
+                        .eq(OrgProfileEntity::getUserId, user.getId())
+                        .eq(OrgProfileEntity::getDeleted, 0)
+                );
+                
+                if (orgProfile != null) {
+                    userInfo.setOrgStatus(orgProfile.getVerifyStatus());
+                    userInfo.setOrgProfileComplete(isOrgProfileComplete(orgProfile));
+                } else {
+                    userInfo.setOrgStatus("PENDING");
+                    userInfo.setOrgProfileComplete(false);
+                }
+            }
+            
+            response.setUser(userInfo);
+            return response;
         }
         
         throw new RuntimeException("无效的刷新令牌");
@@ -147,9 +197,41 @@ public class AuthService {
         response.setCreateTime(user.getCreateTime());
         response.setPermissions(permissions);
         
+        // 如果是机构用户，添加机构状态信息
+        if ("ORG".equals(user.getRole())) {
+            OrgProfileEntity orgProfile = orgProfileMapper.selectOne(
+                new LambdaQueryWrapper<OrgProfileEntity>()
+                    .eq(OrgProfileEntity::getUserId, user.getId())
+                    .eq(OrgProfileEntity::getDeleted, 0)
+            );
+            
+            if (orgProfile != null) {
+                response.setOrgStatus(orgProfile.getVerifyStatus());
+                response.setOrgProfileComplete(isOrgProfileComplete(orgProfile));
+                response.setOrgName(orgProfile.getOrgName());
+            } else {
+                response.setOrgStatus("PENDING");
+                response.setOrgProfileComplete(false);
+                response.setOrgName("");
+            }
+        }
+        
         return response;
     }
     
+    /**
+     * 检查机构资料是否完整
+     */
+    private boolean isOrgProfileComplete(OrgProfileEntity orgProfile) {
+        return orgProfile != null 
+                && StringUtils.hasText(orgProfile.getOrgName())
+                && StringUtils.hasText(orgProfile.getContactName())
+                && StringUtils.hasText(orgProfile.getContactPhone())
+                && StringUtils.hasText(orgProfile.getAddress())
+                && StringUtils.hasText(orgProfile.getProvince())
+                && StringUtils.hasText(orgProfile.getCity());
+    }
+
     /**
      * 修改个人资料
      */

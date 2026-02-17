@@ -10,7 +10,9 @@ import com.yr.pet.adoption.exception.BizException;
 import com.yr.pet.adoption.exception.ErrorCode;
 import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.UserEntity;
+import com.yr.pet.adoption.model.entity.OrgProfileEntity;
 import com.yr.pet.adoption.mapper.UserMapper;
+import com.yr.pet.adoption.mapper.OrgProfileMapper;
 import com.yr.pet.adoption.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     private final UserFavoriteService userFavoriteService;
     private final AdoptionApplicationService adoptionApplicationService;
     private final CheckinPostService checkinPostService;
+    private final OrgProfileMapper orgProfileMapper;
 
     @Override
     public UserEntity findByUsername(String username) {
@@ -68,6 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     }
 
     @Override
+    @Transactional
     public UserEntity register(RegisterRequest registerRequest) {
         // 检查用户名是否已存在
         if (existsByUsername(registerRequest.getUsername())) {
@@ -95,7 +99,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         user.setUpdateTime(LocalDateTime.now());
         
         save(user);
+        
+        // 如果是机构用户，自动创建机构资料
+        if ("ORG".equals(registerRequest.getRole())) {
+            createOrgProfile(user.getId());
+        }
+        
         return user;
+    }
+
+    /**
+     * 创建机构资料
+     * @param userId 用户ID
+     */
+    private void createOrgProfile(Long userId) {
+        OrgProfileEntity orgProfile = new OrgProfileEntity();
+        orgProfile.setUserId(userId);
+        orgProfile.setOrgName(""); // 初始为空，需要后续完善
+        orgProfile.setVerifyStatus("PENDING");
+        orgProfile.setDeleted(0);
+        orgProfile.setCreateTime(LocalDateTime.now());
+        orgProfile.setUpdateTime(LocalDateTime.now());
+        orgProfileMapper.insert(orgProfile);
     }
 
     @Override
