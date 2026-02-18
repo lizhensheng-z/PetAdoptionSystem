@@ -147,12 +147,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // GET 请求获取宠物列表/详情不需要认证
-        if ("GET".equals(method)) {
-            if (requestUri.equals("/api/pets") ||
-                    requestUri.startsWith("/api/pets/")) {
-                return true;
-            }
-        }
+        // if ("GET".equals(method)) {
+        //     if (requestUri.equals("/api/pets") ||
+        //             requestUri.startsWith("/api/pets/")) {
+        //         return true;
+        //     }
+        // }
 
         return false;
     }

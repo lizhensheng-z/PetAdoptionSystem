@@ -31,7 +31,7 @@ public class AdoptionApplicationVO {
     private Long userId;
 
     @Schema(description = "用户昵称")
-    private String userNickname;
+    private String userName;
 
     @Schema(description = "用户头像")
     private String userAvatar;

@@ -37,7 +37,7 @@ public class UserContent {
         return USER_CONTEXT.get();
     }
     
-/**
+    /**
      * 获取当前用户ID
      */
     public Long getUserId() {
