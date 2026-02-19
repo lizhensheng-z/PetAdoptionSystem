@@ -112,4 +112,18 @@ public interface UserService extends IService<UserEntity> {
      * 导出用户数据
      */
     void exportUsers(UserListRequest request, HttpServletResponse response);
+
+    /**
+     * 获取用户已领养的宠物列表
+     * @param userId 用户ID
+     * @return 已领养宠物列表
+     */
+    List<UserAdoptedPetResponse> getUserAdoptedPets(Long userId);
+
+    /**
+     * 获取用户信用摘要信息
+     * @param userId 用户ID
+     * @return 信用摘要信息
+     */
+    UserCreditSummaryResponse getUserCreditSummary(Long userId);
 }

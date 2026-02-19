@@ -1,21 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.yr.pet.adoption.mapper.CreditLogMapper">
 
-    <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.yr.pet.adoption.model.entity.CreditLogEntity">
-        <id column="id" property="id" />
-        <result column="user_id" property="userId" />
-        <result column="delta" property="delta" />
-        <result column="reason" property="reason" />
-        <result column="ref_type" property="refType" />
-        <result column="ref_id" property="refId" />
-        <result column="create_time" property="createTime" />
-    </resultMap>
+    <!-- 分页查询用户的信用日志 -->
+    <select id="selectUserCreditLogs" resultType="com.yr.pet.adoption.model.entity.CreditLogEntity">
+        SELECT 
+            id,
+            user_id,
+            delta,
+            reason,
+            ref_type,
+            ref_id,
+            create_time
+        FROM credit_log
+        WHERE user_id = #{userId}
+        <if test="type != null and type != ''">
+            AND reason = #{type}
+        </if>
+        <if test="startTime != null">
+            AND create_time >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND create_time &lt;= #{endTime}
+        </if>
+        ORDER BY create_time DESC
+    </select>
 
-    <!-- 通用查询结果列 -->
-    <sql id="Base_Column_List">
-        id, user_id, delta, reason, ref_type, ref_id, create_time
-    </sql>
+    <!-- 获取用户的总打卡天数 -->
+    <select id="getTotalCheckinDays" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT DATE(create_time))
+        FROM credit_log
+        WHERE user_id = #{userId}
+        AND reason = 'CHECKIN'
+    </select>
+
+    <!-- 获取用户的连续打卡天数 -->
+    <select id="getConsecutiveCheckinDays" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM (
+            SELECT 
+                create_time,
+                @row_num := @row_num + 1 as row_num,
+                DATEDIFF(create_time, @prev_date) as diff,
+                @prev_date := create_time
+            FROM credit_log, (SELECT @row_num := 0, @prev_date := NULL) r
+            WHERE user_id = #{userId}
+            AND reason = 'CHECKIN'
+            ORDER BY create_time DESC
+        ) t
+        WHERE diff = 1 OR diff IS NULL
+        ORDER BY create_time DESC
+        LIMIT 1
+    </select>
+
+    <!-- 获取用户最后一次打卡日期 -->
+    <select id="getLastCheckinDate" resultType="java.time.LocalDateTime">
+        SELECT create_time
+        FROM credit_log
+        WHERE user_id = #{userId}
+        AND reason = 'CHECKIN'
+        ORDER BY create_time DESC
+        LIMIT 1
+    </select>
 
 </mapper>

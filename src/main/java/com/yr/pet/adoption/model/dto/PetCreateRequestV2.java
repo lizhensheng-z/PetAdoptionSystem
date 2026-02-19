@@ -59,6 +59,7 @@ public class PetCreateRequestV2 {
 
     // 内部类定义
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Location {
         private String address;
         private String city;
@@ -108,6 +109,7 @@ public class PetCreateRequestV2 {
         }
     }
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Health {
         private Boolean sterilized;
         private Boolean vaccinated;
@@ -150,6 +152,7 @@ public class PetCreateRequestV2 {
         }
     }
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Personality {
         @JsonProperty("desc")
         private String desc;

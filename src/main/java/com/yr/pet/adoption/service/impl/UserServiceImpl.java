@@ -9,8 +9,10 @@ import com.yr.pet.adoption.common.PageResult;
 import com.yr.pet.adoption.exception.BizException;
 import com.yr.pet.adoption.exception.ErrorCode;
 import com.yr.pet.adoption.model.dto.*;
-import com.yr.pet.adoption.model.entity.UserEntity;
-import com.yr.pet.adoption.model.entity.OrgProfileEntity;
+import com.yr.pet.adoption.mapper.AdoptionApplicationMapper;
+import com.yr.pet.adoption.mapper.PetMapper;
+import com.yr.pet.adoption.mapper.CreditAccountMapper;
+import com.yr.pet.adoption.model.entity.*;
 import com.yr.pet.adoption.mapper.UserMapper;
 import com.yr.pet.adoption.mapper.OrgProfileMapper;
 import com.yr.pet.adoption.service.*;
@@ -53,6 +55,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     private final AdoptionApplicationService adoptionApplicationService;
     private final CheckinPostService checkinPostService;
     private final OrgProfileMapper orgProfileMapper;
+    private final AdoptionApplicationMapper adoptionApplicationMapper;
+    private final PetMapper petMapper;
+    private final CreditAccountMapper creditAccountMapper;
 
     @Override
     public UserEntity findByUsername(String username) {
@@ -99,7 +104,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         user.setUpdateTime(LocalDateTime.now());
         
         save(user);
-        
+
+
         // 如果是机构用户，自动创建机构资料
         if ("ORG".equals(registerRequest.getRole())) {
             createOrgProfile(user.getId());
@@ -530,6 +536,131 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             return objectMapper.writeValueAsString(preference);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("用户偏好设置转换失败", e);
+        }
+    }
+
+    @Override
+    public List<UserAdoptedPetResponse> getUserAdoptedPets(Long userId) {
+        // 查询用户已领养成功的申请
+        List<AdoptionApplicationEntity> applications = adoptionApplicationMapper.selectList(
+            new LambdaQueryWrapper<AdoptionApplicationEntity>()
+                .eq(AdoptionApplicationEntity::getUserId, userId)
+                .eq(AdoptionApplicationEntity::getStatus, "APPROVED")
+                .eq(AdoptionApplicationEntity::getDeleted, 0)
+                .orderByDesc(AdoptionApplicationEntity::getCreateTime)
+        );
+
+        if (applications.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 获取宠物ID列表
+        List<Long> petIds = applications.stream()
+            .map(AdoptionApplicationEntity::getPetId)
+            .collect(Collectors.toList());
+
+        // 查询宠物信息
+        List<PetEntity> pets = petMapper.selectList(
+            new LambdaQueryWrapper<PetEntity>()
+                .in(PetEntity::getId, petIds)
+                .eq(PetEntity::getStatus, "ADOPTED")
+                .eq(PetEntity::getDeleted, 0)
+        );
+
+        // 转换为响应DTO
+        return pets.stream()
+            .map(pet -> new UserAdoptedPetResponse(
+                pet.getId(),
+                pet.getName(),
+                pet.getCoverUrl()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserCreditSummaryResponse getUserCreditSummary(Long userId) {
+        // 获取信用账户信息
+        CreditAccountEntity creditAccount = creditAccountMapper.selectById(userId);
+        if (creditAccount == null) {
+            // 如果用户没有信用账户，创建默认账户
+            creditAccount = new CreditAccountEntity();
+            creditAccount.setUserId(userId);
+            creditAccount.setScore(600); // 默认信用分
+            creditAccount.setLevel(1);
+            creditAccount.setLastCalcTime(LocalDateTime.now());
+            creditAccount.setUpdateTime(LocalDateTime.now());
+            creditAccountMapper.insert(creditAccount);
+        }
+
+        // 获取总打卡数
+        int totalCheckins = checkinPostService.getMyCheckins(userId, null, 1, 1).getTotal().intValue();
+
+        // 计算信用等级信息
+        String levelName = getCreditLevelName(creditAccount.getLevel());
+        String levelIcon = getCreditLevelIcon(creditAccount.getLevel());
+        int nextLevelThreshold = getNextLevelThreshold(creditAccount.getLevel());
+        String ranking = calculateRanking(creditAccount.getScore());
+
+        return new UserCreditSummaryResponse(
+            creditAccount.getScore(),
+            levelName,
+            levelIcon,
+            totalCheckins,
+            nextLevelThreshold,
+            ranking
+        );
+    }
+
+    private String getCreditLevelIcon(Integer level) {
+        if (level == null) {
+            return "shield-outline";
+        }
+        switch (level) {
+            case 1:
+                return "shield-outline";
+            case 2:
+                return "shield-half";
+            case 3:
+                return "shield-check";
+            case 4:
+                return "shield-star";
+            default:
+                return "shield-outline";
+        }
+    }
+
+    private int getNextLevelThreshold(Integer level) {
+        if (level == null) {
+            return 700;
+        }
+        switch (level) {
+            case 1:
+                return 700;
+            case 2:
+                return 800;
+            case 3:
+                return 900;
+            case 4:
+                return 1000;
+            default:
+                return 700;
+        }
+    }
+
+    private String calculateRanking(Integer score) {
+        if (score == null) {
+            return "Top 50%";
+        }
+        
+        // 简化的排名计算逻辑
+        if (score >= 900) {
+            return "Top 5%";
+        } else if (score >= 800) {
+            return "Top 15%";
+        } else if (score >= 700) {
+            return "Top 30%";
+        } else {
+            return "Top 50%";
         }
     }
 }

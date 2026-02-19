@@ -1,37 +1,27 @@
 package com.yr.pet.adoption.model.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import java.io.Serializable;
+import lombok.Data;
+
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 /**
- * <p>
- * 用户信用账户表
- * </p>
- *
- * @author 榕
- * @since 2026-02-01
+ * 用户信用账户实体类
+ * 对应数据库表：credit_account
+ * 
+ * @author 宗平
+ * @since 2024-02-18
  */
-@Getter
-@Setter
-@Accessors(chain = true)
+@Data
 @TableName("credit_account")
-public class CreditAccountEntity extends Model<CreditAccountEntity> {
-
-    private static final long serialVersionUID = 1L;
+public class CreditAccountEntity {
 
     /**
      * 用户ID（sys_user.id）
      */
-    @TableId(value = "user_id", type = IdType.AUTO)
+    @TableId("user_id")
     private Long userId;
 
     /**
@@ -55,11 +45,6 @@ public class CreditAccountEntity extends Model<CreditAccountEntity> {
     /**
      * 更新时间
      */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @TableField("update_time")
     private LocalDateTime updateTime;
-
-    @Override
-    public Serializable pkVal() {
-        return this.userId;
-    }
 }
