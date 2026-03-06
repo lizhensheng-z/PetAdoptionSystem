@@ -1,5 +1,6 @@
 package com.yr.pet.ai.controller;
 
+import com.yr.pet.adoption.common.R;
 import com.yr.pet.adoption.common.UserContext;
 import com.yr.pet.ai.model.vo.DaySessionVO;
 import com.yr.pet.ai.model.vo.QuestionRecordVO;
@@ -15,7 +16,7 @@ import java.util.List;
 
 //@Api(tags = "AI会话服务")
 @RestController
-@RequestMapping("/ai/session")
+@RequestMapping("/api/ai/session")
 public class SessionController {
     @Resource
     private SessionService sessionService;
@@ -26,8 +27,9 @@ public class SessionController {
      */
 //    @ApiOperation("按天分组获取会话列表")
     @GetMapping("/listGroupByDay")
-    public List<DaySessionVO> listGroupByDay(@RequestParam(defaultValue = "7", required = false) @Max(30) Integer days){
-        return sessionService.queryRecentDays(days);
+    public R<List<DaySessionVO>> listGroupByDay(@RequestParam(defaultValue = "7", required = false) @Max(30) Integer days){
+        List<DaySessionVO> daySessionVOS = sessionService.queryRecentDays(days);
+        return R.ok(daySessionVOS);
 
     }
     /**
@@ -35,34 +37,37 @@ public class SessionController {
      */
 //    @ApiOperation("删除会话")
     @PostMapping("/delete")
-    public void delete(@RequestParam("sessionId") Long sessionId) {
+    public R<Void> delete(@RequestParam("sessionId") Long sessionId) {
         sessionService.deleteSession(sessionId);
-
+        return R.ok();
     }
     /**
      * 删除当天会话
      */
 //    @ApiOperation("删除某天所有会话")
     @PostMapping("/delete/day")
-    public void delete(@RequestParam Date date) {
+    public R<Void> delete(@RequestParam Date date) {
         sessionService.deleteDaySession(date);
+        return R.ok();
     }
     /**
      * 获取会话详情
      */
 //    @ApiOperation("获取会话详情")
     @PostMapping("/detail")
-    public List<QuestionRecordVO> detail(@RequestParam("sessionId") Long sessionId) {
-        return sessionService.getSessionDetail(sessionId);
+    public R<List<QuestionRecordVO>> detail(@RequestParam("sessionId") Long sessionId) {
+        List<QuestionRecordVO> sessionDetail = sessionService.getSessionDetail(sessionId);
+        return R.ok(sessionDetail);
     }
 //    @ApiOperation("查询当天所有会话内容详情")
     @GetMapping("/chat/history/day")
-    public List<QuestionRecordVO> getDayChatHistory(@RequestParam String day) {  // yyyy-MM-dd) {
+    public R<List<QuestionRecordVO>> getDayChatHistory(@RequestParam String day) {  // yyyy-MM-dd) {
         Long userId = UserContext.getUserId();
         if (userId != null){
-            return questionRecordService.getDayChatDetails(userId, day);
+            List<QuestionRecordVO> dayChatDetails = questionRecordService.getDayChatDetails(userId, day);
+            return R.ok(dayChatDetails);
         }
-        return List.of(); // Return an empty list if userId is null
+        return R.ok(List.of());// Return an empty list if userId is null
     }
 
 

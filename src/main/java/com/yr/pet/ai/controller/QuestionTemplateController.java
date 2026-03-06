@@ -2,6 +2,7 @@ package com.yr.pet.ai.controller;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yr.pet.adoption.common.R;
 import com.yr.pet.ai.model.dto.QuestionTemplateDTO;
 import com.yr.pet.ai.model.dto.TemplatePageQueryDTO;
 import com.yr.pet.ai.model.entity.QuestionTemplateDO;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 //@Api(tags = "ai问题模板服务")
 @RestController
-@RequestMapping("/ai/questionTemplate")
+@RequestMapping("/api/ai/questionTemplate")
 public class QuestionTemplateController {
 
     @Resource
@@ -30,8 +31,9 @@ public class QuestionTemplateController {
      */
 //    @ApiOperation("批量新增问题模板")
     @PostMapping("/batchCreate")
-    public void batchCreate(@RequestBody List<QuestionTemplateDTO> createDTOList) {
-       questionTemplateService.batchCreate(createDTOList);
+    public R<Void> batchCreate(@RequestBody List<QuestionTemplateDTO> createDTOList) {
+        questionTemplateService.batchCreate(createDTOList);
+        return R.ok();
 
     }
 //    @ApiOperation("更新问题模板")
@@ -48,8 +50,9 @@ public class QuestionTemplateController {
 
 //    @ApiOperation("获取所有模板列表")
     @GetMapping("/page")
-    public Page<QuestionTemplateDO> list(TemplatePageQueryDTO param) {
-        return questionTemplateService.pageQuestionTemplate(param);
+    public R<Page<QuestionTemplateDO>> list(TemplatePageQueryDTO param) {
+        Page<QuestionTemplateDO> questionTemplateDOPage = questionTemplateService.pageQuestionTemplate(param);
+        return R.ok(questionTemplateDOPage);
     }
 
 

@@ -16,6 +16,6 @@
         FROM ai_question_record
         WHERE session_id = #{sessionId}
           AND user_id    = #{userId}
-        ORDER BY create_time DESC
+        ORDER BY create_time
     </select>
 </mapper>

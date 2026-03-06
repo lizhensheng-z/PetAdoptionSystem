@@ -52,12 +52,15 @@ spring:
 
 # MyBatis-Plus 配置
 mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml  # ✅ 必须用 classpath* 扫描所有模块
+  type-aliases-package: com.yr.pet
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境打印SQL，线上建议关闭
   global-config:
     db-config:
-      id-type: ASSIGN_ID            # 雪花ID（也可 AUTO）
+      id-type: ASSIGN_ID
+# 雪花ID（也可 AUTO）
 
 # Springdoc / Swagger
 springdoc:

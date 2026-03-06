@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 李振生
  */
 @RestController
-@RequestMapping("/ai/record")
+@RequestMapping("/api/ai/record")
 public class QuestionRecordController {
 
 
