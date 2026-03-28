@@ -134,7 +134,8 @@ public class DeepSeekClient {
      * @param sessionDO 会话
      * @return 流式SSE响应（转发给前端）
      */
-    private @NotNull Flux<ServerSentEvent<String>> getAuthorization(String content, AiChatRequest request, SessionDO sessionDO) {
+    private @NotNull Flux<ServerSentEvent<String>>
+    getAuthorization(String content, AiChatRequest request, SessionDO sessionDO) {
         Long questionRequestId;
         Long sessionId = sessionDO.getSessionId();
         try {
