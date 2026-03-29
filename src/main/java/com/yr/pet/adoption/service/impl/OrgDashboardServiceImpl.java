@@ -47,16 +47,16 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
     @Override
     public OrgStatisticsResponse getStatistics(Long orgUserId) {
         OrgStatisticsResponse response = new OrgStatisticsResponse();
-        
+
         // 获取机构的所有宠物ID
         List<PetEntity> orgPets = petMapper.selectList(
                 Wrappers.lambdaQuery(PetEntity.class)
                         .eq(PetEntity::getOrgUserId, orgUserId)
                         .eq(PetEntity::getDeleted, 0)
         );
-        
+
         List<Long> orgPetIds = orgPets.stream().map(PetEntity::getId).collect(Collectors.toList());
-        
+
         // 统计各状态宠物数量
         response.setTotalPets((int) orgPets.stream()
                 .filter(p -> List.of("PUBLISHED", "APPLYING").contains(p.getStatus()))
@@ -70,12 +70,24 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
         response.setUnderReviewPets((int) orgPets.stream()
                 .filter(p -> "PENDING_AUDIT".equals(p.getStatus()))
                 .count());
-        
+
+        // 物种分布统计
+        response.setCatCount((int) orgPets.stream()
+                .filter(p -> "CAT".equals(p.getSpecies()))
+                .count());
+        response.setDogCount((int) orgPets.stream()
+                .filter(p -> "DOG".equals(p.getSpecies()))
+                .count());
+        response.setOtherCount((int) orgPets.stream()
+                .filter(p -> "OTHER".equals(p.getSpecies()))
+                .count());
+
         if (orgPetIds.isEmpty()) {
             response.setPendingApplications(0);
             response.setMonthlyAdoptions(0);
             response.setTotalAdoptions(0);
             response.setPendingFollowups(0);
+            response.setAdoptionTrend(List.of());
         } else {
             // 待处理申请数
             response.setPendingApplications(Math.toIntExact(adoptionApplicationMapper.selectCount(
@@ -84,7 +96,7 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
                             .in(AdoptionApplicationEntity::getStatus, "SUBMITTED", "UNDER_REVIEW")
                             .eq(AdoptionApplicationEntity::getDeleted, 0)
             )));
-            
+
             // 本月领养数
             LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
             response.setMonthlyAdoptions(Math.toIntExact(adoptionApplicationMapper.selectCount(
@@ -94,7 +106,7 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
                             .ge(AdoptionApplicationEntity::getDecidedTime, startOfMonth)
                             .eq(AdoptionApplicationEntity::getDeleted, 0)
             )));
-            
+
             // 累计领养数
             response.setTotalAdoptions(Math.toIntExact(adoptionApplicationMapper.selectCount(
                     Wrappers.lambdaQuery(AdoptionApplicationEntity.class)
@@ -102,11 +114,11 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
                             .eq(AdoptionApplicationEntity::getStatus, "APPROVED")
                             .eq(AdoptionApplicationEntity::getDeleted, 0)
             )));
-            
+
             // 待回访数 - 使用更安全的查询方式
             LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
             long pendingFollowups = 0;
-            
+
             // 先查询符合条件的领养记录
             List<AdoptionApplicationEntity> adoptedApplications = adoptionApplicationMapper.selectList(
                     Wrappers.lambdaQuery(AdoptionApplicationEntity.class)
@@ -115,12 +127,12 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
                             .lt(AdoptionApplicationEntity::getDecidedTime, sevenDaysAgo)
                             .eq(AdoptionApplicationEntity::getDeleted, 0)
             );
-            
+
             if (!adoptedApplications.isEmpty()) {
                 List<Long> adoptedPetIds = adoptedApplications.stream()
                         .map(AdoptionApplicationEntity::getPetId)
                         .collect(Collectors.toList());
-                
+
                 if (!adoptedPetIds.isEmpty()) {
                     // 查询这些宠物是否有7天内的打卡记录
                     long recentCheckinCount = checkinPostMapper.selectCount(
@@ -129,17 +141,49 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
                                     .ge(CheckinPostEntity::getCreateTime, sevenDaysAgo)
                                     .eq(CheckinPostEntity::getDeleted, 0)
                     );
-                    
+
                     pendingFollowups = adoptedPetIds.size() - recentCheckinCount;
                 }
             }
-            
+
             response.setPendingFollowups((int) Math.max(0, pendingFollowups));
+
+            // 近半年领养趋势
+            response.setAdoptionTrend(getMonthlyAdoptionTrend(orgPetIds));
         }
-        
+
         response.setTimestamp(LocalDateTime.now());
-        
+
         return response;
+    }
+
+    /**
+     * 获取近半年领养趋势
+     */
+    private List<OrgStatisticsResponse.MonthlyAdoption> getMonthlyAdoptionTrend(List<Long> orgPetIds) {
+        List<OrgStatisticsResponse.MonthlyAdoption> trend = new java.util.ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDateTime monthStart = now.minusMonths(i).withDayOfMonth(1).atStartOfDay();
+            LocalDateTime monthEnd = monthStart.plusMonths(1);
+
+            long count = adoptionApplicationMapper.selectCount(
+                    Wrappers.lambdaQuery(AdoptionApplicationEntity.class)
+                            .in(AdoptionApplicationEntity::getPetId, orgPetIds)
+                            .eq(AdoptionApplicationEntity::getStatus, "APPROVED")
+                            .ge(AdoptionApplicationEntity::getDecidedTime, monthStart)
+                            .lt(AdoptionApplicationEntity::getDecidedTime, monthEnd)
+                            .eq(AdoptionApplicationEntity::getDeleted, 0)
+            );
+
+            OrgStatisticsResponse.MonthlyAdoption monthly = new OrgStatisticsResponse.MonthlyAdoption();
+            monthly.setMonth(monthStart.getMonthValue() + "月");
+            monthly.setCount((int) count);
+            trend.add(monthly);
+        }
+
+        return trend;
     }
 
     @Override
@@ -306,6 +350,10 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
         todos.sort((a, b) -> {
             int priorityOrder = getPriorityOrder(a.getPriority()) - getPriorityOrder(b.getPriority());
             if (priorityOrder != 0) return priorityOrder;
+            // 处理 submitTime 为 null 的情况
+            if (a.getSubmitTime() == null && b.getSubmitTime() == null) return 0;
+            if (a.getSubmitTime() == null) return 1;  // null 排在后面
+            if (b.getSubmitTime() == null) return -1;
             return a.getSubmitTime().compareTo(b.getSubmitTime());
         });
 
@@ -439,22 +487,129 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
     @Override
     public FollowupReminderListResponse getFollowupReminders(Long orgUserId, String status, Integer limit) {
         FollowupReminderListResponse response = new FollowupReminderListResponse();
-        
+        List<FollowupReminderResponse> reminders = new java.util.ArrayList<>();
+
         // 获取机构的所有宠物ID
         List<Long> orgPetIds = petMapper.selectList(
                 Wrappers.lambdaQuery(PetEntity.class)
                         .eq(PetEntity::getOrgUserId, orgUserId)
                         .eq(PetEntity::getDeleted, 0)
         ).stream().map(PetEntity::getId).toList();
-        
+
         if (orgPetIds.isEmpty()) {
-            response.setList(List.of());
+            response.setList(reminders);
             return response;
         }
-        
-        // 简化实现，实际应该根据回访状态筛选
-        response.setList(List.of()); // 简化实现
-        
+
+        if (limit == null) {
+            limit = 10;
+        }
+
+        // 查询领养成功的申请
+        List<AdoptionApplicationEntity> adoptedApplications = adoptionApplicationMapper.selectList(
+                Wrappers.lambdaQuery(AdoptionApplicationEntity.class)
+                        .in(AdoptionApplicationEntity::getPetId, orgPetIds)
+                        .eq(AdoptionApplicationEntity::getStatus, "APPROVED")
+                        .eq(AdoptionApplicationEntity::getDeleted, 0)
+                        .orderByDesc(AdoptionApplicationEntity::getDecidedTime)
+        );
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime sevenDaysAgo = now.minusDays(7);
+        LocalDateTime threeDaysLater = now.plusDays(3);
+
+        for (AdoptionApplicationEntity app : adoptedApplications) {
+            // 查询最近的打卡记录
+            CheckinPostEntity latestCheckin = checkinPostMapper.selectOne(
+                    Wrappers.lambdaQuery(CheckinPostEntity.class)
+                            .eq(CheckinPostEntity::getPetId, app.getPetId())
+                            .eq(CheckinPostEntity::getUserId, app.getUserId())
+                            .eq(CheckinPostEntity::getDeleted, 0)
+                            .orderByDesc(CheckinPostEntity::getCreateTime)
+                            .last("LIMIT 1")
+            );
+
+            // 计算下次回访日期（领养后7天，之后每14天）
+            LocalDateTime adoptedTime = app.getDecidedTime();
+            LocalDateTime nextFollowupDate;
+            int overdueDays = 0;
+            String reminderStatus;
+
+            if (latestCheckin != null) {
+                // 有打卡记录，下次回访日期为最后一次打卡后14天
+                nextFollowupDate = latestCheckin.getCreateTime().plusDays(14);
+            } else {
+                // 无打卡记录，下次回访日期为领养后7天
+                nextFollowupDate = adoptedTime.plusDays(7);
+            }
+
+            // 计算超期天数
+            if (nextFollowupDate.isBefore(now)) {
+                overdueDays = (int) java.time.temporal.ChronoUnit.DAYS.between(nextFollowupDate.toLocalDate(), now.toLocalDate());
+                reminderStatus = "overdue";
+            } else if (nextFollowupDate.isBefore(threeDaysLater)) {
+                reminderStatus = "soon";
+            } else {
+                reminderStatus = "normal";
+            }
+
+            // 根据状态筛选
+            if (status != null && !"all".equals(status)) {
+                if (!status.equals(reminderStatus)) {
+                    continue;
+                }
+            }
+
+            // 只显示需要提醒的（即将到期或已超期）
+            if (!"overdue".equals(reminderStatus) && !"soon".equals(reminderStatus)) {
+                continue;
+            }
+
+            FollowupReminderResponse reminder = new FollowupReminderResponse();
+            reminder.setId(app.getId());
+            reminder.setPetId(app.getPetId());
+            reminder.setAdoptionApplicationId(app.getId());
+            reminder.setAdoptedTime(adoptedTime);
+            reminder.setUserId(app.getUserId());
+            reminder.setNextFollowupDate(nextFollowupDate);
+            reminder.setOverdueDays(overdueDays);
+            reminder.setStatus(reminderStatus);
+
+            // 获取宠物信息
+            PetEntity pet = petMapper.selectById(app.getPetId());
+            if (pet != null) {
+                reminder.setPetName(pet.getName());
+                reminder.setPetCoverUrl(pet.getCoverUrl());
+            }
+
+            // 获取领养人信息
+            UserEntity user = userMapper.selectById(app.getUserId());
+            if (user != null) {
+                reminder.setUserName(user.getUsername());
+                reminder.setUserPhone(user.getPhone());
+            }
+
+            // 设置上次回访时间（即最近打卡时间）
+            if (latestCheckin != null) {
+                reminder.setLastFollowupTime(latestCheckin.getCreateTime());
+            }
+
+            reminders.add(reminder);
+
+            if (reminders.size() >= limit) {
+                break;
+            }
+        }
+
+        // 按超期天数降序排序（最紧急的在前）
+        reminders.sort((a, b) -> {
+            if (a.getOverdueDays() == null && b.getOverdueDays() == null) return 0;
+            if (a.getOverdueDays() == null) return 1;
+            if (b.getOverdueDays() == null) return -1;
+            return b.getOverdueDays().compareTo(a.getOverdueDays());
+        });
+
+        response.setList(reminders);
         return response;
     }
 
