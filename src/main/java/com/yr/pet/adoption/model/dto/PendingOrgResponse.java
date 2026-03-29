@@ -38,6 +38,18 @@ public class PendingOrgResponse implements Serializable {
     @Schema(description = "机构地址")
     private String address;
 
+    @Schema(description = "省")
+    private String province;
+
+    @Schema(description = "市")
+    private String city;
+
+    @Schema(description = "区/县")
+    private String district;
+
+    @Schema(description = "机构封面URL")
+    private String coverUrl;
+
     @Schema(description = "机构简介")
     private String description;
 

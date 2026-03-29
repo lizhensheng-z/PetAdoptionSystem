@@ -4,8 +4,10 @@ import com.yr.pet.adoption.common.R;
 import com.yr.pet.adoption.model.dto.AdminDashboardChartsResponse;
 import com.yr.pet.adoption.model.dto.AdminDashboardStatsResponse;
 import com.yr.pet.adoption.model.dto.OrgAuditRequest;
+import com.yr.pet.adoption.model.dto.OrgProfileResponse;
 import com.yr.pet.adoption.model.dto.PendingOrgResponse;
 import com.yr.pet.adoption.service.AdminDashboardService;
+import com.yr.pet.adoption.service.OrgProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +31,7 @@ import java.util.List;
 public class AdminDashboardController {
 
     private final AdminDashboardService adminDashboardService;
+    private final OrgProfileService orgProfileService;
 
     /**
      * 获取管理后台核心指标统计数据
@@ -67,6 +70,20 @@ public class AdminDashboardController {
         
         List<PendingOrgResponse> pendingOrgs = adminDashboardService.getPendingOrganizations(limit);
         return R.ok(pendingOrgs);
+    }
+
+    /**
+     * 获取机构详情（管理员查看）
+     */
+    @GetMapping("/organizations/{id}")
+    @PreAuthorize("hasAuthority('admin:organization:audit')")
+    @Operation(summary = "获取机构详情", description = "管理员查看机构详细信息，用于审核")
+    public R<OrgProfileResponse> getOrganizationDetail(
+            @Parameter(description = "机构用户ID", example = "123")
+            @PathVariable Long id) {
+
+        OrgProfileResponse profile = orgProfileService.getOrgProfile(id);
+        return R.ok(profile);
     }
 
     /**

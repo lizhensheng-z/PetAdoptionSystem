@@ -152,6 +152,10 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             response.setApplyTime(profile.getCreateTime());
             response.setLicenseNo(profile.getLicenseNo());
             response.setAddress(profile.getAddress());
+            response.setProvince(profile.getProvince());
+            response.setCity(profile.getCity());
+            response.setDistrict(profile.getDistrict());
+            response.setCoverUrl(profile.getCoverUrl());
             response.setVerifyStatus(profile.getVerifyStatus());
             response.setVerifyRemark(profile.getVerifyRemark());
             return response;
