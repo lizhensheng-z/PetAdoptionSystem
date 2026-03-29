@@ -145,14 +145,199 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
     @Override
     public TodoListResponse getTodos(Long orgUserId, String type, Integer limit) {
         TodoListResponse response = new TodoListResponse();
-        
-        // 这里简化实现，实际应该根据type筛选不同类型的待办事项
-        // 实际实现需要复杂的SQL查询和关联
-        
-        response.setTodos(List.of()); // 简化实现
-        response.setTotalCount(0);
-        
+        List<TodoItemResponse> todos = new java.util.ArrayList<>();
+
+        // 获取机构的所有宠物ID
+        List<Long> orgPetIds = petMapper.selectList(
+                Wrappers.lambdaQuery(PetEntity.class)
+                        .eq(PetEntity::getOrgUserId, orgUserId)
+                        .eq(PetEntity::getDeleted, 0)
+        ).stream().map(PetEntity::getId).collect(Collectors.toList());
+
+        if (limit == null) {
+            limit = 10;
+        }
+
+        // 1. 待处理的申请
+        if (type == null || "application".equals(type)) {
+            if (!orgPetIds.isEmpty()) {
+                List<AdoptionApplicationEntity> pendingApplications = adoptionApplicationMapper.selectList(
+                        Wrappers.lambdaQuery(AdoptionApplicationEntity.class)
+                                .in(AdoptionApplicationEntity::getPetId, orgPetIds)
+                                .in(AdoptionApplicationEntity::getStatus, "SUBMITTED", "UNDER_REVIEW", "INTERVIEW", "HOME_VISIT")
+                                .eq(AdoptionApplicationEntity::getDeleted, 0)
+                                .orderByAsc(AdoptionApplicationEntity::getCreateTime)
+                                .last("LIMIT " + limit)
+                );
+
+                for (AdoptionApplicationEntity app : pendingApplications) {
+                    TodoItemResponse item = new TodoItemResponse();
+                    item.setId(app.getId());
+                    item.setType("application");
+                    item.setStatus(app.getStatus());
+                    item.setSubmitTime(app.getCreateTime());
+                    item.setPetId(app.getPetId());
+
+                    // 设置优先级
+                    if ("INTERVIEW".equals(app.getStatus()) || "HOME_VISIT".equals(app.getStatus())) {
+                        item.setPriority("high");
+                    } else {
+                        item.setPriority("medium");
+                    }
+
+                    // 获取宠物信息
+                    PetEntity pet = petMapper.selectById(app.getPetId());
+                    if (pet != null) {
+                        item.setPetName(pet.getName());
+                        item.setPetCoverUrl(pet.getCoverUrl());
+                    }
+
+                    // 获取申请人信息
+                    UserEntity user = userMapper.selectById(app.getUserId());
+                    if (user != null) {
+                        item.setUserName(user.getUsername());
+                        item.setUserAvatar(user.getAvatar());
+                        item.setUserId(user.getId());
+                    }
+
+                    // 构建标题
+                    String statusText = getStatusText(app.getStatus());
+                    item.setTitle(item.getUserName() + statusText + "领养\"" + item.getPetName() + "\"");
+
+                    todos.add(item);
+                }
+            }
+        }
+
+        // 2. 待审核的宠物
+        if (type == null || "audit".equals(type)) {
+            List<PetEntity> pendingAuditPets = petMapper.selectList(
+                    Wrappers.lambdaQuery(PetEntity.class)
+                            .eq(PetEntity::getOrgUserId, orgUserId)
+                            .eq(PetEntity::getStatus, "PENDING_AUDIT")
+                            .eq(PetEntity::getDeleted, 0)
+                            .orderByAsc(PetEntity::getUpdateTime)
+                            .last("LIMIT " + limit)
+            );
+
+            for (PetEntity pet : pendingAuditPets) {
+                TodoItemResponse item = new TodoItemResponse();
+                item.setId(pet.getId());
+                item.setType("audit");
+                item.setPetId(pet.getId());
+                item.setPetName(pet.getName());
+                item.setPetCoverUrl(pet.getCoverUrl());
+                item.setStatus("PENDING_AUDIT");
+                item.setSubmitTime(pet.getUpdateTime());
+                item.setPriority("medium");
+                item.setTitle("宠物\"" + pet.getName() + "\"等待审核发布");
+
+                todos.add(item);
+            }
+        }
+
+        // 3. 需要回访的领养人
+        if (type == null || "followup".equals(type)) {
+            if (!orgPetIds.isEmpty()) {
+                LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+
+                List<AdoptionApplicationEntity> adoptedApplications = adoptionApplicationMapper.selectList(
+                        Wrappers.lambdaQuery(AdoptionApplicationEntity.class)
+                                .in(AdoptionApplicationEntity::getPetId, orgPetIds)
+                                .eq(AdoptionApplicationEntity::getStatus, "APPROVED")
+                                .lt(AdoptionApplicationEntity::getDecidedTime, sevenDaysAgo)
+                                .eq(AdoptionApplicationEntity::getDeleted, 0)
+                );
+
+                for (AdoptionApplicationEntity app : adoptedApplications) {
+                    // 检查最近7天是否有打卡记录
+                    long recentCheckins = checkinPostMapper.selectCount(
+                            Wrappers.lambdaQuery(CheckinPostEntity.class)
+                                    .eq(CheckinPostEntity::getPetId, app.getPetId())
+                                    .ge(CheckinPostEntity::getCreateTime, LocalDateTime.now().minusDays(7))
+                                    .eq(CheckinPostEntity::getDeleted, 0)
+                    );
+
+                    if (recentCheckins == 0) {
+                        TodoItemResponse item = new TodoItemResponse();
+                        item.setId(app.getId());
+                        item.setType("followup");
+                        item.setPetId(app.getPetId());
+                        item.setUserId(app.getUserId());
+                        item.setAdoptionTime(app.getDecidedTime());
+
+                        // 计算超期天数
+                        long overdueDays = java.time.temporal.ChronoUnit.DAYS.between(
+                                app.getDecidedTime().toLocalDate(), LocalDate.now());
+                        item.setOverdueDays((int) overdueDays);
+
+                        // 设置优先级
+                        if (overdueDays > 30) {
+                            item.setPriority("urgent");
+                        } else if (overdueDays > 14) {
+                            item.setPriority("high");
+                        } else {
+                            item.setPriority("medium");
+                        }
+
+                        // 获取宠物信息
+                        PetEntity pet = petMapper.selectById(app.getPetId());
+                        if (pet != null) {
+                            item.setPetName(pet.getName());
+                            item.setPetCoverUrl(pet.getCoverUrl());
+                        }
+
+                        // 获取领养人信息
+                        UserEntity user = userMapper.selectById(app.getUserId());
+                        if (user != null) {
+                            item.setUserName(user.getUsername());
+                            item.setUserAvatar(user.getAvatar());
+                        }
+
+                        item.setTitle("领养人\"" + item.getUserName() + "\"已" + overdueDays + "天未打卡，需要回访");
+
+                        todos.add(item);
+                    }
+                }
+            }
+        }
+
+        // 按优先级和时间排序
+        todos.sort((a, b) -> {
+            int priorityOrder = getPriorityOrder(a.getPriority()) - getPriorityOrder(b.getPriority());
+            if (priorityOrder != 0) return priorityOrder;
+            return a.getSubmitTime().compareTo(b.getSubmitTime());
+        });
+
+        // 限制返回数量
+        if (todos.size() > limit) {
+            todos = todos.subList(0, limit);
+        }
+
+        response.setTodos(todos);
+        response.setTotalCount(todos.size());
+
         return response;
+    }
+
+    private String getStatusText(String status) {
+        return switch (status) {
+            case "SUBMITTED" -> "提交了";
+            case "UNDER_REVIEW" -> "正在审核";
+            case "INTERVIEW" -> "预约了面谈";
+            case "HOME_VISIT" -> "预约了家访";
+            default -> "申请了";
+        };
+    }
+
+    private int getPriorityOrder(String priority) {
+        return switch (priority) {
+            case "urgent" -> 0;
+            case "high" -> 1;
+            case "medium" -> 2;
+            case "low" -> 3;
+            default -> 4;
+        };
     }
 
     @Override
