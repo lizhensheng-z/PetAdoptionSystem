@@ -26,11 +26,13 @@ public class PetCreateRequestV2 {
     private String species;
 
     @Size(max = 64, message = "品种不能超过64字符")
+    @NotNull(message = "品种不能为空")
     private String breed;
 
+    @NotNull(message = "性别不能为空")
     private String gender;
 
-
+    @NotNull(message = "年龄不能为空")
     private Integer ageMonths;
     private Integer ageYears;
 
