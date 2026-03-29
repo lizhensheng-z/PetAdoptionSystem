@@ -57,6 +57,12 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
     @Autowired
     private UserFavoriteMapper userFavoriteMapper;
 
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
     @Override
     public PageResult<PetListResponse> getPetList(PetListRequest request) {
         // 构建查询条件
@@ -220,7 +226,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
     }
 
     /**
-     * 分析用户偏好（基于收藏和申请历史）
+     * 分析用户偏好（基于收藏、申请历史和用户手动设置）
      */
     private UserPreferenceInfo analyzeUserPreference(Long userId) {
         if (userId == null) {
@@ -229,7 +235,24 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
 
         UserPreferenceInfo preference = new UserPreferenceInfo();
 
-        // 统计用户收藏的宠物物种和品种
+        // ========== 1. 读取用户手动设置的偏好 ==========
+        UserEntity user = userMapper.selectById(userId);
+        if (user != null && user.getPreferenceJson() != null && !user.getPreferenceJson().isEmpty()) {
+            try {
+                Map<String, Object> userPreference = objectMapper.readValue(user.getPreferenceJson(), Map.class);
+                preference.setPetTypes((List<String>) userPreference.get("petTypes"));
+                preference.setAgeRange((List<Integer>) userPreference.get("ageRange"));
+                preference.setGender((String) userPreference.get("gender"));
+                preference.setTags((List<String>) userPreference.get("tags"));
+                preference.setDistance((Integer) userPreference.get("distance"));
+                preference.setSizes((List<String>) userPreference.get("sizes"));
+                preference.setHealthRequirements((List<String>) userPreference.get("healthRequirements"));
+            } catch (Exception e) {
+                // 解析失败，忽略手动设置的偏好
+            }
+        }
+
+        // ========== 2. 分析用户收藏行为 ==========
         LambdaQueryWrapper<UserFavoriteEntity> favoriteWrapper = new LambdaQueryWrapper<>();
         favoriteWrapper.eq(UserFavoriteEntity::getUserId, userId);
         List<UserFavoriteEntity> favorites = userFavoriteMapper.selectList(favoriteWrapper);
@@ -263,7 +286,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
                 .orElse(null));
         }
 
-        // 统计用户申请的宠物物种和品种
+        // ========== 3. 分析用户申请行为 ==========
         LambdaQueryWrapper<AdoptionApplicationEntity> appWrapper = new LambdaQueryWrapper<>();
         appWrapper.eq(AdoptionApplicationEntity::getUserId, userId);
         List<AdoptionApplicationEntity> applications = adoptionApplicationMapper.selectList(appWrapper);
@@ -318,71 +341,155 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
 
     /**
      * 计算推荐分数
-     * 维度：偏好匹配(30分) + 新鲜度(25分) + 距离(20分) + 热度(15分) + 随机(10分)
+     * 维度：偏好匹配(40分) + 新鲜度(20分) + 距离(20分) + 热度(10分) + 随机(10分)
      */
     private int calculateRecommendScore(PetEntity pet, UserPreferenceInfo preference,
                                        BigDecimal userLng, BigDecimal userLat) {
         int score = 0;
         Random random = new Random();
 
-        // 1. 偏好匹配 (30分)
+        // 1. 偏好匹配 (40分)
         if (preference != null) {
-            // 物种匹配 (15分)
-            if (preference.getFavoriteSpecies() != null &&
-                preference.getFavoriteSpecies().equals(pet.getSpecies())) {
-                score += 15;
-            } else if (preference.getAppliedSpecies() != null &&
-                       preference.getAppliedSpecies().equals(pet.getSpecies())) {
-                score += 10;
+            // 1.1 宠物类型匹配 (10分) - 用户手动设置
+            if (preference.getPetTypes() != null && !preference.getPetTypes().isEmpty()) {
+                if (preference.getPetTypes().contains(pet.getSpecies())) {
+                    score += 10;
+                }
+            } else {
+                // 如果用户未设置，使用行为分析
+                if (preference.getFavoriteSpecies() != null &&
+                    preference.getFavoriteSpecies().equals(pet.getSpecies())) {
+                    score += 8;
+                } else if (preference.getAppliedSpecies() != null &&
+                           preference.getAppliedSpecies().equals(pet.getSpecies())) {
+                    score += 5;
+                }
             }
 
-            // 品种匹配 (15分)
+            // 1.2 性别匹配 (5分) - 用户手动设置
+            if (preference.getGender() != null && !preference.getGender().isEmpty()) {
+                if (preference.getGender().equals(pet.getGender())) {
+                    score += 5;
+                }
+            }
+
+            // 1.3 年龄范围匹配 (5分) - 用户手动设置
+            if (preference.getAgeRange() != null && preference.getAgeRange().size() == 2) {
+                int minAge = preference.getAgeRange().get(0);
+                int maxAge = preference.getAgeRange().get(1);
+                if (pet.getAgeMonth() != null &&
+                    pet.getAgeMonth() >= minAge && pet.getAgeMonth() <= maxAge) {
+                    score += 5;
+                }
+            }
+
+            // 1.4 体型匹配 (5分) - 用户手动设置
+            if (preference.getSizes() != null && !preference.getSizes().isEmpty()) {
+                if (pet.getSize() != null && preference.getSizes().contains(pet.getSize())) {
+                    score += 5;
+                }
+            }
+
+            // 1.5 品种匹配 (10分) - 行为分析
             if (preference.getFavoriteBreed() != null &&
                 preference.getFavoriteBreed().equals(pet.getBreed())) {
-                score += 15;
+                score += 10;
             } else if (preference.getAppliedBreed() != null &&
                        preference.getAppliedBreed().equals(pet.getBreed())) {
-                score += 10;
+                score += 6;
+            }
+
+            // 1.6 标签匹配 (5分) - 用户手动设置
+            if (preference.getTags() != null && !preference.getTags().isEmpty() && pet.getId() != null) {
+                // 获取宠物的标签
+                List<String> petTags = getPetTagNames(pet.getId());
+                long matchCount = petTags.stream()
+                    .filter(tag -> preference.getTags().contains(tag))
+                    .count();
+                if (matchCount > 0) {
+                    score += Math.min(5, (int) matchCount * 2);
+                }
             }
         }
 
-        // 2. 新鲜度 (25分) - 最近7天发布得满分，每超7天减5分
+        // 2. 新鲜度 (20分) - 最近7天发布得满分，每超7天减3分
         if (pet.getPublishedTime() != null) {
             long daysSincePublish = java.time.temporal.ChronoUnit.DAYS.between(
                 pet.getPublishedTime().toLocalDate(), java.time.LocalDate.now());
-            int freshScore = Math.max(0, 25 - (int)(daysSincePublish / 7) * 5);
+            int freshScore = Math.max(0, 20 - (int)(daysSincePublish / 7) * 3);
             score += freshScore;
         }
 
-        // 3. 距离因素 (20分) - 5km内满分，每增加5km减4分
+        // 3. 距离因素 (20分) - 5km内满分，每增加5km减3分
         if (userLng != null && userLat != null && pet.getLng() != null && pet.getLat() != null) {
             BigDecimal distance = calculateDistance(userLng, userLat, pet.getLng(), pet.getLat());
             if (distance != null) {
-                int distanceScore = Math.max(0, 20 - distance.divide(BigDecimal.valueOf(5), 0, RoundingMode.DOWN).intValue() * 4);
+                // 考虑用户设置的距离偏好
+                int maxDistance = (preference != null && preference.getDistance() != null)
+                    ? preference.getDistance() : 50;
+                // 如果超出用户偏好距离，大幅减分
+                if (distance.intValue() > maxDistance) {
+                    score -= 10;
+                }
+                int distanceScore = Math.max(0, 20 - distance.divide(BigDecimal.valueOf(5), 0, RoundingMode.DOWN).intValue() * 3);
                 score += distanceScore;
             }
         }
 
-        // 4. 热度因素 (15分) - 基于收藏数
+        // 4. 热度因素 (10分) - 基于收藏数
         int favoriteCount = getFavoriteCount(pet.getId());
-        int hotScore = Math.min(15, favoriteCount);
+        int hotScore = Math.min(10, favoriteCount);
         score += hotScore;
 
         // 5. 随机因子 (10分) - 增加推荐多样性
         score += random.nextInt(11);
 
-        return Math.min(100, score);
+        return Math.min(100, Math.max(0, score));
+    }
+
+    /**
+     * 获取宠物的标签名称列表
+     */
+    private List<String> getPetTagNames(Long petId) {
+        LambdaQueryWrapper<PetTagEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PetTagEntity::getPetId, petId);
+        List<PetTagEntity> petTags = petTagMapper.selectList(wrapper);
+
+        if (petTags.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> tagIds = petTags.stream()
+            .map(PetTagEntity::getTagId)
+            .collect(Collectors.toList());
+
+        List<TagEntity> tags = tagMapper.selectBatchIds(tagIds);
+        return tags.stream()
+            .map(TagEntity::getName)
+            .filter(StringUtils::hasText)
+            .collect(Collectors.toList());
     }
 
     /**
      * 用户偏好信息内部类
      */
     private static class UserPreferenceInfo {
+        // 基于用户行为分析的偏好
         private String favoriteSpecies;  // 用户最常收藏的物种
         private String favoriteBreed;    // 用户最常收藏的品种
         private String appliedSpecies;   // 用户最常申请的物种
         private String appliedBreed;     // 用户最常申请的品种
 
+        // 用户手动设置的偏好
+        private List<String> petTypes;           // 宠物类型偏好
+        private List<Integer> ageRange;          // 年龄范围 [最小, 最大]
+        private String gender;                   // 性别偏好
+        private List<String> tags;               // 标签偏好
+        private Integer distance;                // 距离偏好（公里）
+        private List<String> sizes;              // 体型偏好
+        private List<String> healthRequirements; // 健康要求
+
+        // Getter and Setter
         public String getFavoriteSpecies() { return favoriteSpecies; }
         public void setFavoriteSpecies(String favoriteSpecies) { this.favoriteSpecies = favoriteSpecies; }
         public String getFavoriteBreed() { return favoriteBreed; }
@@ -391,6 +498,20 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         public void setAppliedSpecies(String appliedSpecies) { this.appliedSpecies = appliedSpecies; }
         public String getAppliedBreed() { return appliedBreed; }
         public void setAppliedBreed(String appliedBreed) { this.appliedBreed = appliedBreed; }
+        public List<String> getPetTypes() { return petTypes; }
+        public void setPetTypes(List<String> petTypes) { this.petTypes = petTypes; }
+        public List<Integer> getAgeRange() { return ageRange; }
+        public void setAgeRange(List<Integer> ageRange) { this.ageRange = ageRange; }
+        public String getGender() { return gender; }
+        public void setGender(String gender) { this.gender = gender; }
+        public List<String> getTags() { return tags; }
+        public void setTags(List<String> tags) { this.tags = tags; }
+        public Integer getDistance() { return distance; }
+        public void setDistance(Integer distance) { this.distance = distance; }
+        public List<String> getSizes() { return sizes; }
+        public void setSizes(List<String> sizes) { this.sizes = sizes; }
+        public List<String> getHealthRequirements() { return healthRequirements; }
+        public void setHealthRequirements(List<String> healthRequirements) { this.healthRequirements = healthRequirements; }
     }
 
     @Override

@@ -234,12 +234,21 @@ public class DeepSeekClient {
             int statusCode = response.statusCode().value();
             // 1. 通过状态码匹配枚举实例
             DeepSeekErrorCode errorCode = DeepSeekErrorCode.fromStatusCode(statusCode);
-            // 2. 解析API返回的原始错误信息（可选，用于补充详情）
-            return response.bodyToMono(JsonNode.class)
-                    .defaultIfEmpty(objectMapper.createObjectNode())
-                    .flatMap(errorJson -> {
+            // 2. 先读取原始响应体为字符串，避免内容类型不兼容问题
+            return response.bodyToMono(String.class)
+                    .defaultIfEmpty("")
+                    .flatMap(errorBody -> {
+                        // 3. 尝试解析JSON，失败则使用空节点
+                        JsonNode errorJson = objectMapper.createObjectNode();
+                        try {
+                            if (errorBody != null && !errorBody.isEmpty()) {
+                                errorJson = objectMapper.readTree(errorBody);
+                            }
+                        } catch (JsonProcessingException e) {
+                            log.warn("无法解析错误响应体为JSON，原始内容: {}", errorBody);
+                        }
                         handleErrorByCode(finalQuestionRequestId, errorJson, errorCode);
-                        // 5. 返回前端友好提示（枚举的简洁提示）
+                        // 4. 返回前端友好提示（枚举的简洁提示）
                         return Mono.error(new ValidateException(DeepSeekErrorCode.ERROR_TO_USER));
                     });
         };
