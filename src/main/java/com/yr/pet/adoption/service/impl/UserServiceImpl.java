@@ -110,15 +110,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         user.setStatus("NORMAL");
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
-        
+
         save(user);
 
+        // 创建用户信用账户，初始信用分为60分
+        createCreditAccount(user.getId());
 
         // 如果是机构用户，自动创建机构资料
         if ("ORG".equals(registerRequest.getRole())) {
             createOrgProfile(user.getId());
         }
-        
+
         return user;
     }
 
@@ -135,6 +137,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         orgProfile.setCreateTime(LocalDateTime.now());
         orgProfile.setUpdateTime(LocalDateTime.now());
         orgProfileMapper.insert(orgProfile);
+    }
+
+    /**
+     * 创建用户信用账户
+     * @param userId 用户ID
+     */
+    private void createCreditAccount(Long userId) {
+        CreditAccountEntity creditAccount = new CreditAccountEntity();
+        creditAccount.setUserId(userId);
+        creditAccount.setScore(60); // 初始信用分60分
+        creditAccount.setLevel(0);  // 初始等级为0（新注册）
+        creditAccount.setLastCalcTime(LocalDateTime.now());
+        creditAccount.setUpdateTime(LocalDateTime.now());
+        creditAccountMapper.insert(creditAccount);
     }
 
     @Override
