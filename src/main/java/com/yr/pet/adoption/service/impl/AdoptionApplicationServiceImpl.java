@@ -76,8 +76,22 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
         AdoptionApplicationEntity application = new AdoptionApplicationEntity();
         application.setPetId(request.getPetId());
         application.setUserId(userId);
+
+        // 将申请信息合并到 questionnaire 中保存
         try {
-            application.setQuestionnaireJson(objectMapper.writeValueAsString(request.getQuestionnaire()));
+            Map<String, Object> fullQuestionnaire = new java.util.HashMap<>();
+
+            // 添加基本信息
+            fullQuestionnaire.put("reason", request.getReason());
+            fullQuestionnaire.put("contactInfo", request.getContactInfo());
+            fullQuestionnaire.put("remarks", request.getRemarks());
+
+            // 添加问卷数据
+            if (request.getQuestionnaire() != null) {
+                fullQuestionnaire.putAll(request.getQuestionnaire());
+            }
+
+            application.setQuestionnaireJson(objectMapper.writeValueAsString(fullQuestionnaire));
         } catch (JsonProcessingException e) {
             throw new BusinessException("问卷数据格式错误");
         }
