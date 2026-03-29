@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -243,7 +244,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         stats.setAdoptions((int) adoptionApplicationService.getMyApplications(userId, "APPROVED", 1, 1, "create_time", "desc").getTotal());
         stats.setPendingApplications((int) adoptionApplicationService.getMyApplications(userId, "SUBMITTED", 1, 1, "create_time", "desc").getTotal());
 
-        LocalDateTime monthStart = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
         stats.setMonthlyCheckins(checkinPostService.getMyCheckins(userId, null, 1, 1000).getTotal().intValue());
 
         return stats;

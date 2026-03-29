@@ -165,7 +165,7 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
         LocalDateTime now = LocalDateTime.now();
 
         for (int i = 5; i >= 0; i--) {
-            LocalDateTime monthStart = now.minusMonths(i).withDayOfMonth(1).atStartOfDay();
+            LocalDateTime monthStart = now.minusMonths(i).toLocalDate().withDayOfMonth(1).atStartOfDay();
             LocalDateTime monthEnd = monthStart.plusMonths(1);
 
             long count = adoptionApplicationMapper.selectCount(
@@ -309,6 +309,7 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
                         item.setPetId(app.getPetId());
                         item.setUserId(app.getUserId());
                         item.setAdoptionTime(app.getDecidedTime());
+                        item.setSubmitTime(app.getDecidedTime()); // 使用领养时间作为排序依据
 
                         // 计算超期天数
                         long overdueDays = java.time.temporal.ChronoUnit.DAYS.between(
