@@ -1,0 +1,820 @@
+-- MySQL dump 10.13  Distrib 8.4.8, for macos15 (arm64)
+--
+-- Host: localhost    Database: petAdoptionSystem
+-- ------------------------------------------------------
+-- Server version	8.4.8
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `adoption_application`
+--
+
+DROP TABLE IF EXISTS `adoption_application`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `adoption_application` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `pet_id` bigint NOT NULL COMMENT '宠物ID（pet.id）',
+  `user_id` bigint NOT NULL COMMENT '领养人用户ID（sys_user.id，role=USER）',
+  `questionnaire_json` json DEFAULT NULL COMMENT '申请问卷JSON',
+  `status` varchar(24) NOT NULL DEFAULT 'SUBMITTED' COMMENT '申请状态：SUBMITTED/UNDER_REVIEW/INTERVIEW/HOME_VISIT/APPROVED/REJECTED/CANCELLED',
+  `reject_reason` varchar(255) DEFAULT NULL COMMENT '拒绝原因（机构填写）',
+  `org_remark` varchar(255) DEFAULT NULL COMMENT '机构备注',
+  `decided_time` datetime DEFAULT NULL COMMENT '最终决定时间（通过/拒绝）',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_status` (`user_id`,`status`) COMMENT '用户申请状态索引',
+  KEY `idx_pet_status` (`pet_id`,`status`) COMMENT '宠物申请状态索引',
+  KEY `idx_create_time` (`create_time`) COMMENT '创建时间索引'
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='领养申请表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `adoption_application`
+--
+
+LOCK TABLES `adoption_application` WRITE;
+/*!40000 ALTER TABLE `adoption_application` DISABLE KEYS */;
+INSERT INTO `adoption_application` VALUES (1,4,2,'{\"housing\": \"自有住房\", \"dailyTime\": \"1-2小时\", \"experience\": \"无经验\", \"familySize\": \"1人\", \"emergencyPlan\": \"aaaaaa\", \"monthlyBudget\": \"500以下\", \"vaccinationPlan\": \"会按时接种\"}','CANCELLED',NULL,NULL,NULL,0,'2026-02-15 11:45:32','2026-02-15 12:04:24'),(3,4,2,'{\"housing\": \"租房\", \"dailyTime\": \"3-4小时\", \"experience\": \"1-3年\", \"familySize\": \"2人\", \"emergencyPlan\": \"啊啊啊啊啊啊啊\", \"monthlyBudget\": \"500-1000\", \"vaccinationPlan\": \"暂不确定\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-15 15:31:01','2026-02-15 15:31:01'),(4,1,4,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-14 16:55:27','2026-02-15 16:55:27'),(5,2,5,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','UNDER_REVIEW',NULL,'资料审核中',NULL,0,'2026-02-13 16:55:27','2026-02-15 16:55:27'),(6,3,6,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-12 16:55:27','2026-02-15 16:55:27'),(7,4,7,'{\"housing\": \"租房\", \"experience\": \"有5年养狗经验\"}','UNDER_REVIEW',NULL,'等待面谈',NULL,0,'2026-02-11 16:55:27','2026-02-15 16:55:27'),(8,5,8,'{\"housing\": \"自有住房\", \"experience\": \"有1年养猫经验\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-10 16:55:27','2026-02-15 16:55:27'),(9,6,4,'{\"housing\": \"租房\", \"experience\": \"有3年养猫经验\"}','UNDER_REVIEW',NULL,'资料审核中',NULL,0,'2026-02-09 16:55:27','2026-02-15 16:55:27'),(10,7,5,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-08 16:55:27','2026-02-15 16:55:27'),(11,8,6,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','UNDER_REVIEW',NULL,'等待审核',NULL,0,'2026-02-07 16:55:27','2026-02-15 16:55:27'),(12,9,7,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-14 16:55:27',0,'2026-02-10 16:55:27','2026-02-15 16:55:27'),(13,10,8,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-13 16:55:27',0,'2026-02-09 16:55:27','2026-02-15 16:55:27'),(14,11,4,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-02-12 16:55:27',0,'2026-02-08 16:55:27','2026-02-15 16:55:27'),(15,12,5,'{\"housing\": \"租房\", \"experience\": \"有5年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-11 16:55:27',0,'2026-02-07 16:55:27','2026-02-15 16:55:27'),(16,13,6,'{\"housing\": \"自有住房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-10 16:55:27',0,'2026-02-06 16:55:27','2026-02-15 16:55:27'),(17,14,7,'{\"housing\": \"租房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-09 16:55:27',0,'2026-02-05 16:55:27','2026-02-15 16:55:27'),(18,15,8,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-02-08 16:55:27',0,'2026-02-04 16:55:27','2026-02-15 16:55:27'),(19,16,4,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-07 16:55:27',0,'2026-02-03 16:55:27','2026-02-15 16:55:27'),(20,17,5,'{\"housing\": \"自有住房\", \"experience\": \"有5年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-06 16:55:27',0,'2026-02-02 16:55:27','2026-02-15 16:55:27'),(21,18,6,'{\"housing\": \"租房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-05 16:55:27',0,'2026-02-01 16:55:27','2026-02-15 16:55:27'),(22,19,7,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-04 16:55:27',0,'2026-01-31 16:55:27','2026-02-15 16:55:27'),(23,20,8,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-03 16:55:27',0,'2026-01-30 16:55:27','2026-02-15 16:55:27'),(24,21,4,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-01-21 16:55:27',0,'2026-01-16 16:55:27','2026-02-15 16:55:27'),(25,22,5,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-01-16 16:55:27',0,'2026-01-11 16:55:27','2026-02-15 16:55:27'),(26,23,6,'{\"housing\": \"自有住房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2026-01-11 16:55:27',0,'2026-01-06 16:55:27','2026-02-15 16:55:27'),(27,24,7,'{\"housing\": \"租房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-01-06 16:55:27',0,'2026-01-01 16:55:27','2026-02-15 16:55:27'),(28,25,8,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-01-01 16:55:27',0,'2025-12-27 16:55:27','2026-02-15 16:55:27'),(29,26,4,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2025-12-27 16:55:27',0,'2025-12-22 16:55:27','2026-02-15 16:55:27'),(30,27,5,'{\"housing\": \"自有住房\", \"experience\": \"有5年养狗经验\"}','APPROVED',NULL,'审核通过','2025-12-22 16:55:27',0,'2025-12-17 16:55:27','2026-02-15 16:55:27'),(31,28,6,'{\"housing\": \"租房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2025-12-17 16:55:27',0,'2025-12-12 16:55:27','2026-02-15 16:55:27'),(32,29,7,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2025-12-12 16:55:27',0,'2025-12-07 16:55:27','2026-02-15 16:55:27'),(33,30,8,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2025-12-07 16:55:27',0,'2025-12-02 16:55:27','2026-02-15 16:55:27'),(34,28,4,'{\"housing\": \"自有住房\", \"experience\": \"有5年养狗经验\"}','APPROVED',NULL,'审核通过','2025-12-17 16:55:27',0,'2025-12-07 16:55:27','2026-02-15 16:55:27'),(35,29,5,'{\"housing\": \"租房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-01-16 16:55:27',0,'2026-01-06 16:55:27','2026-02-15 16:55:27'),(36,30,6,'{\"housing\": \"自有住房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-01-31 16:55:27',0,'2026-01-21 16:55:27','2026-02-15 16:55:27'),(37,31,7,'{\"housing\": \"租房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-07 16:55:27',0,'2026-01-28 16:55:27','2026-02-15 16:55:27'),(38,9,4,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'7887887','2026-02-16 17:43:13',0,'2026-02-14 17:02:07','2026-02-16 17:43:13'),(39,10,5,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','UNDER_REVIEW',NULL,'资料审核中',NULL,0,'2026-02-13 17:02:07','2026-02-15 17:02:07'),(40,11,6,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','HOME_VISIT',NULL,'11111',NULL,0,'2026-02-12 17:02:07','2026-02-18 16:52:47'),(41,12,7,'{\"housing\": \"租房\", \"experience\": \"有5年养狗经验\"}','UNDER_REVIEW',NULL,'等待面谈',NULL,0,'2026-02-11 17:02:07','2026-02-15 17:02:07'),(42,13,8,'{\"housing\": \"自有住房\", \"experience\": \"有1年养猫经验\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-10 17:02:07','2026-02-15 17:02:07'),(43,14,4,'{\"housing\": \"租房\", \"experience\": \"有3年养猫经验\"}','CANCELLED',NULL,'资料审核中',NULL,0,'2026-02-09 17:02:07','2026-02-17 11:27:43'),(44,15,5,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-08 17:02:07','2026-02-15 17:02:07'),(45,16,6,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','UNDER_REVIEW',NULL,'等待审核',NULL,0,'2026-02-07 17:02:07','2026-02-15 17:02:07'),(46,17,7,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-14 17:02:07',0,'2026-02-10 17:02:07','2026-02-15 17:02:07'),(47,18,8,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-13 17:02:07',0,'2026-02-09 17:02:07','2026-02-15 17:02:07'),(48,19,4,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-02-12 17:02:07',0,'2026-02-08 17:02:07','2026-02-15 17:02:07'),(49,20,5,'{\"housing\": \"租房\", \"experience\": \"有5年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-11 17:02:07',0,'2026-02-07 17:02:07','2026-02-15 17:02:07'),(50,21,6,'{\"housing\": \"自有住房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-10 17:02:07',0,'2026-02-06 17:02:07','2026-02-15 17:02:07'),(51,22,7,'{\"housing\": \"租房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-09 17:02:07',0,'2026-02-05 17:02:07','2026-02-15 17:02:07'),(52,23,8,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-02-08 17:02:07',0,'2026-02-04 17:02:07','2026-02-15 17:02:07'),(53,24,4,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-07 17:02:07',0,'2026-02-03 17:02:07','2026-02-15 17:02:07'),(54,25,5,'{\"housing\": \"自有住房\", \"experience\": \"有5年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-06 17:02:07',0,'2026-02-02 17:02:07','2026-02-15 17:02:07'),(55,26,6,'{\"housing\": \"租房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-05 17:02:07',0,'2026-02-01 17:02:07','2026-02-15 17:02:07'),(56,27,7,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-02-04 17:02:07',0,'2026-01-31 17:02:07','2026-02-15 17:02:07'),(57,28,8,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-02-03 17:02:07',0,'2026-01-30 17:02:07','2026-02-15 17:02:07'),(58,49,4,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-01-21 17:02:07',0,'2026-01-16 17:02:07','2026-02-15 17:02:07'),(59,50,5,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2026-01-16 17:02:07',0,'2026-01-11 17:02:07','2026-02-15 17:02:07'),(60,51,6,'{\"housing\": \"自有住房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2026-01-11 17:02:07',0,'2026-01-06 17:02:07','2026-02-15 17:02:07'),(61,52,7,'{\"housing\": \"租房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2026-01-06 17:02:07',0,'2026-01-01 17:02:07','2026-02-15 17:02:07'),(62,53,8,'{\"housing\": \"自有住房\", \"experience\": \"首次养宠\"}','APPROVED',NULL,'审核通过','2026-01-01 17:02:07',0,'2025-12-27 17:02:07','2026-02-15 17:02:07'),(63,54,4,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2025-12-27 17:02:07',0,'2025-12-22 17:02:07','2026-02-15 17:02:07'),(64,55,5,'{\"housing\": \"自有住房\", \"experience\": \"有5年养狗经验\"}','APPROVED',NULL,'审核通过','2025-12-22 17:02:07',0,'2025-12-17 17:02:07','2026-02-15 17:02:07'),(65,56,6,'{\"housing\": \"租房\", \"experience\": \"有1年养猫经验\"}','APPROVED',NULL,'审核通过','2025-12-17 17:02:07',0,'2025-12-12 17:02:07','2026-02-15 17:02:07'),(66,57,7,'{\"housing\": \"自有住房\", \"experience\": \"有3年养猫经验\"}','APPROVED',NULL,'审核通过','2025-12-12 17:02:07',0,'2025-12-07 17:02:07','2026-02-15 17:02:07'),(67,58,8,'{\"housing\": \"租房\", \"experience\": \"有2年养狗经验\"}','APPROVED',NULL,'审核通过','2025-12-07 17:02:07',0,'2025-12-02 17:02:07','2026-02-15 17:02:07'),(68,62,4,'{\"housing\": \"自有住房\", \"dailyTime\": \"3-4小时\", \"experience\": \"1-3年\", \"familySize\": \"2人\", \"emergencyPlan\": \"1111111111\", \"monthlyBudget\": \"500-1000\", \"vaccinationPlan\": \"会按时接种\"}','CANCELLED',NULL,NULL,NULL,0,'2026-02-18 16:36:43','2026-02-18 16:37:06'),(69,61,3,'{\"housing\": \"自有住房\", \"dailyTime\": \"1-2小时\", \"experience\": \"无经验\", \"familySize\": \"1人\", \"emergencyPlan\": \"111111111111\", \"monthlyBudget\": \"500以下\", \"vaccinationPlan\": \"会按时接种\"}','APPROVED',NULL,'11111','2026-02-18 17:51:47',0,'2026-02-18 17:50:54','2026-02-18 17:51:47'),(70,31,4,'{\"housing\": \"自有住房\", \"dailyTime\": \"1-2小时\", \"experience\": \"无经验\", \"familySize\": \"1人\", \"emergencyPlan\": \"11111111\", \"monthlyBudget\": \"500以下\", \"vaccinationPlan\": \"会按时接种\"}','SUBMITTED',NULL,NULL,NULL,0,'2026-02-19 12:43:54','2026-02-19 12:43:54');
+/*!40000 ALTER TABLE `adoption_application` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `adoption_flow_log`
+--
+
+DROP TABLE IF EXISTS `adoption_flow_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `adoption_flow_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `application_id` bigint NOT NULL COMMENT '申请ID（adoption_application.id）',
+  `from_status` varchar(24) DEFAULT NULL COMMENT '变更前状态',
+  `to_status` varchar(24) NOT NULL COMMENT '变更后状态',
+  `operator_id` bigint NOT NULL COMMENT '操作者用户ID（机构或管理员 sys_user.id）',
+  `remark` varchar(255) DEFAULT NULL COMMENT '流转备注',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_app_id` (`application_id`) COMMENT '申请流转索引',
+  KEY `idx_operator_time` (`operator_id`,`create_time`) COMMENT '操作者时间索引'
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='申请状态流转日志表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `adoption_flow_log`
+--
+
+LOCK TABLES `adoption_flow_log` WRITE;
+/*!40000 ALTER TABLE `adoption_flow_log` DISABLE KEYS */;
+INSERT INTO `adoption_flow_log` VALUES (1,1,NULL,'SUBMITTED',2,'用户提交申请','2026-02-15 11:45:32'),(2,1,'SUBMITTED','CANCELLED',2,'用户撤回申请: 啊啊啊啊啊啊','2026-02-15 12:04:24'),(3,3,NULL,'SUBMITTED',2,'用户提交申请','2026-02-15 15:31:01'),(4,38,NULL,'SUBMITTED',3,'用户提交申请','2026-02-14 17:02:07'),(5,39,'SUBMITTED','UNDER_REVIEW',3,'机构开始审核','2026-02-13 17:02:07'),(6,46,'SUBMITTED','UNDER_REVIEW',3,'机构开始审核','2026-02-11 17:02:07'),(7,46,'UNDER_REVIEW','INTERVIEW',3,'安排面谈','2026-02-12 17:02:07'),(8,46,'INTERVIEW','APPROVED',3,'审核通过','2026-02-14 17:02:07'),(9,38,'SUBMITTED','UNDER_REVIEW',3,'1111111111','2026-02-16 17:42:09'),(10,38,'UNDER_REVIEW','INTERVIEW',3,'11111111 面谈时间: 2026-02-17T00:00','2026-02-16 17:42:58'),(11,38,'INTERVIEW','HOME_VISIT',3,'12345678','2026-02-16 17:43:05'),(12,38,'HOME_VISIT','APPROVED',3,'7887887','2026-02-16 17:43:13'),(13,40,'SUBMITTED','UNDER_REVIEW',3,'1111111','2026-02-16 17:43:56'),(14,40,'UNDER_REVIEW','INTERVIEW',3,'1111111 面谈时间: 2026-02-25T00:00','2026-02-16 17:44:03'),(15,43,'UNDER_REVIEW','CANCELLED',4,'用户撤回申请: 没时间','2026-02-17 11:27:43'),(16,68,NULL,'SUBMITTED',4,'用户提交申请','2026-02-18 16:36:43'),(17,68,'SUBMITTED','CANCELLED',4,'用户撤回申请: 不想申请了','2026-02-18 16:37:06'),(18,40,'INTERVIEW','HOME_VISIT',3,'11111','2026-02-18 16:52:47'),(19,69,NULL,'SUBMITTED',3,'用户提交申请','2026-02-18 17:50:54'),(20,69,'SUBMITTED','UNDER_REVIEW',3,'11111','2026-02-18 17:51:27'),(21,69,'UNDER_REVIEW','INTERVIEW',3,'111111 面谈时间: 2026-02-25T00:00','2026-02-18 17:51:38'),(22,69,'INTERVIEW','HOME_VISIT',3,'111111','2026-02-18 17:51:43'),(23,69,'HOME_VISIT','APPROVED',3,'11111','2026-02-18 17:51:47'),(24,70,NULL,'SUBMITTED',4,'用户提交申请','2026-02-19 12:43:54');
+/*!40000 ALTER TABLE `adoption_flow_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ai_question_record`
+--
+
+DROP TABLE IF EXISTS `ai_question_record`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ai_question_record` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint DEFAULT NULL COMMENT '用户ID',
+  `type` tinyint DEFAULT NULL COMMENT '类型，1问题 2回复',
+  `session_id` bigint DEFAULT NULL COMMENT '用户会话id',
+  `question_id` bigint DEFAULT NULL COMMENT '用户问题id（系统）',
+  `response_id` varchar(64) DEFAULT NULL COMMENT 'deepseek回复id（外部）',
+  `req_text` text COMMENT '请求原文',
+  `resp_text` text COMMENT '回复文本-原文',
+  `tokens_used` int DEFAULT NULL COMMENT 'tokens使用量',
+  `status` tinyint DEFAULT NULL COMMENT '状态，0失败 1成功 2中断',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `req_param` mediumtext COMMENT '请求体',
+  `resp_result` mediumtext COMMENT '响应体',
+  `if_delete` tinyint(1) DEFAULT '0' COMMENT '是否删除(0否 1是)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `modify_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `modify_by` bigint DEFAULT NULL COMMENT '修改人',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_session_id` (`session_id`),
+  KEY `idx_question_id` (`question_id`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI-用户提问记录';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ai_question_record`
+--
+
+LOCK TABLES `ai_question_record` WRITE;
+/*!40000 ALTER TABLE `ai_question_record` DISABLE KEYS */;
+INSERT INTO `ai_question_record` VALUES (1,2,1,1,2029172830953009154,NULL,'你好',NULL,NULL,NULL,NULL,'{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}',NULL,0,'2026-03-04 20:31:18',2,'2026-03-04 20:31:17',NULL),(2,2,2,1,2029172830953009154,'d7024dd8-e634-4040-93fe-5227849c5df9','你好','你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\n\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨',78,1,'SUCCESS','{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}','{\"id\":\"d7024dd8-e634-4040-93fe-5227849c5df9\",\"object\":\"chat.completion.chunk\",\"created\":1772627478,\"model\":\"deepseek-chat\",\"system_fingerprint\":\"fp_eaab8d114b_prod0820_fp8_kvcache\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":5,\"completion_tokens\":73,\"total_tokens\":78,\"prompt_tokens_details\":{\"cached_tokens\":0},\"prompt_cache_hit_tokens\":0,\"prompt_cache_miss_tokens\":5}}',0,'2026-03-04 20:31:23',2,'2026-03-04 20:31:22',NULL),(3,2,1,1,2029174583844925442,NULL,'你好',NULL,NULL,NULL,NULL,'{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}',NULL,0,'2026-03-04 20:38:16',2,'2026-03-04 20:38:15',NULL),(4,2,2,1,2029174583844925442,'dfbf2cdb-a37f-4049-aedd-fc8776db5ce4','你好','你好！😊 很高兴再次见到你！看来我们又见面了呢～\n\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨',137,1,'SUCCESS','{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}','{\"id\":\"dfbf2cdb-a37f-4049-aedd-fc8776db5ce4\",\"object\":\"chat.completion.chunk\",\"created\":1772627896,\"model\":\"deepseek-chat\",\"system_fingerprint\":\"fp_eaab8d114b_prod0820_fp8_kvcache\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"你好！😊 很高兴再次见到你！看来我们又见面了呢～\\n\\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":83,\"completion_tokens\":54,\"total_tokens\":137,\"prompt_tokens_details\":{\"cached_tokens\":64},\"prompt_cache_hit_tokens\":64,\"prompt_cache_miss_tokens\":19}}',0,'2026-03-04 20:38:20',2,'2026-03-04 20:38:19',NULL),(5,2,1,1,2029176254289395714,NULL,'hh',NULL,NULL,NULL,NULL,'{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！😊 很高兴再次见到你！看来我们又见面了呢～\\n\\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨\"},{\"role\":\"user\",\"content\":\"hh\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}',NULL,0,'2026-03-04 20:44:54',2,'2026-03-04 20:44:53',NULL),(6,2,2,1,2029176254289395714,'2478ad68-2011-4bc1-b19d-ad5fa2cafef8','hh','哈哈～ 😄 看来今天心情不错呀！  \n“hh”收到～ 是想轻松聊聊天，还是有什么好玩的事情想分享呢？  \n我随时在线，等你随时“抛话题”哦～ ✨',188,1,'SUCCESS','{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！😊 很高兴再次见到你！看来我们又见面了呢～\\n\\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨\"},{\"role\":\"user\",\"content\":\"hh\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}','{\"id\":\"2478ad68-2011-4bc1-b19d-ad5fa2cafef8\",\"object\":\"chat.completion.chunk\",\"created\":1772628294,\"model\":\"deepseek-chat\",\"system_fingerprint\":\"fp_eaab8d114b_prod0820_fp8_kvcache\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"哈哈～ 😄 看来今天心情不错呀！  \\n“hh”收到～ 是想轻松聊聊天，还是有什么好玩的事情想分享呢？  \\n我随时在线，等你随时“抛话题”哦～ ✨\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":142,\"completion_tokens\":46,\"total_tokens\":188,\"prompt_tokens_details\":{\"cached_tokens\":128},\"prompt_cache_hit_tokens\":128,\"prompt_cache_miss_tokens\":14}}',0,'2026-03-04 20:44:58',2,'2026-03-04 20:44:57',NULL),(7,2,1,1,2029176483617161218,NULL,'今天多少度',NULL,NULL,NULL,NULL,'{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！😊 很高兴再次见到你！看来我们又见面了呢～\\n\\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨\"},{\"role\":\"user\",\"content\":\"hh\"},{\"role\":\"assistant\",\"content\":\"哈哈～ 😄 看来今天心情不错呀！  \\n“hh”收到～ 是想轻松聊聊天，还是有什么好玩的事情想分享呢？  \\n我随时在线，等你随时“抛话题”哦～ ✨\"},{\"role\":\"user\",\"content\":\"今天多少度\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}',NULL,0,'2026-03-04 20:45:49',2,'2026-03-04 20:45:48',NULL),(8,2,2,1,2029176483617161218,'56ea9413-71f0-42bd-9c32-a68e9ea35952','今天多少度','你的问题可能需要补充一点信息哦～ 🌍  \n**请问你指的是哪个城市/地区呢？** 或者如果你方便告诉我大致位置（比如“北京”、“上海”），我可以帮你查询实时天气和温度！ 😊  \n\n（如果你只是想测试我的功能——那我可要骄傲地说：我能联网查天气，但需要具体地点才能精准回答～）',270,1,'SUCCESS','{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！😊 很高兴再次见到你！看来我们又见面了呢～\\n\\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨\"},{\"role\":\"user\",\"content\":\"hh\"},{\"role\":\"assistant\",\"content\":\"哈哈～ 😄 看来今天心情不错呀！  \\n“hh”收到～ 是想轻松聊聊天，还是有什么好玩的事情想分享呢？  \\n我随时在线，等你随时“抛话题”哦～ ✨\"},{\"role\":\"user\",\"content\":\"今天多少度\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}','{\"id\":\"56ea9413-71f0-42bd-9c32-a68e9ea35952\",\"object\":\"chat.completion.chunk\",\"created\":1772628348,\"model\":\"deepseek-chat\",\"system_fingerprint\":\"fp_eaab8d114b_prod0820_fp8_kvcache\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"你的问题可能需要补充一点信息哦～ 🌍  \\n**请问你指的是哪个城市/地区呢？** 或者如果你方便告诉我大致位置（比如“北京”、“上海”），我可以帮你查询实时天气和温度！ 😊  \\n\\n（如果你只是想测试我的功能——那我可要骄傲地说：我能联网查天气，但需要具体地点才能精准回答～）\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":195,\"completion_tokens\":75,\"total_tokens\":270,\"prompt_tokens_details\":{\"cached_tokens\":128},\"prompt_cache_hit_tokens\":128,\"prompt_cache_miss_tokens\":67}}',0,'2026-03-04 20:45:54',2,'2026-03-04 20:45:53',NULL),(9,2,1,1,2029176554563813378,NULL,'长沙今天多少度',NULL,NULL,NULL,NULL,'{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！😊 很高兴再次见到你！看来我们又见面了呢～\\n\\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨\"},{\"role\":\"user\",\"content\":\"hh\"},{\"role\":\"assistant\",\"content\":\"哈哈～ 😄 看来今天心情不错呀！  \\n“hh”收到～ 是想轻松聊聊天，还是有什么好玩的事情想分享呢？  \\n我随时在线，等你随时“抛话题”哦～ ✨\"},{\"role\":\"user\",\"content\":\"今天多少度\"},{\"role\":\"assistant\",\"content\":\"你的问题可能需要补充一点信息哦～ 🌍  \\n**请问你指的是哪个城市/地区呢？** 或者如果你方便告诉我大致位置（比如“北京”、“上海”），我可以帮你查询实时天气和温度！ 😊  \\n\\n（如果你只是想测试我的功能——那我可要骄傲地说：我能联网查天气，但需要具体地点才能精准回答～）\"},{\"role\":\"user\",\"content\":\"长沙今天多少度\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}',NULL,0,'2026-03-04 20:46:06',2,'2026-03-04 20:46:05',NULL),(10,2,2,1,2029176554563813378,'ae9c3c13-14e3-40ab-86f5-e56c20bce7b0','长沙今天多少度','由于我目前无法直接访问实时天气数据，建议你可以通过以下方式快速查询长沙今天的温度：\n\n1. **打开天气应用或网站**：比如中国天气网、手机自带天气应用等。  \n2. **搜索“长沙天气”**：在搜索引擎或地图App中输入即可看到实时温度。  \n3. **语音助手**：对手机说“今天长沙温度多少？”。\n\n如果你需要其他帮助（比如出行建议、穿搭推荐），尽管告诉我，我可以根据温度信息为你提供建议哦！😊  \n（也提醒你：最近天气多变，出门前记得确认实时更新～）',404,1,'SUCCESS','{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！很高兴见到你！😊 我是DeepSeek，由深度求索公司创造的AI助手。无论你有什么问题、需要什么帮助，或者只是想聊聊天，我都很乐意为你提供支持！\\n\\n我可以帮你解答各种问题，协助处理文档，进行创作和分析等等。有什么我可以为你做的吗？我会尽我所能热情地帮助你！✨\"},{\"role\":\"user\",\"content\":\"你好\"},{\"role\":\"assistant\",\"content\":\"你好！😊 很高兴再次见到你！看来我们又见面了呢～\\n\\n今天有什么我可以帮助你的吗？无论是学习、工作、生活中的问题，还是想要聊聊天、分享想法，我都很乐意陪伴你！请随时告诉我你需要什么帮助吧～ ✨\"},{\"role\":\"user\",\"content\":\"hh\"},{\"role\":\"assistant\",\"content\":\"哈哈～ 😄 看来今天心情不错呀！  \\n“hh”收到～ 是想轻松聊聊天，还是有什么好玩的事情想分享呢？  \\n我随时在线，等你随时“抛话题”哦～ ✨\"},{\"role\":\"user\",\"content\":\"今天多少度\"},{\"role\":\"assistant\",\"content\":\"你的问题可能需要补充一点信息哦～ 🌍  \\n**请问你指的是哪个城市/地区呢？** 或者如果你方便告诉我大致位置（比如“北京”、“上海”），我可以帮你查询实时天气和温度！ 😊  \\n\\n（如果你只是想测试我的功能——那我可要骄傲地说：我能联网查天气，但需要具体地点才能精准回答～）\"},{\"role\":\"user\",\"content\":\"长沙今天多少度\"}],\"stream\":true,\"max_tokens\":2048,\"temperature\":0.7}','{\"id\":\"ae9c3c13-14e3-40ab-86f5-e56c20bce7b0\",\"object\":\"chat.completion.chunk\",\"created\":1772628365,\"model\":\"deepseek-chat\",\"system_fingerprint\":\"fp_eaab8d114b_prod0820_fp8_kvcache\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"由于我目前无法直接访问实时天气数据，建议你可以通过以下方式快速查询长沙今天的温度：\\n\\n1. **打开天气应用或网站**：比如中国天气网、手机自带天气应用等。  \\n2. **搜索“长沙天气”**：在搜索引擎或地图App中输入即可看到实时温度。  \\n3. **语音助手**：对手机说“今天长沙温度多少？”。\\n\\n如果你需要其他帮助（比如出行建议、穿搭推荐），尽管告诉我，我可以根据温度信息为你提供建议哦！😊  \\n（也提醒你：最近天气多变，出门前记得确认实时更新～）\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":278,\"completion_tokens\":126,\"total_tokens\":404,\"prompt_tokens_details\":{\"cached_tokens\":256},\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":22}}',0,'2026-03-04 20:46:14',2,'2026-03-04 20:46:13',NULL);
+/*!40000 ALTER TABLE `ai_question_record` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ai_question_template`
+--
+
+DROP TABLE IF EXISTS `ai_question_template`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ai_question_template` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `question` text COMMENT '问题内容',
+  `answer` text COMMENT '答案内容',
+  `sort_no` int DEFAULT NULL COMMENT '排序号',
+  `type` tinyint DEFAULT NULL COMMENT '类型，1-问题模板，2-免责声明',
+  `if_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除(0否 1是)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `modify_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `modify_by` bigint DEFAULT NULL COMMENT '修改人',
+  PRIMARY KEY (`id`),
+  KEY `idx_type_sort` (`type`,`sort_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI-系统问题模板';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ai_question_template`
+--
+
+LOCK TABLES `ai_question_template` WRITE;
+/*!40000 ALTER TABLE `ai_question_template` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ai_question_template` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ai_session`
+--
+
+DROP TABLE IF EXISTS `ai_session`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ai_session` (
+  `session_id` bigint NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) DEFAULT NULL COMMENT '会话标题',
+  `if_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除(0否 1是)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `modify_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `modify_by` bigint DEFAULT NULL COMMENT '修改人',
+  PRIMARY KEY (`session_id`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI用户会话';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ai_session`
+--
+
+LOCK TABLES `ai_session` WRITE;
+/*!40000 ALTER TABLE `ai_session` DISABLE KEYS */;
+INSERT INTO `ai_session` VALUES (1,'你好',0,'2026-03-04 20:31:18',2,'2026-03-04 20:31:17',NULL);
+/*!40000 ALTER TABLE `ai_session` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `audit_log`
+--
+
+DROP TABLE IF EXISTS `audit_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `audit_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `actor_id` bigint NOT NULL COMMENT '操作者用户ID（sys_user.id）',
+  `action` varchar(64) NOT NULL COMMENT '动作（如BAN_USER/REVIEW_PET/DELETE_PET）',
+  `target_type` varchar(32) NOT NULL COMMENT '目标类型（USER/PET/APPLICATION/CONFIG等）',
+  `target_id` bigint DEFAULT NULL COMMENT '目标ID',
+  `detail_json` json DEFAULT NULL COMMENT '操作详情JSON',
+  `ip` varchar(64) DEFAULT NULL COMMENT '操作者IP',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_actor_time` (`actor_id`,`create_time`) COMMENT '操作者时间索引',
+  KEY `idx_action` (`action`) COMMENT '动作索引'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='审计日志表（关键操作留痕）';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `audit_log`
+--
+
+LOCK TABLES `audit_log` WRITE;
+/*!40000 ALTER TABLE `audit_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `audit_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `checkin_post`
+--
+
+DROP TABLE IF EXISTS `checkin_post`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `checkin_post` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID（sys_user.id）',
+  `pet_id` bigint NOT NULL COMMENT '宠物ID（pet.id）',
+  `content` varchar(2000) DEFAULT NULL COMMENT '打卡内容',
+  `media_urls` json DEFAULT NULL COMMENT '媒体URL数组JSON',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_time` (`user_id`,`create_time`) COMMENT '用户打卡时间索引',
+  KEY `idx_pet_time` (`pet_id`,`create_time`) COMMENT '宠物打卡时间索引'
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='领养后打卡表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `checkin_post`
+--
+
+LOCK TABLES `checkin_post` WRITE;
+/*!40000 ALTER TABLE `checkin_post` DISABLE KEYS */;
+INSERT INTO `checkin_post` VALUES (1,4,28,'小金现在越来越可爱了，完全融入了我们的家庭！','[\"https://example.com/checkin1-1.jpg\", \"https://example.com/checkin1-2.jpg\"]',0,'2025-12-27 16:55:27'),(2,4,28,'今天带小金去公园玩，它特别开心','[\"https://example.com/checkin1-3.jpg\"]',0,'2026-01-16 16:55:27'),(3,4,28,'小金现在很健康，体重也正常',NULL,0,'2026-02-05 16:55:27'),(4,5,29,'小银刚到家有点害羞，现在已经很亲人了','[\"https://example.com/checkin2-1.jpg\"]',0,'2026-01-26 16:55:27'),(5,5,29,'小银越来越漂亮了，性格也很好','[\"https://example.com/checkin2-2.jpg\"]',0,'2026-02-10 16:55:27'),(6,6,30,'小铜刚到新家，还在适应中','[\"https://example.com/checkin3-1.jpg\"]',0,'2026-02-05 16:55:28'),(7,4,56,'小金现在越来越可爱了，完全融入了我们的家庭！','[\"https://example.com/checkin1-1.jpg\", \"https://example.com/checkin1-2.jpg\"]',0,'2025-12-27 17:02:07'),(8,4,56,'今天带小金去公园玩，它特别开心','[\"https://example.com/checkin1-3.jpg\"]',0,'2026-01-16 17:02:07'),(9,4,56,'小金现在很健康，体重也正常',NULL,0,'2026-02-05 17:02:07'),(10,5,57,'小银刚到家有点害羞，现在已经很亲人了','[\"https://example.com/checkin2-1.jpg\"]',0,'2026-01-26 17:02:07'),(11,5,57,'小银越来越漂亮了，性格也很好','[\"https://example.com/checkin2-2.jpg\"]',0,'2026-02-10 17:02:07'),(12,6,58,'小铜刚到新家，还在适应中','[\"https://example.com/checkin3-1.jpg\"]',0,'2026-02-05 17:02:07'),(13,3,61,'1111111',NULL,0,'2026-02-18 17:52:16'),(14,4,9,'121212121',NULL,0,'2026-02-19 12:45:03');
+/*!40000 ALTER TABLE `checkin_post` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `credit_account`
+--
+
+DROP TABLE IF EXISTS `credit_account`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `credit_account` (
+  `user_id` bigint NOT NULL COMMENT '用户ID（sys_user.id）',
+  `score` int NOT NULL DEFAULT '0' COMMENT '信用分',
+  `level` int NOT NULL DEFAULT '0' COMMENT '信用等级',
+  `last_calc_time` datetime DEFAULT NULL COMMENT '最近一次结算时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户信用账户表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `credit_account`
+--
+
+LOCK TABLES `credit_account` WRITE;
+/*!40000 ALTER TABLE `credit_account` DISABLE KEYS */;
+INSERT INTO `credit_account` VALUES (3,2,0,'2026-02-18 17:45:02','2026-02-18 17:45:01'),(4,87,2,'2026-02-15 17:02:07','2026-02-15 17:02:07'),(5,92,3,'2026-02-15 17:02:07','2026-02-15 17:02:07'),(6,78,2,'2026-02-15 17:02:07','2026-02-15 17:02:07'),(7,88,2,'2026-02-15 17:02:07','2026-02-15 17:02:07'),(8,95,3,'2026-02-15 17:02:07','2026-02-15 17:02:07');
+/*!40000 ALTER TABLE `credit_account` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `credit_log`
+--
+
+DROP TABLE IF EXISTS `credit_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `credit_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID（sys_user.id）',
+  `delta` int NOT NULL COMMENT '分数变化（可正可负）',
+  `reason` varchar(64) NOT NULL COMMENT '变更原因（如CHECKIN/VIOLATION）',
+  `ref_type` varchar(32) DEFAULT NULL COMMENT '关联类型（checkin/application等）',
+  `ref_id` bigint DEFAULT NULL COMMENT '关联ID',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_time` (`user_id`,`create_time`) COMMENT '用户信用流水索引'
+) ENGINE=InnoDB AUTO_INCREMENT=2024344455440343042 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='信用分变更流水表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `credit_log`
+--
+
+LOCK TABLES `credit_log` WRITE;
+/*!40000 ALTER TABLE `credit_log` DISABLE KEYS */;
+INSERT INTO `credit_log` VALUES (2024059381583044610,3,2,'CHECKIN','checkin',13,'2026-02-18 17:52:16'),(2024344455440343041,4,2,'CHECKIN','checkin',14,'2026-02-19 12:45:03');
+/*!40000 ALTER TABLE `credit_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `org_profile`
+--
+
+DROP TABLE IF EXISTS `org_profile`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `org_profile` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint NOT NULL COMMENT '机构用户ID（sys_user.id，role=ORG）',
+  `org_name` varchar(128) NOT NULL COMMENT '机构名称',
+  `license_no` varchar(64) DEFAULT NULL COMMENT '机构资质/登记号（可选）',
+  `contact_name` varchar(64) DEFAULT NULL COMMENT '联系人姓名',
+  `contact_phone` varchar(32) DEFAULT NULL COMMENT '联系人电话',
+  `address` varchar(255) DEFAULT NULL COMMENT '详细地址',
+  `province` varchar(64) DEFAULT NULL COMMENT '省',
+  `city` varchar(64) DEFAULT NULL COMMENT '市',
+  `district` varchar(64) DEFAULT NULL COMMENT '区/县',
+  `lng` decimal(10,6) DEFAULT NULL COMMENT '经度',
+  `lat` decimal(10,6) DEFAULT NULL COMMENT '纬度',
+  `cover_url` varchar(512) DEFAULT NULL COMMENT '机构封面/图片URL',
+  `verify_status` varchar(16) NOT NULL DEFAULT 'PENDING' COMMENT '机构认证状态：PENDING/APPROVED/REJECTED（可选启用）',
+  `verify_remark` varchar(255) DEFAULT NULL COMMENT '认证备注/驳回原因',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  KEY `idx_verify_status` (`verify_status`) COMMENT '认证状态索引',
+  KEY `idx_city` (`city`) COMMENT '城市索引',
+  KEY `idx_lng_lat` (`lng`,`lat`) COMMENT '经纬度索引'
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='救助机构资料表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `org_profile`
+--
+
+LOCK TABLES `org_profile` WRITE;
+/*!40000 ALTER TABLE `org_profile` DISABLE KEYS */;
+INSERT INTO `org_profile` VALUES (1,3,'爱心救助站','ORG20240001','王明','13800138001','北京市朝阳区建国路88号','北京市','北京市','朝阳区',116.480000,39.980000,'https://example.com/org-cover.jpg','APPROVED',NULL,0,'2026-02-15 16:46:27','2026-02-15 17:02:07'),(3,11,'11','123456789012345678','11','18767552635','湖北省武汉市青山区钢花村街道钢花村街110社区','湖北省','武汉市','青山区',114.393624,30.624557,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/avatar/20260217/150731_65def3f17b94426f812ca29430e90aa9.jpeg','APPROVED','资料完整，符合要求',0,'2026-02-17 14:03:39','2026-02-17 16:09:07'),(4,12,'2121','123456789012345678','qq','18768622827','湖北省武汉市青山区钢花村街道钢花村街110社区','湖北省','武汉市','青山区',114.393591,30.624379,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/avatar/20260219/125211_0643255d58264c82ba11eae9de7e4ef1.jpeg','APPROVED','资料完整，符合要求',0,'2026-02-19 12:51:16','2026-02-19 12:53:13');
+/*!40000 ALTER TABLE `org_profile` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pet`
+--
+
+DROP TABLE IF EXISTS `pet`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pet` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `org_user_id` bigint NOT NULL COMMENT '发布机构用户ID（sys_user.id，role=ORG）',
+  `name` varchar(64) DEFAULT NULL COMMENT '宠物名字/昵称',
+  `species` varchar(16) NOT NULL COMMENT '物种：CAT/DOG/OTHER',
+  `breed` varchar(64) DEFAULT NULL COMMENT '品种',
+  `gender` varchar(16) DEFAULT NULL COMMENT '性别：MALE/FEMALE/UNKNOWN',
+  `age_month` int DEFAULT NULL COMMENT '年龄（月）',
+  `size` varchar(8) DEFAULT NULL COMMENT '体型：S/M/L',
+  `color` varchar(32) DEFAULT NULL COMMENT '毛色/颜色',
+  `sterilized` tinyint DEFAULT NULL COMMENT '是否绝育：0否1是',
+  `vaccinated` tinyint DEFAULT NULL COMMENT '是否疫苗：0否1是',
+  `dewormed` tinyint DEFAULT NULL COMMENT '是否驱虫：0否1是',
+  `health_desc` varchar(1000) DEFAULT NULL COMMENT '健康描述',
+  `personality_desc` varchar(1000) DEFAULT NULL COMMENT '性格描述（文本）',
+  `adopt_requirements` varchar(1000) DEFAULT NULL COMMENT '领养要求（文本）',
+  `status` varchar(16) NOT NULL DEFAULT 'DRAFT' COMMENT '宠物状态：DRAFT/PENDING_AUDIT/PUBLISHED/APPLYING/ADOPTED/REMOVED',
+  `audit_status` varchar(16) NOT NULL DEFAULT 'NONE' COMMENT '审核状态：NONE/PENDING/APPROVED/REJECTED',
+  `lng` decimal(10,6) DEFAULT NULL COMMENT '经度（默认继承机构坐标）',
+  `lat` decimal(10,6) DEFAULT NULL COMMENT '纬度（默认继承机构坐标）',
+  `cover_url` varchar(512) DEFAULT NULL COMMENT '封面URL',
+  `published_time` datetime DEFAULT NULL COMMENT '发布时间（审核通过后写入）',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_org_status` (`org_user_id`,`status`) COMMENT '机构与宠物状态索引',
+  KEY `idx_status_species` (`status`,`species`) COMMENT '状态与物种索引',
+  KEY `idx_audit_status` (`audit_status`) COMMENT '审核状态索引',
+  KEY `idx_published_time` (`published_time`) COMMENT '发布时间索引',
+  KEY `idx_lng_lat` (`lng`,`lat`) COMMENT '经纬度索引'
+) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='宠物档案表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pet`
+--
+
+LOCK TABLES `pet` WRITE;
+/*!40000 ALTER TABLE `pet` DISABLE KEYS */;
+INSERT INTO `pet` VALUES (1,1001,'团子','CAT','英短','MALE',10,'M','蓝灰',1,1,1,'已体检，无传染病史','亲人，喜欢被摸，适应新环境较快','需封窗；同意签领养协议；不接受散养','PUBLISHED','APPROVED',121.473701,31.230416,'https://img.example.com/pet/tuanzhi_cover.jpg','2025-12-01 10:00:00',0,'2026-02-14 22:41:43','2026-02-14 22:41:43'),(2,1001,'小麦','DOG','柯基','FEMALE',18,'M','黄白',1,1,1,'肠胃敏感，需低脂狗粮','活泼外向，喜欢互动','需定期回访；不接受长时间笼养','PUBLISHED','APPROVED',121.480000,31.220000,'https://img.example.com/pet/xiaomai_cover.jpg','2025-12-03 09:30:00',0,'2026-02-14 22:41:43','2026-02-14 22:41:43'),(3,1002,'花卷','CAT','田园猫','FEMALE',6,'S','狸花',0,1,1,'轻微结膜炎已用药控制','胆小慢热，熟悉后黏人','需有耐心；建议家中无幼儿；封窗必须','PUBLISHED','APPROVED',116.407526,39.904030,'https://img.example.com/pet/huajuan_cover.jpg','2025-12-05 14:20:00',0,'2026-02-14 22:41:43','2026-02-14 22:41:43'),(4,1002,'可乐','DOG','中华田园犬','MALE',24,'L','黑',1,1,1,'健康良好','稳重听话，会基础指令','需有院子或足够运动；每日遛狗不少于2次','APPLYING','APPROVED',116.410000,39.900000,'https://img.example.com/pet/kele_cover.jpg','2025-12-06 11:00:00',0,'2026-02-14 22:41:43','2026-02-15 15:31:01'),(5,1003,'糯米','CAT','布偶','MALE',14,'M','海豹双色',1,1,1,'皮肤状态良好','温顺，喜欢陪伴，不爱叫','不接受合租频繁搬家；需按时疫苗驱虫','PENDING_AUDIT','PENDING',113.264385,23.129112,'https://img.example.com/pet/nuomi_cover.jpg',NULL,0,'2026-02-14 22:41:43','2026-02-14 22:41:43'),(6,1003,'豆豆','OTHER','兔','UNKNOWN',8,'S','白',0,0,1,'牙齿需定期修剪','安静，适合室内饲养','需了解兔子饲养；不接受放养；笼舍需达标','DRAFT','NONE',113.270000,23.130000,'https://img.example.com/pet/doudou_cover.jpg',NULL,0,'2026-02-14 22:41:43','2026-02-14 22:41:43'),(7,1001,'橘子','CAT','橘猫','MALE',36,'L','橘',1,1,1,'轻度肥胖，需控制体重','贪吃亲人，喜欢玩逗猫棒','需科学喂养；封窗；定期体检','APPLYING','APPROVED',121.465000,31.235000,'https://img.example.com/pet/juzi_cover.jpg','2025-11-20 16:10:00',0,'2026-02-14 22:41:43','2026-02-14 22:41:43'),(8,1002,'奶茶','DOG','比熊','FEMALE',9,'S','白',0,1,1,'泪痕明显需日常护理','粘人，适合陪伴型家庭','需有时间陪伴；接受美容护理开销','REMOVED','REJECTED',116.395000,39.910000,'https://img.example.com/pet/naicha_cover.jpg',NULL,0,'2026-02-14 22:41:43','2026-02-14 22:41:43'),(9,3,'小白','CAT','中华田园猫','FEMALE',24,'M','白色',1,1,1,'健康活泼，已完成绝育疫苗','亲人可爱，喜欢被人抚摸','需要有养猫经验','ADOPTED','APPROVED',NULL,NULL,'https://example.com/pet1.jpg','2026-02-13 16:50:42',0,'2026-02-08 16:50:42','2026-02-16 17:43:13'),(10,3,'小黑','DOG','拉布拉多','MALE',36,'L','黑色',1,1,1,'非常健康，精力充沛','活泼好动，喜欢运动','需要较大的活动空间','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet2.jpg','2026-02-12 16:50:42',0,'2026-02-05 16:50:42','2026-02-15 16:50:42'),(11,3,'小花','CAT','橘猫','FEMALE',18,'M','橘色',1,1,1,'健康状态良好','温顺亲人，适合新手','希望主人有耐心','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet3.jpg','2026-02-14 16:50:42',0,'2026-02-10 16:50:42','2026-02-15 16:50:42'),(12,3,'旺财','DOG','金毛','MALE',24,'L','金色',1,1,1,'非常健康','性格温顺，对人友好','需要有养狗经验','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet4.jpg','2026-02-11 16:50:42',0,'2026-02-03 16:50:42','2026-02-15 16:50:42'),(13,3,'雪球','CAT','布偶猫','FEMALE',12,'L','白色',1,1,1,'健康漂亮','安静温顺，喜欢安静环境','适合家庭饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet5.jpg','2026-02-10 16:50:42',0,'2026-02-01 16:50:42','2026-02-15 16:50:42'),(14,3,'黑豆','DOG','哈士奇','MALE',30,'L','黑白',1,1,1,'健康强壮','活泼好动，精力旺盛','需要大量运动','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet6.jpg','2026-02-09 16:50:42',0,'2026-01-30 16:50:42','2026-02-17 11:27:43'),(15,3,'奶茶','CAT','英短','FEMALE',15,'M','银渐层',1,1,1,'健康良好','性格温和，容易相处','希望主人细心照顾','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet7.jpg','2026-02-08 16:50:42',0,'2026-01-28 16:50:42','2026-02-15 16:50:42'),(16,3,'大黄','DOG','柴犬','MALE',27,'M','黄色',1,1,1,'健康活泼','忠诚可爱，对主人忠诚','适合有经验的铲屎官','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet8.jpg','2026-02-07 16:50:42',0,'2026-01-26 16:50:42','2026-02-15 16:50:42'),(17,3,'糯米','CAT','暹罗猫','FEMALE',20,'S','浅棕色',1,1,1,'健康可爱','活泼好动，喜欢互动','需要经常陪伴','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet9.jpg','2026-02-06 16:50:42',0,'2026-01-24 16:50:42','2026-02-15 16:50:42'),(18,3,'贝贝','DOG','柯基','FEMALE',18,'M','黄白',1,1,1,'健康良好','活泼可爱，腿短短的','适合公寓饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet10.jpg','2026-02-05 16:50:42',0,'2026-01-22 16:50:42','2026-02-15 16:50:42'),(19,3,'布丁','CAT','美短','MALE',22,'M','银白',1,1,1,'健康强壮','温顺亲人，适合家庭','希望主人有责任心','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet11.jpg','2026-02-04 16:50:42',0,'2026-01-20 16:50:42','2026-02-15 16:50:42'),(20,3,'欢欢','DOG','边牧','FEMALE',33,'M','黑白',1,1,1,'非常健康','聪明伶俐，智商很高','需要智力和运动刺激','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet12.jpg','2026-02-03 16:50:42',0,'2026-01-18 16:50:42','2026-02-15 16:50:42'),(21,3,'豆豆','CAT','折耳猫','MALE',16,'S','棕色',1,1,1,'健康可爱','安静温顺，适合新手','希望主人有耐心','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet13.jpg','2026-02-02 16:50:42',0,'2026-01-16 16:50:42','2026-02-15 16:50:42'),(22,3,'皮皮','DOG','贵宾','MALE',21,'S','白色',1,1,1,'健康良好','活泼聪明，容易训练','适合公寓饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet14.jpg','2026-02-01 16:50:42',0,'2026-01-14 16:50:42','2026-02-15 16:50:42'),(23,3,'糖糖','CAT','波斯猫','FEMALE',25,'L','白色',1,1,1,'健康漂亮','优雅高贵，性格温和','需要细心照料','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet15.jpg','2026-01-31 16:50:42',0,'2026-01-12 16:50:42','2026-02-15 16:50:42'),(24,3,'乐乐','DOG','萨摩耶','MALE',28,'L','白色',1,1,1,'健康强壮','笑容甜美，性格开朗','需要较多运动','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet16.jpg','2026-01-30 16:50:42',0,'2026-01-10 16:50:42','2026-02-15 16:50:42'),(25,3,'咪咪','CAT','缅因猫','FEMALE',30,'L','棕虎斑',1,1,1,'健康强壮','体型大但性格温和','需要较大空间','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet17.jpg','2026-01-29 16:50:42',0,'2026-01-08 16:50:42','2026-02-15 16:50:42'),(26,3,'毛毛','DOG','比熊','MALE',19,'S','白色',1,1,1,'健康可爱','活泼亲人，不掉毛','适合公寓饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet18.jpg','2026-01-28 16:50:42',0,'2026-01-06 16:50:42','2026-02-15 16:50:42'),(27,3,'球球','CAT','苏格兰折耳猫','MALE',14,'M','蓝灰色',1,1,1,'健康状态良好','温顺可爱，适合家庭','希望主人有耐心','APPLYING','APPROVED',NULL,NULL,'https://example.com/pet19.jpg','2026-02-14 16:50:42',0,'2026-02-12 16:50:42','2026-02-15 16:50:42'),(28,3,'点点','DOG','法国斗牛','FEMALE',20,'S','黑白',1,1,1,'健康良好','活泼可爱，性格独特','适合公寓饲养','APPLYING','APPROVED',NULL,NULL,'https://example.com/pet20.jpg','2026-02-13 16:50:42',0,'2026-02-10 16:50:42','2026-02-15 16:50:42'),(29,3,'小白','CAT','中华田园猫','FEMALE',24,'M','白色',1,1,1,'健康活泼，已完成绝育疫苗','亲人可爱，喜欢被人抚摸','需要有养猫经验','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet1.jpg','2026-02-13 16:53:15',0,'2026-02-08 16:53:15','2026-02-15 16:53:15'),(30,3,'小黑','DOG','拉布拉多','MALE',36,'L','黑色',1,1,1,'非常健康，精力充沛','活泼好动，喜欢运动','需要较大的活动空间','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet2.jpg','2026-02-12 16:53:15',0,'2026-02-05 16:53:15','2026-02-15 16:53:15'),(31,3,'小花','CAT','橘猫','FEMALE',18,'M','橘色',1,1,1,'健康状态良好','温顺亲人，适合新手','希望主人有耐心','APPLYING','APPROVED',NULL,NULL,'https://example.com/pet3.jpg','2026-02-14 16:53:15',0,'2026-02-10 16:53:15','2026-02-19 12:43:54'),(32,3,'旺财','DOG','金毛','MALE',24,'L','金色',1,1,1,'非常健康','性格温顺，对人友好','需要有养狗经验','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet4.jpg','2026-02-11 16:53:15',0,'2026-02-03 16:53:15','2026-02-15 16:53:15'),(33,3,'雪球','CAT','布偶猫','FEMALE',12,'L','白色',1,1,1,'健康漂亮','安静温顺，喜欢安静环境','适合家庭饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet5.jpg','2026-02-10 16:53:15',0,'2026-02-01 16:53:15','2026-02-15 16:53:15'),(34,3,'黑豆','DOG','哈士奇','MALE',30,'L','黑白',1,1,1,'健康强壮','活泼好动，精力旺盛','需要大量运动','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet6.jpg','2026-02-09 16:53:15',0,'2026-01-30 16:53:15','2026-02-15 16:53:15'),(35,3,'奶茶','CAT','英短','FEMALE',15,'M','银渐层',1,1,1,'健康良好','性格温和，容易相处','希望主人细心照顾','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet7.jpg','2026-02-08 16:53:15',0,'2026-01-28 16:53:15','2026-02-15 16:53:15'),(36,3,'大黄','DOG','柴犬','MALE',27,'M','黄色',1,1,1,'健康活泼','忠诚可爱，对主人忠诚','适合有经验的铲屎官','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet8.jpg','2026-02-07 16:53:15',0,'2026-01-26 16:53:15','2026-02-15 16:53:15'),(37,3,'糯米','CAT','暹罗猫','FEMALE',20,'S','浅棕色',1,1,1,'健康可爱','活泼好动，喜欢互动','需要经常陪伴','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet9.jpg','2026-02-06 16:53:15',0,'2026-01-24 16:53:15','2026-02-15 16:53:15'),(38,3,'贝贝','DOG','柯基','FEMALE',18,'M','黄白',1,1,1,'健康良好','活泼可爱，腿短短的','适合公寓饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet10.jpg','2026-02-05 16:53:15',0,'2026-01-22 16:53:15','2026-02-15 16:53:15'),(39,3,'布丁','CAT','美短','MALE',22,'M','银白',1,1,1,'健康强壮','温顺亲人，适合家庭','希望主人有责任心','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet11.jpg','2026-02-04 16:53:15',0,'2026-01-20 16:53:15','2026-02-15 16:53:15'),(40,3,'欢欢','DOG','边牧','FEMALE',33,'M','黑白',1,1,1,'非常健康','聪明伶俐，智商很高','需要智力和运动刺激','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet12.jpg','2026-02-03 16:53:15',0,'2026-01-18 16:53:15','2026-02-15 16:53:15'),(41,3,'豆豆','CAT','折耳猫','MALE',16,'S','棕色',1,1,1,'健康可爱','安静温顺，适合新手','希望主人有耐心','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet13.jpg','2026-02-02 16:53:15',0,'2026-01-16 16:53:15','2026-02-15 16:53:15'),(42,3,'皮皮','DOG','贵宾','MALE',21,'S','白色',1,1,1,'健康良好','活泼聪明，容易训练','适合公寓饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet14.jpg','2026-02-01 16:53:15',0,'2026-01-14 16:53:15','2026-02-15 16:53:15'),(43,3,'糖糖','CAT','波斯猫','FEMALE',25,'L','白色',1,1,1,'健康漂亮','优雅高贵，性格温和','需要细心照料','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet15.jpg','2026-01-31 16:53:15',0,'2026-01-12 16:53:15','2026-02-15 16:53:15'),(44,3,'乐乐','DOG','萨摩耶','MALE',28,'L','白色',1,1,1,'健康强壮','笑容甜美，性格开朗','需要较多运动','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet16.jpg','2026-01-30 16:53:15',0,'2026-01-10 16:53:15','2026-02-15 16:53:15'),(45,3,'咪咪','CAT','缅因猫','FEMALE',30,'L','棕虎斑',1,1,1,'健康强壮','体型大但性格温和','需要较大空间','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet17.jpg','2026-01-29 16:53:15',0,'2026-01-08 16:53:15','2026-02-15 16:53:15'),(46,3,'毛毛','DOG','比熊','MALE',19,'S','白色',1,1,1,'健康可爱','活泼亲人，不掉毛','适合公寓饲养','PUBLISHED','APPROVED',NULL,NULL,'https://example.com/pet18.jpg','2026-01-28 16:53:15',0,'2026-01-06 16:53:15','2026-02-15 16:53:15'),(47,3,'球球','CAT','苏格兰折耳猫','MALE',14,'M','蓝灰色',1,1,1,'健康状态良好','温顺可爱，适合家庭','希望主人有耐心','APPLYING','APPROVED',NULL,NULL,'https://example.com/pet19.jpg','2026-02-14 16:53:15',0,'2026-02-12 16:53:15','2026-02-15 16:53:15'),(48,3,'点点','DOG','法国斗牛','FEMALE',20,'S','黑白',1,1,1,'健康良好','活泼可爱，性格独特','适合公寓饲养','APPLYING','APPROVED',NULL,NULL,'https://example.com/pet20.jpg','2026-02-13 16:53:15',0,'2026-02-10 16:53:15','2026-02-15 16:53:15'),(49,3,'小灰','CAT','狸花猫','MALE',16,'M','灰白',1,1,1,'健康状态良好','活泼好动，亲人','希望主人有责任心','DRAFT','NONE',NULL,NULL,'https://example.com/pet21.jpg',NULL,0,'2026-02-14 16:55:27','2026-02-15 16:55:27'),(51,3,'小橙','CAT','橘猫','FEMALE',13,'M','橘色',1,1,1,'健康可爱','温顺亲人，适合家庭','希望主人细心','DRAFT','NONE',NULL,NULL,'https://example.com/pet23.jpg',NULL,0,'2026-02-12 16:55:27','2026-02-15 16:55:27'),(52,3,'小蓝','DOG','边境牧羊犬','MALE',28,'M','黑白',1,1,1,'非常健康','聪明伶俐，智商高','需要大量运动','DRAFT','NONE',NULL,NULL,'https://example.com/pet24.jpg',NULL,0,'2026-02-11 16:55:27','2026-02-15 16:55:27'),(53,3,'小紫','CAT','俄罗斯蓝猫','FEMALE',18,'S','蓝灰色',1,1,1,'健康漂亮','安静温顺，性格独立','适合安静环境','DRAFT','NONE',NULL,NULL,'https://example.com/pet25.jpg',NULL,0,'2026-02-10 16:55:27','2026-02-15 16:55:27'),(54,3,'小棕','DOG','金毛寻回犬','MALE',26,'L','金色',1,1,1,'健康强壮','性格温顺，对人友好','需要有养狗经验','PENDING_AUDIT','PENDING',NULL,NULL,'https://example.com/pet26.jpg',NULL,0,'2026-02-14 16:55:27','2026-02-15 16:55:27'),(55,3,'小青','CAT','缅因猫','FEMALE',32,'L','棕虎斑',1,1,1,'健康强壮','体型大但性格温和','需要较大空间','PENDING_AUDIT','PENDING',NULL,NULL,'https://example.com/pet27.jpg',NULL,0,'2026-02-13 16:55:27','2026-02-15 16:55:27'),(56,3,'小金','DOG','金毛','MALE',24,'L','金色',1,1,1,'非常健康','性格温顺，对人友好','需要有养狗经验','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet28.jpg','2025-12-17 16:55:27',0,'2025-12-07 16:55:27','2026-02-15 16:55:27'),(57,3,'小银','CAT','布偶猫','FEMALE',15,'L','白色',1,1,1,'健康漂亮','安静温顺，适合家庭','适合家庭饲养','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet29.jpg','2026-01-16 16:55:27',0,'2026-01-06 16:55:27','2026-02-15 16:55:27'),(58,3,'小铜','DOG','柯基','MALE',18,'M','黄白',1,1,1,'健康良好','活泼可爱，腿短短的','适合公寓饲养','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet30.jpg','2026-01-31 16:55:27',0,'2026-01-21 16:55:27','2026-02-15 16:55:27'),(59,3,'小铁','CAT','美短','MALE',20,'M','银白',1,1,1,'健康强壮','温顺亲人，适合家庭','希望主人有责任心','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet31.jpg','2026-02-07 16:55:27',0,'2026-01-28 16:55:27','2026-02-15 16:55:27'),(60,3,'小白','CAT','中华田园猫','FEMALE',24,'M','白色',1,1,1,'健康活泼，已完成绝育疫苗','亲人可爱，喜欢被人抚摸','需要有养猫经验','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet1.jpg','2026-02-13 17:02:07',0,'2026-02-08 17:02:07','2026-02-15 17:02:07'),(61,3,'小黑','DOG','拉布拉多','MALE',36,'L','黑色',1,1,1,'非常健康，精力充沛','活泼好动，喜欢运动','需要较大的活动空间','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet2.jpg','2026-02-12 17:02:07',0,'2026-02-05 17:02:07','2026-02-18 17:51:47'),(62,3,'小花','CAT','橘猫','FEMALE',18,'M','橘色',1,1,1,'健康状态良好','温顺亲人，适合新手','希望主人有耐心','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet3.jpg','2026-02-14 17:02:07',0,'2026-02-10 17:02:07','2026-02-18 16:37:06'),(63,3,'旺财','DOG','金毛','MALE',24,'L','金色',1,1,1,'非常健康','性格温顺，对人友好','需要有养狗经验','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet4.jpg','2026-02-11 17:02:07',0,'2026-02-03 17:02:07','2026-02-15 17:02:07'),(64,3,'雪球','CAT','布偶猫','FEMALE',12,'L','白色',1,1,1,'健康漂亮','安静温顺，喜欢安静环境','适合家庭饲养','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet5.jpg','2026-02-10 17:02:07',0,'2026-02-01 17:02:07','2026-02-15 17:02:07'),(65,3,'黑豆','DOG','哈士奇','MALE',30,'L','黑白',1,1,1,'健康强壮','活泼好动，精力旺盛','需要大量运动','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet6.jpg','2026-02-09 17:02:07',0,'2026-01-30 17:02:07','2026-02-15 17:02:07'),(66,3,'奶茶','CAT','英短','FEMALE',15,'M','银渐层',1,1,1,'健康良好','性格温和，容易相处','希望主人细心照顾','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet7.jpg','2026-02-08 17:02:07',0,'2026-01-28 17:02:07','2026-02-15 17:02:07'),(67,3,'大黄','DOG','柴犬','MALE',27,'M','黄色',1,1,1,'健康活泼','忠诚可爱，对主人忠诚','适合有经验的铲屎官','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet8.jpg','2026-02-07 17:02:07',0,'2026-01-26 17:02:07','2026-02-15 17:02:07'),(68,3,'糯米','CAT','暹罗猫','FEMALE',20,'S','浅棕色',1,1,1,'健康可爱','活泼好动，喜欢互动','需要经常陪伴','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet9.jpg','2026-02-06 17:02:07',0,'2026-01-24 17:02:07','2026-02-15 17:02:07'),(69,3,'贝贝','DOG','柯基','FEMALE',18,'M','黄白',1,1,1,'健康良好','活泼可爱，腿短短的','适合公寓饲养','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet10.jpg','2026-02-05 17:02:07',0,'2026-01-22 17:02:07','2026-02-15 17:02:07'),(70,3,'布丁','CAT','美短','MALE',22,'M','银白',1,1,1,'健康强壮','温顺亲人，适合家庭','希望主人有责任心','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet11.jpg','2026-02-04 17:02:07',0,'2026-01-20 17:02:07','2026-02-15 17:02:07'),(71,3,'欢欢','DOG','边牧','FEMALE',33,'M','黑白',1,1,1,'非常健康','聪明伶俐，智商很高','需要智力和运动刺激','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet12.jpg','2026-02-03 17:02:07',0,'2026-01-18 17:02:07','2026-02-15 17:02:07'),(72,3,'豆豆','CAT','折耳猫','MALE',16,'S','棕色',1,1,1,'健康可爱','安静温顺，适合新手','希望主人有耐心','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet13.jpg','2026-02-02 17:02:07',0,'2026-01-16 17:02:07','2026-02-15 17:02:07'),(73,3,'皮皮','DOG','贵宾','MALE',21,'S','白色',1,1,1,'健康良好','活泼聪明，容易训练','适合公寓饲养','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet14.jpg','2026-02-01 17:02:07',0,'2026-01-14 17:02:07','2026-02-15 17:02:07'),(74,3,'糖糖','CAT','波斯猫','FEMALE',25,'L','白色',1,1,1,'健康漂亮','优雅高贵，性格温和','需要细心照料','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet15.jpg','2026-01-31 17:02:07',0,'2026-01-12 17:02:07','2026-02-15 17:02:07'),(75,3,'乐乐','DOG','萨摩耶','MALE',28,'L','白色',1,1,1,'健康强壮','笑容甜美，性格开朗','需要较多运动','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet16.jpg','2026-01-30 17:02:07',0,'2026-01-10 17:02:07','2026-02-15 17:02:07'),(76,3,'咪咪','CAT','缅因猫','FEMALE',30,'L','棕虎斑',1,1,1,'健康强壮','体型大但性格温和','需要较大空间','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet17.jpg','2026-01-29 17:02:07',0,'2026-01-08 17:02:07','2026-02-15 17:02:07'),(77,3,'毛毛','DOG','比熊','MALE',19,'S','白色',1,1,1,'健康可爱','活泼亲人，不掉毛','适合公寓饲养','PUBLISHED','APPROVED',116.480000,39.980000,'https://example.com/pet18.jpg','2026-01-28 17:02:07',0,'2026-01-06 17:02:07','2026-02-15 17:02:07'),(78,3,'球球','CAT','苏格兰折耳猫','MALE',14,'M','蓝灰色',1,1,1,'健康状态良好','温顺可爱，适合家庭','希望主人有耐心','APPLYING','APPROVED',116.480000,39.980000,'https://example.com/pet19.jpg','2026-02-14 17:02:07',0,'2026-02-12 17:02:07','2026-02-15 17:02:07'),(79,3,'点点','DOG','法国斗牛','FEMALE',20,'S','黑白',1,1,1,'健康良好','活泼可爱，性格独特','适合公寓饲养','APPLYING','APPROVED',116.480000,39.980000,'https://example.com/pet20.jpg','2026-02-13 17:02:07',0,'2026-02-10 17:02:07','2026-02-15 17:02:07'),(80,3,'小灰','CAT','狸花猫','MALE',16,'M','灰白',1,1,1,'健康状态良好','活泼好动，亲人','希望主人有责任心','DRAFT','NONE',NULL,NULL,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/pet_media/20260217/122923_188fd903f91747ca9269aeae0f170985.jpeg',NULL,0,'2026-02-14 17:02:07','2026-02-15 17:02:07'),(81,3,'小黄','DOG','中华田园犬','MALE',22,'M','黄色',1,1,1,'健康强壮','忠诚可爱，易养','适合新手饲养','PUBLISHED','NONE',NULL,NULL,'https://example.com/pet22.jpg',NULL,0,'2026-02-13 17:02:07','2026-02-15 17:02:07'),(82,3,'小橙','CAT','橘猫','FEMALE',13,'M','橘色',1,1,1,'健康可爱','温顺亲人，适合家庭','希望主人细心','DRAFT','NONE',NULL,NULL,'https://example.com/pet23.jpg',NULL,0,'2026-02-12 17:02:07','2026-02-15 17:02:07'),(83,3,'小蓝','DOG','边境牧羊犬','MALE',28,'M','黑白',1,1,1,'非常健康','聪明伶俐，智商高','需要大量运动','DRAFT','NONE',NULL,NULL,'https://example.com/pet24.jpg',NULL,0,'2026-02-11 17:02:07','2026-02-15 17:02:07'),(84,3,'小紫','CAT','俄罗斯蓝猫','FEMALE',18,'S','蓝灰色',1,1,1,'健康漂亮','安静温顺，性格独立','适合安静环境','DRAFT','NONE',NULL,NULL,'https://example.com/pet25.jpg',NULL,0,'2026-02-10 17:02:07','2026-02-15 17:02:07'),(85,3,'小棕','DOG','金毛寻回犬','MALE',26,'L','金色',1,1,1,'健康强壮','性格温顺，对人友好','需要有养狗经验','PENDING_AUDIT','PENDING',NULL,NULL,'https://example.com/pet26.jpg',NULL,0,'2026-02-14 17:02:07','2026-02-15 17:02:07'),(86,3,'小青','CAT','缅因猫','FEMALE',32,'L','棕虎斑',1,1,1,'健康强壮','体型大但性格温和','需要较大空间','PENDING_AUDIT','PENDING',NULL,NULL,'https://example.com/pet27.jpg',NULL,0,'2026-02-13 17:02:07','2026-02-15 17:02:07'),(87,3,'小金','DOG','金毛','MALE',24,'L','金色',1,1,1,'非常健康','性格温顺，对人友好','需要有养狗经验','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet28.jpg','2025-12-17 17:02:07',0,'2025-12-07 17:02:07','2026-02-15 17:02:07'),(88,3,'小银','CAT','布偶猫','FEMALE',15,'L','白色',1,1,1,'健康漂亮','安静温顺，适合家庭','适合家庭饲养','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet29.jpg','2026-01-16 17:02:07',0,'2026-01-06 17:02:07','2026-02-15 17:02:07'),(89,3,'小铜','DOG','柯基','MALE',18,'M','黄白',1,1,1,'健康良好','活泼可爱，腿短短的','适合公寓饲养','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet30.jpg','2026-01-31 17:02:07',0,'2026-01-21 17:02:07','2026-02-15 17:02:07'),(90,3,'小铁','CAT','美短','MALE',20,'M','银白',1,1,1,'健康强壮','温顺亲人，适合家庭','希望主人有责任心','ADOPTED','APPROVED',116.480000,39.980000,'https://example.com/pet31.jpg','2026-02-07 17:02:07',0,'2026-01-28 17:02:07','2026-02-15 17:02:07'),(91,3,'豆豆','CAT','1','UNKNOWN',13,'M','黑色',1,1,1,'很好','无','无','DRAFT','NONE',116.480000,39.980000,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/pet_media/20260216/101457_e9b46e68085545a5b7e9199286ae4765.png',NULL,0,'2026-02-16 10:25:05','2026-02-16 10:25:05'),(92,3,'豆豆','CAT','A','UNKNOWN',13,'M','黑色',1,1,1,'很好','无','无','DRAFT','NONE',116.480000,39.980000,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/pet_media/20260216/095041_8612c835252e4f7fa9b1a44cdfb732f7.png',NULL,0,'2026-02-16 10:28:09','2026-02-16 10:28:09'),(93,3,'可可','CAT','A','UNKNOWN',14,'M','灰',0,0,1,'11','111','1111111','PENDING_AUDIT','PENDING',116.480000,39.980000,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/pet_media/20260216/103410_34bf3bbcabed439294a8a59d01ee70a0.jpeg',NULL,0,'2026-02-16 10:34:43','2026-02-16 10:34:43');
+/*!40000 ALTER TABLE `pet` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pet_audit`
+--
+
+DROP TABLE IF EXISTS `pet_audit`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pet_audit` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `pet_id` bigint NOT NULL COMMENT '宠物ID（pet.id）',
+  `org_user_id` bigint NOT NULL COMMENT '提交审核的机构用户ID（sys_user.id）',
+  `status` varchar(16) NOT NULL DEFAULT 'PENDING' COMMENT '审核状态：PENDING/APPROVED/REJECTED',
+  `submit_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
+  `audit_time` datetime DEFAULT NULL COMMENT '审核时间',
+  `auditor_id` bigint DEFAULT NULL COMMENT '审核人用户ID（sys_user.id，role=ADMIN）',
+  `remark` varchar(255) DEFAULT NULL COMMENT '审核备注/驳回原因',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_pet_id` (`pet_id`) COMMENT '宠物审核索引',
+  KEY `idx_status_time` (`status`,`submit_time`) COMMENT '状态与时间索引'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='宠物发布审核记录表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pet_audit`
+--
+
+LOCK TABLES `pet_audit` WRITE;
+/*!40000 ALTER TABLE `pet_audit` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pet_audit` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pet_media`
+--
+
+DROP TABLE IF EXISTS `pet_media`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pet_media` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `pet_id` bigint NOT NULL COMMENT '宠物ID（pet.id）',
+  `url` varchar(512) NOT NULL COMMENT '媒体URL',
+  `media_type` varchar(16) NOT NULL COMMENT '媒体类型：IMAGE/VIDEO',
+  `sort` int NOT NULL DEFAULT '0' COMMENT '排序号（越小越靠前）',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_pet_id` (`pet_id`) COMMENT '宠物媒体索引'
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='宠物媒体表（图/视频）';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pet_media`
+--
+
+LOCK TABLES `pet_media` WRITE;
+/*!40000 ALTER TABLE `pet_media` DISABLE KEYS */;
+INSERT INTO `pet_media` VALUES (1,1,'https://img.example.com/pet/tuanzhi_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(2,1,'https://img.example.com/pet/tuanzhi_2.jpg','IMAGE',1,0,'2026-02-14 22:41:43'),(3,1,'https://video.example.com/pet/tuanzhi_intro.mp4','VIDEO',2,0,'2026-02-14 22:41:43'),(4,2,'https://img.example.com/pet/xiaomai_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(5,2,'https://img.example.com/pet/xiaomai_2.jpg','IMAGE',1,0,'2026-02-14 22:41:43'),(6,3,'https://img.example.com/pet/huajuan_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(7,3,'https://img.example.com/pet/huajuan_2.jpg','IMAGE',1,0,'2026-02-14 22:41:43'),(8,4,'https://img.example.com/pet/kele_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(9,4,'https://video.example.com/pet/kele_run.mp4','VIDEO',1,0,'2026-02-14 22:41:43'),(10,5,'https://img.example.com/pet/nuomi_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(11,5,'https://img.example.com/pet/nuomi_2.jpg','IMAGE',1,0,'2026-02-14 22:41:43'),(12,6,'https://img.example.com/pet/doudou_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(13,7,'https://img.example.com/pet/juzi_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(14,7,'https://img.example.com/pet/juzi_2.jpg','IMAGE',1,0,'2026-02-14 22:41:43'),(15,8,'https://img.example.com/pet/naicha_1.jpg','IMAGE',0,0,'2026-02-14 22:41:43'),(16,1,'https://example.com/pet1-media1.jpg','IMAGE',1,0,'2026-02-15 16:55:27'),(17,1,'https://example.com/pet1-media2.jpg','IMAGE',2,0,'2026-02-15 16:55:27'),(18,2,'https://example.com/pet2-media1.jpg','IMAGE',1,0,'2026-02-15 16:55:27'),(19,3,'https://example.com/pet3-media1.jpg','IMAGE',1,0,'2026-02-15 16:55:27'),(20,4,'https://example.com/pet4-media1.jpg','IMAGE',1,0,'2026-02-15 16:55:27'),(21,5,'https://example.com/pet5-media1.jpg','IMAGE',1,0,'2026-02-15 16:55:27'),(22,9,'https://example.com/pet1-media1.jpg','IMAGE',1,0,'2026-02-15 17:02:07'),(23,9,'https://example.com/pet1-media2.jpg','IMAGE',2,0,'2026-02-15 17:02:07'),(24,10,'https://example.com/pet2-media1.jpg','IMAGE',1,0,'2026-02-15 17:02:07'),(25,11,'https://example.com/pet3-media1.jpg','IMAGE',1,0,'2026-02-15 17:02:07'),(26,12,'https://example.com/pet4-media1.jpg','IMAGE',1,0,'2026-02-15 17:02:07'),(27,13,'https://example.com/pet5-media1.jpg','IMAGE',1,0,'2026-02-15 17:02:07'),(28,91,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/pet_media/20260216/103134_9dc98c0346e84402a119c5cfef2704da.jpeg','IMAGE',1,0,'2026-02-16 10:31:35'),(29,91,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/pet_media/20260216/103141_84c6ac10d7744e478459bcd49b8f9c92.jpeg','IMAGE',2,0,'2026-02-16 10:31:41'),(30,93,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/pet_media/20260216/103602_1de4fda9970840c8b27ca91c81547640.jpeg','IMAGE',3,0,'2026-02-16 10:36:03');
+/*!40000 ALTER TABLE `pet_media` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pet_tag`
+--
+
+DROP TABLE IF EXISTS `pet_tag`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pet_tag` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `pet_id` bigint NOT NULL COMMENT '宠物ID（pet.id）',
+  `tag_id` bigint NOT NULL COMMENT '标签ID（tag.id）',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_pet_tag` (`pet_id`,`tag_id`),
+  KEY `idx_pet_id` (`pet_id`) COMMENT '宠物索引',
+  KEY `idx_tag_id` (`tag_id`) COMMENT '标签索引'
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='宠物-标签关联表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pet_tag`
+--
+
+LOCK TABLES `pet_tag` WRITE;
+/*!40000 ALTER TABLE `pet_tag` DISABLE KEYS */;
+INSERT INTO `pet_tag` VALUES (1,91,2,0,'2026-02-16 10:25:06'),(2,91,10,0,'2026-02-16 10:25:06'),(3,91,7,0,'2026-02-16 10:25:06'),(4,92,1,0,'2026-02-16 10:28:09'),(5,92,10,0,'2026-02-16 10:28:09'),(6,92,7,0,'2026-02-16 10:28:09'),(7,92,3,0,'2026-02-16 10:28:09'),(8,93,4,0,'2026-02-16 10:34:43'),(9,93,8,0,'2026-02-16 10:34:43');
+/*!40000 ALTER TABLE `pet_tag` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_config`
+--
+
+DROP TABLE IF EXISTS `sys_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_config` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `config_key` varchar(64) NOT NULL COMMENT '配置键',
+  `config_value` varchar(2000) NOT NULL COMMENT '配置值（字符串/JSON）',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `config_key` (`config_key`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置表（推荐权重/信用规则等）';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_config`
+--
+
+LOCK TABLES `sys_config` WRITE;
+/*!40000 ALTER TABLE `sys_config` DISABLE KEYS */;
+INSERT INTO `sys_config` VALUES (1,'recommend.alpha','0.50','偏好/标签匹配权重','2026-02-16 22:48:41'),(2,'recommend.beta','0.20','协同过滤权重','2026-01-29 15:35:00'),(3,'recommend.gamma','0.20','距离权重','2026-01-29 15:35:00'),(4,'recommend.delta','0.05','新鲜度权重','2026-01-29 15:35:00'),(5,'recommend.maxDistanceKm','50','默认附近最大距离(km)','2026-01-29 15:35:00'),(6,'credit.checkin.dailyMax','1','每日计分打卡次数上限','2026-01-29 15:35:00'),(7,'credit.checkin.base','2','打卡基础分','2026-01-29 15:35:00'),(8,'credit.checkin.mediaBonus','1','含媒体加分','2026-01-29 15:35:00'),(9,'credit.checkin.textBonus','1','文本>30字加分','2026-01-29 15:35:00'),(10,'credit.violation.penalty','-20','违规扣分基准','2026-01-29 15:35:00');
+/*!40000 ALTER TABLE `sys_config` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_notice`
+--
+
+DROP TABLE IF EXISTS `sys_notice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_notice` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `title` varchar(128) NOT NULL COMMENT '公告标题',
+  `content` text NOT NULL COMMENT '公告内容',
+  `status` varchar(16) NOT NULL DEFAULT 'PUBLISHED' COMMENT '公告状态：DRAFT/PUBLISHED/REMOVED',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_status` (`status`) COMMENT '公告状态索引'
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统公告表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_notice`
+--
+
+LOCK TABLES `sys_notice` WRITE;
+/*!40000 ALTER TABLE `sys_notice` DISABLE KEYS */;
+INSERT INTO `sys_notice` VALUES (1,'测试','11111111111','REMOVED','2026-02-16 21:18:08','2026-02-16 21:18:08'),(2,'吖吖啊','11111111111111','DRAFT','2026-02-16 21:31:01','2026-02-16 21:31:01');
+/*!40000 ALTER TABLE `sys_notice` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_permission`
+--
+
+DROP TABLE IF EXISTS `sys_permission`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_permission` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `perm_code` varchar(128) NOT NULL COMMENT '权限编码（唯一）：如 pet:create / admin:pet:audit',
+  `perm_name` varchar(128) NOT NULL COMMENT '权限名称',
+  `perm_type` varchar(16) NOT NULL COMMENT '权限类型：API/MENU/BUTTON',
+  `http_method` varchar(16) DEFAULT NULL COMMENT 'HTTP方法（API类型可填）：GET/POST/PUT/DELETE',
+  `api_path` varchar(255) DEFAULT NULL COMMENT 'API路径（API类型可填）：/api/org/pets/**',
+  `parent_id` bigint DEFAULT NULL COMMENT '父权限ID（用于菜单树）',
+  `sort` int NOT NULL DEFAULT '0' COMMENT '排序',
+  `enabled` tinyint NOT NULL DEFAULT '1' COMMENT '是否启用：0否1是',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `perm_code` (`perm_code`),
+  KEY `idx_type` (`perm_type`) COMMENT '类型索引',
+  KEY `idx_parent` (`parent_id`) COMMENT '父级索引'
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限表（API/菜单/按钮）';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_permission`
+--
+
+LOCK TABLES `sys_permission` WRITE;
+/*!40000 ALTER TABLE `sys_permission` DISABLE KEYS */;
+INSERT INTO `sys_permission` VALUES (1,'pet:read','浏览宠物','API','GET','/api/pets/**',NULL,1,1,'用户/游客浏览宠物','2026-01-29 15:35:00','2026-01-29 15:35:00'),(2,'favorite:manage','收藏/取消收藏','API',NULL,'/api/favorites/**',NULL,2,1,'收藏相关','2026-01-29 15:35:00','2026-01-29 15:35:00'),(3,'behavior:write','写入行为埋点','API','POST','/api/behavior',NULL,3,1,'推荐埋点','2026-01-29 15:35:00','2026-01-29 15:35:00'),(4,'pet:create','机构创建宠物','API','POST','/api/org/pets',NULL,10,1,'机构创建宠物档案','2026-01-29 15:35:00','2026-01-29 15:35:00'),(5,'pet:update','机构修改宠物','API','PUT','/api/org/pets/**',NULL,11,1,'机构修改宠物档案','2026-01-29 15:35:00','2026-01-29 15:35:00'),(6,'pet:submit_audit','机构提交宠物审核','API','POST','/api/org/pets/**/submit-audit',NULL,12,1,'提交审核','2026-01-29 15:35:00','2026-01-29 15:35:00'),(7,'pet:remove','机构下架/删除宠物','API',NULL,'/api/org/pets/**',NULL,13,1,'下架或删除','2026-01-29 15:35:00','2026-01-29 15:35:00'),(8,'app:apply','用户发起领养申请','API','POST','/api/applications',NULL,20,1,'用户申请','2026-01-29 15:35:00','2026-01-29 15:35:00'),(9,'app:my','用户查看我的申请','API','GET','/api/applications/my',NULL,21,1,'用户申请列表','2026-01-29 15:35:00','2026-01-29 15:35:00'),(10,'app:cancel','用户撤回申请','API','POST','/api/applications/**/cancel',NULL,22,1,'撤回申请','2026-01-29 15:35:00','2026-01-29 15:35:00'),(11,'app:org:list','机构查看申请列表','API','GET','/api/org/applications',NULL,30,1,'机构申请管理','2026-01-29 15:35:00','2026-01-29 15:35:00'),(12,'app:org:detail','机构查看申请详情','API','GET','/api/org/applications/**',NULL,31,1,'申请详情','2026-01-29 15:35:00','2026-01-29 15:35:00'),(13,'app:org:status','机构流转申请状态','API','POST','/api/org/applications/**/status',NULL,32,1,'状态流转','2026-01-29 15:35:00','2026-01-29 15:35:00'),(14,'checkin:create','用户发布打卡','API','POST','/api/checkins',NULL,40,1,'领养后打卡','2026-01-29 15:35:00','2026-01-29 15:35:00'),(15,'checkin:my','用户查看我的打卡','API','GET','/api/checkins/my',NULL,41,1,'打卡列表','2026-01-29 15:35:00','2026-01-29 15:35:00'),(16,'credit:me','用户查看信用','API','GET','/api/credit/me',NULL,42,1,'信用查看','2026-01-29 15:35:00','2026-01-29 15:35:00'),(17,'admin:pet_audit:list','管理员查看宠物审核列表','API','GET','/api/admin/pet-audits',NULL,90,1,'审核列表','2026-01-29 15:35:00','2026-01-29 15:35:00'),(18,'admin:pet_audit:decision','管理员审核宠物（通过/驳回）','API','POST','/api/admin/pet-audits/**/decision',NULL,91,1,'审核操作','2026-01-29 15:35:00','2026-01-29 15:35:00'),(19,'admin:tag:manage','管理员管理标签库','API',NULL,'/api/admin/tags/**',NULL,92,1,'标签维护','2026-01-29 15:35:00','2026-01-29 15:35:00'),(20,'admin:config:manage','管理员配置参数','API',NULL,'/api/admin/config/**',NULL,93,1,'运营参数','2026-01-29 15:35:00','2026-01-29 15:35:00'),(21,'admin:user:manage','管理员用户管理','API',NULL,'/api/admin/users/**',NULL,94,1,'封禁/解封等','2026-01-29 15:35:00','2026-01-29 15:35:00'),(22,'org:access','机构角色','API','GET','',NULL,30,1,'机构申请管理','2026-01-29 15:35:00','2026-01-29 15:35:00'),(23,'org:pet:view','机构查看宠物详情','API','GET','/api/org/pets/**',NULL,14,1,'机构端查看宠物详情/编辑页数据','2026-02-16 16:58:17','2026-02-16 16:58:17');
+/*!40000 ALTER TABLE `sys_permission` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_role`
+--
+
+DROP TABLE IF EXISTS `sys_role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_role` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `role_code` varchar(32) NOT NULL COMMENT '角色编码：USER/ORG/ADMIN 等',
+  `role_name` varchar(64) NOT NULL COMMENT '角色名称',
+  `enabled` tinyint NOT NULL DEFAULT '1' COMMENT '是否启用：0否1是',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `role_code` (`role_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_role`
+--
+
+LOCK TABLES `sys_role` WRITE;
+/*!40000 ALTER TABLE `sys_role` DISABLE KEYS */;
+INSERT INTO `sys_role` VALUES (1,'USER','领养人',1,'默认领养人角色','2026-01-29 15:35:00','2026-01-29 15:35:00'),(2,'ORG','救助机构',1,'机构用户角色','2026-01-29 15:35:00','2026-01-29 15:35:00'),(3,'ADMIN','管理员',1,'平台管理员角色','2026-01-29 15:35:00','2026-01-29 15:35:00');
+/*!40000 ALTER TABLE `sys_role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_role_permission`
+--
+
+DROP TABLE IF EXISTS `sys_role_permission`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_role_permission` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `role_id` bigint NOT NULL COMMENT '角色ID（sys_role.id）',
+  `permission_id` bigint NOT NULL COMMENT '权限ID（sys_permission.id）',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_role_perm` (`role_id`,`permission_id`),
+  KEY `idx_role` (`role_id`),
+  KEY `idx_perm` (`permission_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-权限关联表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_role_permission`
+--
+
+LOCK TABLES `sys_role_permission` WRITE;
+/*!40000 ALTER TABLE `sys_role_permission` DISABLE KEYS */;
+INSERT INTO `sys_role_permission` VALUES (1,1,8,'2026-01-29 15:35:00'),(2,1,10,'2026-01-29 15:35:00'),(3,1,9,'2026-01-29 15:35:00'),(4,1,3,'2026-01-29 15:35:00'),(5,1,14,'2026-01-29 15:35:00'),(6,1,15,'2026-01-29 15:35:00'),(7,1,16,'2026-01-29 15:35:00'),(8,1,2,'2026-01-29 15:35:00'),(9,1,1,'2026-01-29 15:35:00'),(16,2,12,'2026-01-29 15:35:00'),(17,2,11,'2026-01-29 15:35:00'),(18,2,13,'2026-01-29 15:35:00'),(19,2,3,'2026-01-29 15:35:00'),(20,2,4,'2026-01-29 15:35:00'),(21,2,1,'2026-01-29 15:35:00'),(22,2,7,'2026-01-29 15:35:00'),(23,2,6,'2026-01-29 15:35:00'),(24,2,5,'2026-01-29 15:35:00'),(31,3,1,'2026-01-29 15:35:00'),(32,3,2,'2026-01-29 15:35:00'),(33,3,3,'2026-01-29 15:35:00'),(34,3,4,'2026-01-29 15:35:00'),(35,3,5,'2026-01-29 15:35:00'),(36,3,6,'2026-01-29 15:35:00'),(37,3,7,'2026-01-29 15:35:00'),(38,3,8,'2026-01-29 15:35:00'),(39,3,9,'2026-01-29 15:35:00'),(40,3,10,'2026-01-29 15:35:00'),(41,3,11,'2026-01-29 15:35:00'),(42,3,12,'2026-01-29 15:35:00'),(43,3,13,'2026-01-29 15:35:00'),(44,3,14,'2026-01-29 15:35:00'),(45,3,15,'2026-01-29 15:35:00'),(46,3,16,'2026-01-29 15:35:00'),(47,3,17,'2026-01-29 15:35:00'),(48,3,18,'2026-01-29 15:35:00'),(49,3,19,'2026-01-29 15:35:00'),(50,3,20,'2026-01-29 15:35:00'),(51,3,21,'2026-01-29 15:35:00'),(52,3,22,'2026-02-16 12:57:34'),(53,2,23,'2026-02-16 16:58:25');
+/*!40000 ALTER TABLE `sys_role_permission` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_user`
+--
+
+DROP TABLE IF EXISTS `sys_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_user` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `username` varchar(64) NOT NULL COMMENT '用户名（唯一）',
+  `password_hash` varchar(255) NOT NULL COMMENT '密码哈希',
+  `phone` varchar(32) DEFAULT NULL COMMENT '手机号',
+  `email` varchar(128) DEFAULT NULL COMMENT '邮箱',
+  `role` varchar(16) NOT NULL COMMENT '冗余角色：USER/ORG/ADMIN（可用于快速判断，实际以RBAC为准）',
+  `avatar` varchar(512) DEFAULT NULL COMMENT '头像URL',
+  `status` varchar(16) NOT NULL DEFAULT 'NORMAL' COMMENT '账号状态：NORMAL/BANNED',
+  `preference_json` json DEFAULT NULL COMMENT '用户偏好JSON（智能匹配用，可选）',
+  `last_login_time` datetime DEFAULT NULL COMMENT '最后登录时间',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  KEY `idx_role_status` (`role`,`status`) COMMENT '角色与状态索引',
+  KEY `idx_phone` (`phone`) COMMENT '手机号索引',
+  KEY `idx_email` (`email`) COMMENT '邮箱索引'
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统用户表（领养人/机构/管理员）';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_user`
+--
+
+LOCK TABLES `sys_user` WRITE;
+/*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
+INSERT INTO `sys_user` VALUES (1,'testuser1770001140424','$2a$10$c27z2dbRkkvqpf7M.VL7quZArCkE2ykbHofkvnknnP3Q3sn0Pvo8.','13800138000','test@example.com','USER',NULL,'NORMAL',NULL,NULL,0,'2026-02-02 10:59:01','2026-02-02 10:59:01'),(2,'admin','$2a$10$tDzOp4mlMa3NO1/J9f7fL.emDfJ4Gnf76rUlnMqQryXPQeb0mbQku','18186114194','2734569998@qq.com','ADMIN',NULL,'NORMAL',NULL,'2026-03-04 20:05:17',0,'2026-02-14 15:05:19','2026-03-04 20:05:16'),(3,'test_org','$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','13800138001','org@test.com','ORG','https://example.com/org-avatar.jpg','NORMAL',NULL,'2026-02-19 12:45:45',0,'2026-02-15 16:46:27','2026-02-19 12:45:44'),(4,'test_user1','$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','13900139012','user1@test.com','USER','https://example.com/avatar1.jpg','NORMAL',NULL,'2026-02-19 12:41:29',0,'2026-02-15 16:46:27','2026-02-19 12:41:29'),(5,'test_user2','$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','13900139002','user2@test.com','USER','https://example.com/avatar2.jpg','NORMAL',NULL,NULL,0,'2026-02-15 16:46:27','2026-02-16 22:15:49'),(6,'test_user3','$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','13900139003','user3@test.com','USER','https://example.com/avatar3.jpg','NORMAL',NULL,NULL,0,'2026-02-15 16:46:27','2026-02-15 16:46:27'),(7,'test_user4','$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','13900139004','user4@test.com','USER','https://example.com/avatar4.jpg','NORMAL',NULL,NULL,0,'2026-02-15 16:46:27','2026-02-15 16:46:27'),(8,'test_user5','$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','13900139005','user5@test.com','USER','https://example.com/avatar5.jpg','NORMAL',NULL,NULL,0,'2026-02-15 16:46:27','2026-02-17 12:38:43'),(9,'aaaa','$2a$10$wOxTUr3RRti9C4b4m85VVeyd6hWp2.TULF0EDTRCLxYfmz0GSkb9K','17689221432','2878@qq.com','ORG',NULL,'NORMAL',NULL,'2026-02-17 13:01:44',0,'2026-02-17 13:01:35','2026-02-17 13:01:44'),(10,'test_org1','$2a$10$vtp4e9/kJO8q1nvhnCbt7u53M.UsR4R4Jl1YDLEW9rAz2qDg86JUe','18176554675','22@qq.com','ORG',NULL,'NORMAL',NULL,'2026-02-17 13:55:29',0,'2026-02-17 13:39:15','2026-02-17 13:55:29'),(11,'111','$2a$10$cJg0ePL6VBEOlrBB/wq2euAoCQ5NGIeRS6EBy9BtbZPc9qmd5Eoba','18278677656','221@qq.com','ORG',NULL,'NORMAL',NULL,'2026-02-17 16:13:26',0,'2026-02-17 14:03:22','2026-02-17 16:13:26'),(12,'test11','$2a$10$w8vwF3NDEquVaXujKoWuAeY9M3RH5QloCXbxJsp.5ppFmfk.g0UxS','18798772612','11@qq.com','ORG',NULL,'NORMAL',NULL,'2026-02-19 12:51:30',0,'2026-02-19 12:51:14','2026-02-19 12:51:29');
+/*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_user_role`
+--
+
+DROP TABLE IF EXISTS `sys_user_role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_user_role` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID（sys_user.id）',
+  `role_id` bigint NOT NULL COMMENT '角色ID（sys_role.id）',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_role` (`user_id`,`role_id`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_role` (`role_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户-角色关联表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_user_role`
+--
+
+LOCK TABLES `sys_user_role` WRITE;
+/*!40000 ALTER TABLE `sys_user_role` DISABLE KEYS */;
+INSERT INTO `sys_user_role` VALUES (1,3,2,'2026-02-15 16:46:27'),(2,4,1,'2026-02-15 16:46:27'),(3,5,1,'2026-02-15 16:46:27'),(4,6,1,'2026-02-15 16:46:27'),(5,7,1,'2026-02-15 16:46:27'),(6,8,1,'2026-02-15 16:46:27');
+/*!40000 ALTER TABLE `sys_user_role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tag`
+--
+
+DROP TABLE IF EXISTS `tag`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tag` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `name` varchar(64) NOT NULL COMMENT '标签名称',
+  `tag_type` varchar(32) NOT NULL COMMENT '标签类型：SPECIES/PERSONALITY/HEALTH/FEATURE',
+  `enabled` tinyint NOT NULL DEFAULT '1' COMMENT '是否启用：0否1是',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_type_name` (`tag_type`,`name`),
+  KEY `idx_tag_type` (`tag_type`) COMMENT '标签类型索引'
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='标签字典表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tag`
+--
+
+LOCK TABLES `tag` WRITE;
+/*!40000 ALTER TABLE `tag` DISABLE KEYS */;
+INSERT INTO `tag` VALUES (1,'亲人','PERSONALITY',1,0,'2026-01-29 15:35:00'),(2,'胆小','PERSONALITY',1,0,'2026-01-29 15:35:00'),(3,'活泼','PERSONALITY',1,0,'2026-01-29 15:35:00'),(4,'安静','PERSONALITY',1,0,'2026-01-29 15:35:00'),(5,'亲猫','PERSONALITY',1,0,'2026-01-29 15:35:00'),(6,'亲狗','PERSONALITY',1,0,'2026-01-29 15:35:00'),(7,'需陪伴','FEATURE',1,0,'2026-01-29 15:35:00'),(8,'可独处','FEATURE',1,0,'2026-01-29 15:35:00'),(11,'已驱虫','HEALTH',1,0,'2026-01-29 15:35:00'),(12,'test','PERSONALITY',1,0,'2026-02-16 22:27:53');
+/*!40000 ALTER TABLE `tag` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_behavior`
+--
+
+DROP TABLE IF EXISTS `user_behavior`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_behavior` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID（sys_user.id）',
+  `pet_id` bigint NOT NULL COMMENT '宠物ID（pet.id）',
+  `behavior_type` varchar(16) NOT NULL COMMENT '行为类型：VIEW/FAVORITE/APPLY/SHARE',
+  `weight` int NOT NULL DEFAULT '1' COMMENT '行为权重（用于推荐）',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_time` (`user_id`,`create_time`) COMMENT '用户行为时间索引',
+  KEY `idx_pet_time` (`pet_id`,`create_time`) COMMENT '宠物行为时间索引',
+  KEY `idx_user_pet_type` (`user_id`,`pet_id`,`behavior_type`) COMMENT '用户-宠物-行为复合索引'
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户行为埋点表（推荐数据源）';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_behavior`
+--
+
+LOCK TABLES `user_behavior` WRITE;
+/*!40000 ALTER TABLE `user_behavior` DISABLE KEYS */;
+INSERT INTO `user_behavior` VALUES (4,2,4,'FAVORITE',6,'2026-02-14 23:39:07'),(7,2,4,'FAVORITE',3,'2026-02-14 23:43:10'),(8,2,4,'FAVORITE',6,'2026-02-14 23:48:30'),(9,2,4,'FAVORITE',6,'2026-02-14 23:48:47'),(10,2,4,'VIEW',27,'2026-02-15 10:23:06'),(11,2,4,'APPLY',45,'2026-02-15 10:23:18'),(12,2,4,'FAVORITE',6,'2026-02-15 13:01:54'),(13,2,4,'FAVORITE',6,'2026-02-15 13:22:30'),(14,2,4,'FAVORITE',6,'2026-02-15 13:24:41'),(15,2,4,'FAVORITE',6,'2026-02-15 13:25:07'),(16,2,4,'FAVORITE',6,'2026-02-15 13:25:16'),(17,2,4,'UNFAVORITE',-2,'2026-02-15 13:38:58'),(18,2,4,'UNFAVORITE',-2,'2026-02-15 13:39:17'),(19,2,4,'UNFAVORITE',-2,'2026-02-15 13:39:23'),(20,2,4,'UNFAVORITE',-2,'2026-02-15 13:39:28'),(21,2,4,'UNFAVORITE',-2,'2026-02-15 13:39:36'),(22,2,4,'UNFAVORITE',-2,'2026-02-15 13:44:02'),(23,2,4,'FAVORITE',6,'2026-02-15 13:45:45'),(24,2,4,'UNFAVORITE',-2,'2026-02-15 13:45:53'),(25,2,4,'FAVORITE',6,'2026-02-15 13:47:10'),(26,2,4,'UNFAVORITE',-2,'2026-02-15 13:47:11'),(27,2,4,'UNFAVORITE',-2,'2026-02-15 13:50:38'),(28,2,4,'FAVORITE',6,'2026-02-15 13:50:39'),(29,2,4,'UNFAVORITE',-2,'2026-02-15 13:50:40'),(30,2,4,'FAVORITE',6,'2026-02-15 13:50:41'),(31,2,4,'UNFAVORITE',-2,'2026-02-15 13:50:42'),(32,2,4,'FAVORITE',6,'2026-02-15 13:50:50'),(33,2,3,'VIEW',2,'2026-02-15 13:50:53'),(34,2,3,'FAVORITE',6,'2026-02-15 13:50:54'),(35,2,3,'UNFAVORITE',-2,'2026-02-15 13:57:02'),(36,2,1,'VIEW',1,'2026-02-15 13:57:29'),(37,4,9,'VIEW',1,'2026-02-10 17:02:07'),(38,4,9,'FAVORITE',3,'2026-02-10 17:02:07'),(39,4,11,'VIEW',1,'2026-02-12 17:02:07'),(40,5,10,'VIEW',1,'2026-02-11 17:02:07'),(41,5,10,'FAVORITE',3,'2026-02-11 17:02:07'),(42,5,12,'VIEW',1,'2026-02-13 17:02:07'),(43,6,9,'VIEW',1,'2026-02-09 17:02:07'),(44,6,13,'FAVORITE',3,'2026-02-14 17:02:07'),(45,4,62,'FAVORITE',3,'2026-02-17 11:23:58'),(46,4,62,'UNFAVORITE',-2,'2026-02-17 11:23:59'),(47,4,62,'FAVORITE',3,'2026-02-17 11:24:01'),(48,4,62,'UNFAVORITE',-2,'2026-02-17 11:24:01'),(49,4,62,'FAVORITE',3,'2026-02-17 11:24:10'),(50,4,62,'UNFAVORITE',-2,'2026-02-17 11:24:11'),(51,4,9,'UNFAVORITE',-2,'2026-02-17 11:27:57'),(52,3,62,'FAVORITE',3,'2026-02-17 12:38:11'),(53,4,62,'FAVORITE',3,'2026-02-18 16:36:12'),(54,4,62,'UNFAVORITE',-2,'2026-02-18 16:36:13'),(55,3,61,'FAVORITE',3,'2026-02-18 17:50:26'),(56,3,61,'UNFAVORITE',-2,'2026-02-18 17:50:27'),(57,4,31,'FAVORITE',3,'2026-02-19 12:42:12');
+/*!40000 ALTER TABLE `user_behavior` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_favorite`
+--
+
+DROP TABLE IF EXISTS `user_favorite`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_favorite` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID（sys_user.id）',
+  `pet_id` bigint NOT NULL COMMENT '宠物ID（pet.id）',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除：0否1是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_pet` (`user_id`,`pet_id`) COMMENT '同一用户同一宠物唯一收藏',
+  KEY `idx_user_time` (`user_id`,`create_time`) COMMENT '用户收藏时间索引',
+  KEY `idx_pet_time` (`pet_id`,`create_time`) COMMENT '宠物被收藏时间索引'
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户收藏表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_favorite`
+--
+
+LOCK TABLES `user_favorite` WRITE;
+/*!40000 ALTER TABLE `user_favorite` DISABLE KEYS */;
+INSERT INTO `user_favorite` VALUES (17,2,4,0,'2026-02-15 13:50:50'),(20,4,11,0,'2026-02-12 17:02:07'),(21,5,10,0,'2026-02-11 17:02:07'),(22,5,12,0,'2026-02-13 17:02:07'),(23,6,9,0,'2026-02-09 17:02:07'),(24,6,13,0,'2026-02-14 17:02:07'),(25,7,11,0,'2026-02-08 17:02:07'),(26,8,10,0,'2026-02-10 17:02:07'),(30,3,62,0,'2026-02-17 12:38:11'),(33,4,31,0,'2026-02-19 12:42:12');
+/*!40000 ALTER TABLE `user_favorite` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-03-29 16:31:29
