@@ -19,6 +19,8 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -152,24 +154,218 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
     }
 
     @Override
-    public PageResult<PetListResponse> getRecommendPets(Long userId, Integer pageNo, Integer pageSize, 
+    public PageResult<PetListResponse> getRecommendPets(Long userId, Integer pageNo, Integer pageSize,
                                                        BigDecimal lng, BigDecimal lat) {
-        // 这里简化实现，实际应该基于用户偏好进行智能推荐
-        // 目前先按发布时间降序返回
-        PetListRequest request = new PetListRequest();
-        request.setPage(pageNo);
-        request.setPageSize(pageSize);
-        request.setLng(lng);
-        request.setLat(lat);
-        
-        PageResult<PetListResponse> result = getPetList(request);
-        
-        // 为推荐结果添加匹配分数（简化实现）
-        result.getList().forEach(pet -> {
-            pet.setMatchScore(80 + new Random().nextInt(20)); // 80-100的随机分数
-        });
-        
-        return result;
+        // 1. 分析用户偏好（基于历史行为）
+        UserPreferenceInfo preference = analyzeUserPreference(userId);
+
+        // 2. 获取用户已申请的宠物ID列表，用于排除
+        List<Long> appliedPetIds = getAppliedPetIds(userId);
+
+        // 3. 构建查询条件
+        LambdaQueryWrapper<PetEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PetEntity::getStatus, "PUBLISHED")
+                   .eq(PetEntity::getAuditStatus, "APPROVED")
+                   .eq(PetEntity::getDeleted, 0);
+
+        // 排除已申请的宠物
+        if (appliedPetIds != null && !appliedPetIds.isEmpty()) {
+            queryWrapper.notIn(PetEntity::getId, appliedPetIds);
+        }
+
+        // 按发布时间降序
+        queryWrapper.orderByDesc(PetEntity::getPublishedTime);
+
+        // 4. 查询宠物列表（多查一些用于排序）
+        Page<PetEntity> page = new Page<>(pageNo, pageSize);
+        IPage<PetEntity> petPage = this.page(page, queryWrapper);
+
+        // 5. 计算推荐分数并排序
+        List<PetListResponse> petList = petPage.getRecords().stream()
+            .map(pet -> {
+                PetListResponse response = convertToListResponse(pet, lng, lat);
+                int score = calculateRecommendScore(pet, preference, lng, lat);
+                response.setMatchScore(score);
+                return response;
+            })
+            .sorted((a, b) -> b.getMatchScore().compareTo(a.getMatchScore()))
+            .collect(Collectors.toList());
+
+        return new PageResult<>(petList, pageNo, pageSize, petPage.getTotal());
+    }
+
+    /**
+     * 分析用户偏好（基于收藏和申请历史）
+     */
+    private UserPreferenceInfo analyzeUserPreference(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+
+        UserPreferenceInfo preference = new UserPreferenceInfo();
+
+        // 统计用户收藏的宠物物种和品种
+        LambdaQueryWrapper<UserFavoriteEntity> favoriteWrapper = new LambdaQueryWrapper<>();
+        favoriteWrapper.eq(UserFavoriteEntity::getUserId, userId);
+        List<UserFavoriteEntity> favorites = userFavoriteMapper.selectList(favoriteWrapper);
+
+        if (!favorites.isEmpty()) {
+            // 获取收藏宠物的物种和品种统计
+            Map<String, Long> speciesCount = new HashMap<>();
+            Map<String, Long> breedCount = new HashMap<>();
+
+            for (UserFavoriteEntity favorite : favorites) {
+                PetEntity pet = this.getById(favorite.getPetId());
+                if (pet != null) {
+                    if (pet.getSpecies() != null) {
+                        speciesCount.merge(pet.getSpecies(), 1L, Long::sum);
+                    }
+                    if (pet.getBreed() != null) {
+                        breedCount.merge(pet.getBreed(), 1L, Long::sum);
+                    }
+                }
+            }
+
+            // 找出最常收藏的物种和品种
+            preference.setFavoriteSpecies(speciesCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null));
+
+            preference.setFavoriteBreed(breedCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null));
+        }
+
+        // 统计用户申请的宠物物种和品种
+        LambdaQueryWrapper<AdoptionApplicationEntity> appWrapper = new LambdaQueryWrapper<>();
+        appWrapper.eq(AdoptionApplicationEntity::getUserId, userId);
+        List<AdoptionApplicationEntity> applications = adoptionApplicationMapper.selectList(appWrapper);
+
+        if (!applications.isEmpty()) {
+            Map<String, Long> speciesCount = new HashMap<>();
+            Map<String, Long> breedCount = new HashMap<>();
+
+            for (AdoptionApplicationEntity app : applications) {
+                PetEntity pet = this.getById(app.getPetId());
+                if (pet != null) {
+                    if (pet.getSpecies() != null) {
+                        speciesCount.merge(pet.getSpecies(), 1L, Long::sum);
+                    }
+                    if (pet.getBreed() != null) {
+                        breedCount.merge(pet.getBreed(), 1L, Long::sum);
+                    }
+                }
+            }
+
+            preference.setAppliedSpecies(speciesCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null));
+
+            preference.setAppliedBreed(breedCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null));
+        }
+
+        return preference;
+    }
+
+    /**
+     * 获取用户已申请的宠物ID列表
+     */
+    private List<Long> getAppliedPetIds(Long userId) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+
+        LambdaQueryWrapper<AdoptionApplicationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AdoptionApplicationEntity::getUserId, userId)
+               .select(AdoptionApplicationEntity::getPetId);
+
+        return adoptionApplicationMapper.selectList(wrapper).stream()
+            .map(AdoptionApplicationEntity::getPetId)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 计算推荐分数
+     * 维度：偏好匹配(30分) + 新鲜度(25分) + 距离(20分) + 热度(15分) + 随机(10分)
+     */
+    private int calculateRecommendScore(PetEntity pet, UserPreferenceInfo preference,
+                                       BigDecimal userLng, BigDecimal userLat) {
+        int score = 0;
+        Random random = new Random();
+
+        // 1. 偏好匹配 (30分)
+        if (preference != null) {
+            // 物种匹配 (15分)
+            if (preference.getFavoriteSpecies() != null &&
+                preference.getFavoriteSpecies().equals(pet.getSpecies())) {
+                score += 15;
+            } else if (preference.getAppliedSpecies() != null &&
+                       preference.getAppliedSpecies().equals(pet.getSpecies())) {
+                score += 10;
+            }
+
+            // 品种匹配 (15分)
+            if (preference.getFavoriteBreed() != null &&
+                preference.getFavoriteBreed().equals(pet.getBreed())) {
+                score += 15;
+            } else if (preference.getAppliedBreed() != null &&
+                       preference.getAppliedBreed().equals(pet.getBreed())) {
+                score += 10;
+            }
+        }
+
+        // 2. 新鲜度 (25分) - 最近7天发布得满分，每超7天减5分
+        if (pet.getPublishedTime() != null) {
+            long daysSincePublish = java.time.temporal.ChronoUnit.DAYS.between(
+                pet.getPublishedTime().toLocalDate(), java.time.LocalDate.now());
+            int freshScore = Math.max(0, 25 - (int)(daysSincePublish / 7) * 5);
+            score += freshScore;
+        }
+
+        // 3. 距离因素 (20分) - 5km内满分，每增加5km减4分
+        if (userLng != null && userLat != null && pet.getLng() != null && pet.getLat() != null) {
+            BigDecimal distance = calculateDistance(userLng, userLat, pet.getLng(), pet.getLat());
+            if (distance != null) {
+                int distanceScore = Math.max(0, 20 - distance.divide(BigDecimal.valueOf(5), 0, RoundingMode.DOWN).intValue() * 4);
+                score += distanceScore;
+            }
+        }
+
+        // 4. 热度因素 (15分) - 基于收藏数
+        int favoriteCount = getFavoriteCount(pet.getId());
+        int hotScore = Math.min(15, favoriteCount);
+        score += hotScore;
+
+        // 5. 随机因子 (10分) - 增加推荐多样性
+        score += random.nextInt(11);
+
+        return Math.min(100, score);
+    }
+
+    /**
+     * 用户偏好信息内部类
+     */
+    private static class UserPreferenceInfo {
+        private String favoriteSpecies;  // 用户最常收藏的物种
+        private String favoriteBreed;    // 用户最常收藏的品种
+        private String appliedSpecies;   // 用户最常申请的物种
+        private String appliedBreed;     // 用户最常申请的品种
+
+        public String getFavoriteSpecies() { return favoriteSpecies; }
+        public void setFavoriteSpecies(String favoriteSpecies) { this.favoriteSpecies = favoriteSpecies; }
+        public String getFavoriteBreed() { return favoriteBreed; }
+        public void setFavoriteBreed(String favoriteBreed) { this.favoriteBreed = favoriteBreed; }
+        public String getAppliedSpecies() { return appliedSpecies; }
+        public void setAppliedSpecies(String appliedSpecies) { this.appliedSpecies = appliedSpecies; }
+        public String getAppliedBreed() { return appliedBreed; }
+        public void setAppliedBreed(String appliedBreed) { this.appliedBreed = appliedBreed; }
     }
 
     @Override
