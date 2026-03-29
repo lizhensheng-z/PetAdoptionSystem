@@ -113,7 +113,22 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         }
 
         // 排序
-        if ("published_time".equals(request.getSortBy())) {
+        if ("distance".equals(request.getSortBy())) {
+            // 距离排序需要用户位置，先查询再排序
+            if (request.getLng() != null && request.getLat() != null) {
+                // 不在SQL层排序，在内存中排序
+                queryWrapper.orderByDesc(PetEntity::getPublishedTime);
+            } else {
+                queryWrapper.orderByDesc(PetEntity::getPublishedTime);
+            }
+        } else if ("age_month".equals(request.getSortBy())) {
+            // 按年龄排序
+            if ("asc".equalsIgnoreCase(request.getOrder())) {
+                queryWrapper.orderByAsc(PetEntity::getAgeMonth);
+            } else {
+                queryWrapper.orderByDesc(PetEntity::getAgeMonth);
+            }
+        } else if ("published_time".equals(request.getSortBy())) {
             if ("asc".equalsIgnoreCase(request.getOrder())) {
                 queryWrapper.orderByAsc(PetEntity::getPublishedTime);
             } else {
@@ -132,6 +147,16 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         List<PetListResponse> petList = petPage.getRecords().stream()
             .map(pet -> convertToListResponse(pet, request.getLng(), request.getLat()))
             .collect(Collectors.toList());
+
+        // 距离排序：在内存中按距离升序排列
+        if ("distance".equals(request.getSortBy()) && request.getLng() != null && request.getLat() != null) {
+            petList.sort((a, b) -> {
+                if (a.getDistance() == null && b.getDistance() == null) return 0;
+                if (a.getDistance() == null) return 1;
+                if (b.getDistance() == null) return -1;
+                return a.getDistance().compareTo(b.getDistance());
+            });
+        }
 
         return new PageResult<>(
             petList,
