@@ -69,7 +69,13 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
             throw new BusinessException("您已有进行中的申请，无法重复申请");
         }
 
-        // 检查进行中的申请数量
+        // 检查用户进行中的申请总数（最多2个）
+        int userActiveCount = adoptionApplicationMapper.countActiveApplicationsByUserId(userId);
+        if (userActiveCount >= 2) {
+            throw new BusinessException("您已有2个进行中的申请，请等待处理完成后再申请新的宠物");
+        }
+
+        // 检查宠物进行中的申请数量
         int activeCount = adoptionApplicationMapper.countActiveApplicationsByPetId(request.getPetId());
         if (activeCount >= 10) { // 可配置的最大申请数
             throw new BusinessException("该宠物申请人数已满，请稍后再试");
