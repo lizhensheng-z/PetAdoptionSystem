@@ -23,23 +23,27 @@ public class DatabaseUserDetailsService implements UserDetailsService {
     private final UserService userService;
     
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String usernameOrPhone) throws UsernameNotFoundException {
+        // 支持用户名或手机号登录
         UserEntity user = userService.lambdaQuery()
-                .eq(UserEntity::getUsername, username)
+                .and(wrapper -> wrapper
+                        .eq(UserEntity::getUsername, usernameOrPhone)
+                        .or()
+                        .eq(UserEntity::getPhone, usernameOrPhone))
                 .eq(UserEntity::getDeleted, 0)
                 .one();
-        
+
         if (user == null) {
-            throw new UsernameNotFoundException("用户不存在: " + username);
+            throw new UsernameNotFoundException("用户不存在: " + usernameOrPhone);
         }
-        
+
         if ("BANNED".equals(user.getStatus())) {
-            throw new UsernameNotFoundException("用户已被禁用: " + username);
+            throw new UsernameNotFoundException("用户已被禁用: " + usernameOrPhone);
         }
-        
+
         //TODO 根据用户角色设置权限
         List<String> permissions = Collections.singletonList("ROLE_" + user.getRole());
-        
+
         return new CustomUserDetails(user, permissions);
     }
 }

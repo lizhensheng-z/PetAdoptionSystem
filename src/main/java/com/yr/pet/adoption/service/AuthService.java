@@ -45,18 +45,18 @@ public class AuthService {
     public LoginResponse login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
+                        loginRequest.getPhone(),
                         loginRequest.getPassword()
                 )
         );
-        
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        
+
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String token = jwtUtil.generateToken(userDetails);
         String refreshToken = jwtUtil.generateRefreshToken(userDetails);
-        
-        UserEntity user = userService.findByUsername(loginRequest.getUsername());
+
+        UserEntity user = userService.findByPhone(loginRequest.getPhone());
         
         List<String> permissions = userDetails.getAuthorities().stream()
                 .map(auth -> auth.getAuthority())
@@ -68,7 +68,8 @@ public class AuthService {
         // 构建响应
         LoginResponse response = new LoginResponse();
         response.setToken(token);
-        
+        response.setRefreshToken(refreshToken);
+
         LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
         userInfo.setId(user.getId());
         userInfo.setUsername(user.getUsername());
@@ -112,22 +113,25 @@ public class AuthService {
      */
     public LoginResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
         String refreshToken = refreshTokenRequest.getRefreshToken();
+        // JWT的subject是用户名（CustomUserDetails.getUsername()返回的是用户名）
         String username = jwtUtil.getUsernameFromToken(refreshToken);
-        
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        
+
         if (jwtUtil.validateToken(refreshToken, userDetails)) {
             String newAccessToken = jwtUtil.generateToken(userDetails);
-            
+            String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
+
             UserEntity user = userService.findByUsername(username);
             List<String> permissions = userDetails.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
                     .toList();
-            
+
             // 构建响应
             LoginResponse response = new LoginResponse();
             response.setToken(newAccessToken);
-            
+            response.setRefreshToken(newRefreshToken);
+
             LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
             userInfo.setId(user.getId());
             userInfo.setUsername(user.getUsername());

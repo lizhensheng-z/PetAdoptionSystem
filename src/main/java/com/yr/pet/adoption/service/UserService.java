@@ -22,7 +22,12 @@ public interface UserService extends IService<UserEntity> {
      * 根据用户名查找用户
      */
     UserEntity findByUsername(String username);
-    
+
+    /**
+     * 根据手机号查找用户
+     */
+    UserEntity findByPhone(String phone);
+
     /**
      * 根据用户ID查找用户
      */

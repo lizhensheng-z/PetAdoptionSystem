@@ -68,6 +68,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     }
 
     @Override
+    public UserEntity findByPhone(String phone) {
+        return lambdaQuery()
+                .eq(UserEntity::getPhone, phone)
+                .eq(UserEntity::getDeleted, 0)
+                .one();
+    }
+
+    @Override
     public UserEntity findById(Long id) {
         return lambdaQuery()
                 .eq(UserEntity::getId, id)

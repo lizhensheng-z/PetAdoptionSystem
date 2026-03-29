@@ -16,6 +16,9 @@ public class LoginResponse {
     @Schema(description = "访问令牌")
     private String token;
 
+    @Schema(description = "刷新令牌")
+    private String refreshToken;
+
     @Schema(description = "用户信息")
     private UserInfo user;
 
@@ -25,6 +28,14 @@ public class LoginResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public UserInfo getUser() {
