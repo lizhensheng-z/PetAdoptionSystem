@@ -15,6 +15,7 @@ import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.model.entity.UserEntity;
 import com.yr.pet.adoption.model.vo.*;
 import com.yr.pet.adoption.service.AdoptionApplicationService;
+import com.yr.pet.adoption.service.CreditAccountService;
 import com.yr.pet.adoption.exception.BusinessException;
 import com.yr.pet.adoption.common.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,8 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
     private ObjectMapper objectMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private CreditAccountService creditAccountService;
 
     @Override
     @Transactional
@@ -156,6 +159,8 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
         vo.setRejectReason(application.getRejectReason());
         vo.setOrgRemark(application.getOrgRemark());
         vo.setDecidedTime(application.getDecidedTime());
+        vo.setInterviewTime(application.getInterviewTime());
+        vo.setInterviewLocation(application.getInterviewLocation());
 
         // 设置宠物信息
         vo.setPetName(pet.getName());
@@ -217,6 +222,9 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
         flowLog.setCreateTime(LocalDateTime.now());
         adoptionFlowLogMapper.insert(flowLog);
 
+        // 扣减信用分
+        creditAccountService.penalizeCancelApply(userId, applicationId);
+
         // 检查是否还有其他进行中的申请
         int activeCount = adoptionApplicationMapper.countActiveApplicationsByPetId(application.getPetId());
         if (activeCount == 0) {
@@ -261,6 +269,8 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
         vo.setRejectReason(application.getRejectReason());
         vo.setOrgRemark(application.getOrgRemark());
         vo.setDecidedTime(application.getDecidedTime());
+        vo.setInterviewTime(application.getInterviewTime());
+        vo.setInterviewLocation(application.getInterviewLocation());
 
         // 设置宠物信息
         vo.setPetName(pet.getName());
@@ -318,18 +328,32 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
         // 更新状态
         application.setStatus(newStatus);
         application.setUpdateTime(LocalDateTime.now());
-        
+
+        // 如果是约见面谈，保存面谈时间和地点
+        if ("INTERVIEW".equals(newStatus)) {
+            if (request.getInterviewTime() != null) {
+                application.setInterviewTime(request.getInterviewTime());
+            }
+            if (request.getInterviewLocation() != null) {
+                application.setInterviewLocation(request.getInterviewLocation());
+            }
+        }
+
         if ("REJECTED".equals(newStatus)) {
             application.setRejectReason(request.getRejectReason());
             application.setDecidedTime(LocalDateTime.now());
+            // 扣减信用分
+            creditAccountService.penalizeApplyRejected(application.getUserId(), applicationId);
         } else if ("APPROVED".equals(newStatus)) {
             application.setDecidedTime(LocalDateTime.now());
+            // 奖励信用分
+            creditAccountService.rewardAdoptionSuccess(application.getUserId(), applicationId);
         }
-        
+
         if (request.getRemark() != null) {
             application.setOrgRemark(request.getRemark());
         }
-        
+
         adoptionApplicationMapper.updateById(application);
 
         // 创建流程日志

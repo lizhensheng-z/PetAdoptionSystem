@@ -6,7 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yr.pet.adoption.common.PageResult;
 import com.yr.pet.adoption.model.entity.*;
 import com.yr.pet.adoption.model.dto.*;
-import com.yr.pet.adoption.mapper.*;
+import com.yr.pet.adoption.mapper.AdoptionApplicationMapper;
+import com.yr.pet.adoption.mapper.ConfigMapper;
+import com.yr.pet.adoption.mapper.CreditAccountMapper;
+import com.yr.pet.adoption.mapper.OrgProfileMapper;
+import com.yr.pet.adoption.mapper.PetMapper;
+import com.yr.pet.adoption.mapper.UserMapper;
+import com.yr.pet.adoption.mapper.CheckinPostMapper;
 import com.yr.pet.adoption.service.CheckinPostService;
 import com.yr.pet.adoption.service.CreditAccountService;
 import com.yr.pet.adoption.exception.BizException;
@@ -48,8 +54,6 @@ public class CheckinPostServiceImpl extends ServiceImpl<CheckinPostMapper, Check
     private UserMapper userMapper;
     @Autowired
     private CreditAccountMapper creditAccountMapper;
-    @Autowired
-    private CreditLogMapper creditLogMapper;
     @Autowired
     private ConfigMapper configMapper;
     @Autowired
@@ -106,31 +110,12 @@ public class CheckinPostServiceImpl extends ServiceImpl<CheckinPostMapper, Check
         
         this.save(entity);
 
-        // 5. 更新信用账户
-        CreditAccountEntity creditAccount = creditAccountMapper.selectById(userId);
-        int beforeScore = creditAccount != null ? creditAccount.getScore() : 0;
-        int afterScore = beforeScore + creditScore;
-        
-        if (creditAccount == null) {
-            creditAccount = new CreditAccountEntity();
-            creditAccount.setUserId(userId);
-            creditAccount.setScore(afterScore);
-            creditAccount.setLevel(calculateLevel(afterScore));
-            creditAccountMapper.insert(creditAccount);
-        } else {
-            creditAccount.setScore(afterScore);
-            creditAccount.setLevel(calculateLevel(afterScore));
-            creditAccountMapper.updateById(creditAccount);
-        }
+        // 5. 奖励信用分
+        creditAccountService.rewardCheckin(userId, request.getContent(), hasMedia, entity.getId());
 
-        // 6. 记录信用流水
-        CreditLogEntity creditLog = new CreditLogEntity();
-        creditLog.setUserId(userId);
-        creditLog.setDelta(creditScore);
-        creditLog.setReason("CHECKIN");
-        creditLog.setRefType("checkin");
-        creditLog.setRefId(entity.getId());
-        creditLogMapper.insert(creditLog);
+        // 6. 获取更新后的信用分
+        CreditAccountEntity creditAccount = creditAccountMapper.selectById(userId);
+        int afterScore = creditAccount != null ? creditAccount.getScore() : 0;
 
         // 7. 返回响应
         CheckinResponse response = new CheckinResponse();
@@ -304,13 +289,5 @@ public class CheckinPostServiceImpl extends ServiceImpl<CheckinPostMapper, Check
             reason.append("+媒体");
         }
         return reason.toString();
-    }
-
-    private int calculateLevel(int score) {
-        if (score >= 150) return 4;
-        if (score >= 100) return 3;
-        if (score >= 50) return 2;
-        if (score >= 25) return 1;
-        return 0;
     }
 }

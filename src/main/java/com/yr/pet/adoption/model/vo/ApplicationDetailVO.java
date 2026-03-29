@@ -63,6 +63,13 @@ public class ApplicationDetailVO {
     @Schema(description = "机构备注")
     private String orgRemark;
 
+    @Schema(description = "面谈时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime interviewTime;
+
+    @Schema(description = "面谈地点")
+    private String interviewLocation;
+
     @Schema(description = "最终决定时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime decidedTime;

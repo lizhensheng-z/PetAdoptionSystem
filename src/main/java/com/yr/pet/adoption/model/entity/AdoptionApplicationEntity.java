@@ -60,6 +60,18 @@ public class AdoptionApplicationEntity implements Serializable {
     private String orgRemark;
 
     /**
+     * 面谈时间
+     */
+    @TableField("interview_time")
+    private LocalDateTime interviewTime;
+
+    /**
+     * 面谈地点
+     */
+    @TableField("interview_location")
+    private String interviewLocation;
+
+    /**
      * 最终决定时间（通过/拒绝）
      */
     @TableField("decided_time")
@@ -138,6 +150,22 @@ public class AdoptionApplicationEntity implements Serializable {
 
     public void setOrgRemark(String orgRemark) {
         this.orgRemark = orgRemark;
+    }
+
+    public LocalDateTime getInterviewTime() {
+        return interviewTime;
+    }
+
+    public void setInterviewTime(LocalDateTime interviewTime) {
+        this.interviewTime = interviewTime;
+    }
+
+    public String getInterviewLocation() {
+        return interviewLocation;
+    }
+
+    public void setInterviewLocation(String interviewLocation) {
+        this.interviewLocation = interviewLocation;
     }
 
     public LocalDateTime getDecidedTime() {

@@ -335,7 +335,7 @@ public class CreditAccountServiceImpl extends ServiceImpl<CreditAccountMapper, C
 
     private List<CreditInfoResponse.BadgeInfo> calculateBadges(Long userId, int checkinCount, int adoptionCount) {
         List<CreditInfoResponse.BadgeInfo> badges = new ArrayList<>();
-        
+
         // 初心者：第一次打卡
         if (checkinCount >= 1) {
             CreditInfoResponse.BadgeInfo badge = new CreditInfoResponse.BadgeInfo();
@@ -344,7 +344,7 @@ public class CreditAccountServiceImpl extends ServiceImpl<CreditAccountMapper, C
             badge.setDescription("完成第一次打卡");
             badges.add(badge);
         }
-        
+
         // 打卡达人：累计打卡10次
         if (checkinCount >= 10) {
             CreditInfoResponse.BadgeInfo badge = new CreditInfoResponse.BadgeInfo();
@@ -353,7 +353,7 @@ public class CreditAccountServiceImpl extends ServiceImpl<CreditAccountMapper, C
             badge.setDescription("累计打卡10次");
             badges.add(badge);
         }
-        
+
         // 铲屎官：成功领养
         if (adoptionCount >= 1) {
             CreditInfoResponse.BadgeInfo badge = new CreditInfoResponse.BadgeInfo();
@@ -362,7 +362,80 @@ public class CreditAccountServiceImpl extends ServiceImpl<CreditAccountMapper, C
             badge.setDescription("成功领养宠物");
             badges.add(badge);
         }
-        
+
         return badges;
+    }
+
+    @Override
+    public void changeCredit(Long userId, Integer delta, String reason, String refType, Long refId) {
+        // 获取或创建信用账户
+        CreditAccountEntity account = this.getById(userId);
+        if (account == null) {
+            account = new CreditAccountEntity();
+            account.setUserId(userId);
+            account.setScore(60); // 默认60分
+            account.setLevel(0);
+            account.setLastCalcTime(LocalDateTime.now());
+            account.setUpdateTime(LocalDateTime.now());
+            this.save(account);
+        }
+
+        // 更新分数
+        int newScore = Math.max(0, account.getScore() + delta); // 分数不能为负
+        account.setScore(newScore);
+        account.setLevel(calculateLevel(newScore));
+        account.setLastCalcTime(LocalDateTime.now());
+        account.setUpdateTime(LocalDateTime.now());
+        this.updateById(account);
+
+        // 记录流水
+        CreditLogEntity log = new CreditLogEntity();
+        log.setUserId(userId);
+        log.setDelta(delta);
+        log.setReason(reason);
+        log.setRefType(refType);
+        log.setRefId(refId);
+        log.setCreateTime(LocalDateTime.now());
+        creditLogMapper.insert(log);
+    }
+
+    @Override
+    public void rewardCheckin(Long userId, String content, boolean hasMedia, Long checkinId) {
+        int score = calculateCheckinScore(content, hasMedia);
+        changeCredit(userId, score, "CHECKIN", "checkin", checkinId);
+    }
+
+    @Override
+    public void rewardAdoptionSuccess(Long userId, Long applicationId) {
+        int score = getConfigValue("credit.adopt.success", 10);
+        changeCredit(userId, score, "ADOPT_SUCCESS", "application", applicationId);
+    }
+
+    @Override
+    public void penalizeCancelApply(Long userId, Long applicationId) {
+        int score = getConfigValue("credit.apply.cancel", -2);
+        changeCredit(userId, score, "CANCEL_APPLY", "application", applicationId);
+    }
+
+    @Override
+    public void penalizeApplyRejected(Long userId, Long applicationId) {
+        int score = getConfigValue("credit.apply.rejected", -1);
+        changeCredit(userId, score, "APPLY_REJECTED", "application", applicationId);
+    }
+
+    @Override
+    public void penalizeViolation(Long userId, Integer delta, String reason) {
+        changeCredit(userId, -Math.abs(delta), "VIOLATION", "manual", null);
+    }
+
+    /**
+     * 根据分数计算等级
+     */
+    private int calculateLevel(int score) {
+        if (score >= 150) return 4;
+        if (score >= 100) return 3;
+        if (score >= 50) return 2;
+        if (score >= 25) return 1;
+        return 0;
     }
 }
