@@ -675,7 +675,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (score == null) {
             return "Top 50%";
         }
-        
+
         // 简化的排名计算逻辑
         if (score >= 900) {
             return "Top 5%";
@@ -686,5 +686,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         } else {
             return "Top 50%";
         }
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        // 查询用户
+        UserEntity user = findById(userId);
+        if (user == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "用户不存在");
+        }
+
+        // 验证原密码
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "原密码错误");
+        }
+
+        // 新密码不能与原密码相同
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "新密码不能与原密码相同");
+        }
+
+        // 更新密码
+        String newPasswordHash = passwordEncoder.encode(request.getNewPassword());
+        lambdaUpdate()
+                .eq(UserEntity::getId, userId)
+                .set(UserEntity::getPasswordHash, newPasswordHash)
+                .set(UserEntity::getUpdateTime, LocalDateTime.now())
+                .update();
     }
 }

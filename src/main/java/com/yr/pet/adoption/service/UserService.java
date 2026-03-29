@@ -131,4 +131,11 @@ public interface UserService extends IService<UserEntity> {
      * @return 信用摘要信息
      */
     UserCreditSummaryResponse getUserCreditSummary(Long userId);
+
+    /**
+     * 修改用户密码
+     * @param userId 用户ID
+     * @param request 修改密码请求
+     */
+    void changePassword(Long userId, ChangePasswordRequest request);
 }
