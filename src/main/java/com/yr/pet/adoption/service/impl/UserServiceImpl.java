@@ -12,6 +12,7 @@ import com.yr.pet.adoption.model.dto.*;
 import com.yr.pet.adoption.mapper.AdoptionApplicationMapper;
 import com.yr.pet.adoption.mapper.PetMapper;
 import com.yr.pet.adoption.mapper.CreditAccountMapper;
+import com.yr.pet.adoption.mapper.TagMapper;
 import com.yr.pet.adoption.model.entity.*;
 import com.yr.pet.adoption.mapper.UserMapper;
 import com.yr.pet.adoption.mapper.OrgProfileMapper;
@@ -59,6 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     private final AdoptionApplicationMapper adoptionApplicationMapper;
     private final PetMapper petMapper;
     private final CreditAccountMapper creditAccountMapper;
+    private final TagMapper tagMapper;
 
     @Override
     public UserEntity findByUsername(String username) {
@@ -272,6 +274,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             } catch (JsonProcessingException e) {
                 throw new BizException(ErrorCode.SYSTEM_ERROR, "用户偏好解析失败");
             }
+        }
+
+        // 如果tags为空,从数据库查询标签并返回前5个
+        if (response.getTags() == null || response.getTags().isEmpty()) {
+            LambdaQueryWrapper<TagEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(TagEntity::getEnabled, true)
+                   .eq(TagEntity::getDeleted, 0)
+                   .isNotNull(TagEntity::getName)
+                   .orderByDesc(TagEntity::getId)  // 按ID降序,获取最新的标签
+                   .last("LIMIT 5");
+            
+            List<String> defaultTags = tagMapper.selectList(wrapper).stream()
+                .map(TagEntity::getName)
+                .filter(StringUtils::hasText)
+                .distinct()
+                .collect(Collectors.toList());
+            
+            response.setTags(defaultTags);
         }
 
         return response;
