@@ -167,17 +167,16 @@ public class PetController {
     }
 
     /**
-     * 提交宠物审核
+     * 发布宠物
      */
-    @PostMapping("/org/pets/{id}/submit-audit")
-//    @PreAuthorize("hasAuthority('pet:submit_audit')")
-    @Operation(summary = "提交宠物审核", description = "将宠物档案提交到管理员审核")
-    public R<Void> submitPetAudit(
+    @PostMapping("/org/pets/{id}/publish")
+    @Operation(summary = "发布宠物", description = "将宠物档案发布，发布后用户可见")
+    public R<Void> publishPet(
             @Parameter(description = "宠物ID", required = true)
             @PathVariable @NotNull @Min(1) Long id) {
-        
+
         Long userId = com.yr.pet.adoption.common.UserContext.getUserId();
-        petService.submitPetAudit(userId, id);
+        petService.publishPet(userId, id);
         return R.ok();
     }
 

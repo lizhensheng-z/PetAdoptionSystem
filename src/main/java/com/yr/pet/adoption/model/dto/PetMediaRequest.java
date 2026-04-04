@@ -16,8 +16,7 @@ public class PetMediaRequest {
     @NotBlank(message = "媒体类型不能为空")
     private String mediaType;
 
-    @NotNull(message = "排序号不能为空")
-    private Integer sort;
+    private Integer sort; // 排序号，可选，后端自动计算
 
     private Boolean isCover = false;
 

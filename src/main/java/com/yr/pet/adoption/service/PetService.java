@@ -124,9 +124,9 @@ public interface PetService extends IService<PetEntity> {
     void deletePetMedia(Long orgUserId, Long petId, Long mediaId);
 
     /**
-     * 提交宠物审核
+     * 发布宠物
      * @param orgUserId 机构用户ID
      * @param petId 宠物ID
      */
-    void submitPetAudit(Long orgUserId, Long petId);
+    void publishPet(Long orgUserId, Long petId);
 }

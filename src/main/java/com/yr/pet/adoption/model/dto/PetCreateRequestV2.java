@@ -32,12 +32,10 @@ public class PetCreateRequestV2 {
     @NotNull(message = "性别不能为空")
     private String gender;
 
+    @JsonProperty("ageMonth")
     @NotNull(message = "年龄不能为空")
     private Integer ageMonths;
     private Integer ageYears;
-
-    @JsonProperty("ageMonth")
-    private Integer ageMonth;
 
     private String size;
 
@@ -54,8 +52,6 @@ public class PetCreateRequestV2 {
     private String adoptRequirements;
 
     private String status;
-
-    private String auditStatus;
 
     private String coverUrl;
 

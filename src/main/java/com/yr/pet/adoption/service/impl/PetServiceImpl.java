@@ -68,9 +68,8 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         // 构建查询条件
         LambdaQueryWrapper<PetEntity> queryWrapper = new LambdaQueryWrapper<>();
         
-        // 只查询已发布且审核通过的宠物
+        // 只查询已发布的宠物
         queryWrapper.eq(PetEntity::getStatus, "PUBLISHED")
-                   .eq(PetEntity::getAuditStatus, "APPROVED")
                    .eq(PetEntity::getDeleted, 0);
 
         // 关键词搜索
@@ -196,7 +195,6 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         // 3. 构建查询条件
         LambdaQueryWrapper<PetEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PetEntity::getStatus, "PUBLISHED")
-                   .eq(PetEntity::getAuditStatus, "APPROVED")
                    .eq(PetEntity::getDeleted, 0);
 
         // 排除已申请的宠物
@@ -574,7 +572,6 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         LambdaQueryWrapper<PetEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ne(PetEntity::getId, petId)
                    .eq(PetEntity::getStatus, "PUBLISHED")
-                   .eq(PetEntity::getAuditStatus, "APPROVED")
                    .eq(PetEntity::getDeleted, 0)
                    .orderByDesc(PetEntity::getPublishedTime)
                    .last("LIMIT " + (limit != null ? limit : 6));
@@ -814,9 +811,9 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         // 设置机构用户ID
         pet.setOrgUserId(orgUserId);
 
-        // 设置状态为草稿
-        pet.setStatus("DRAFT");
-        pet.setAuditStatus("NONE");
+        // 设置状态为已发布
+        pet.setStatus("PUBLISHED");
+        pet.setPublishedTime(java.time.LocalDateTime.now());
 
         // 设置默认位置（如果未提供，使用机构位置）
         if (pet.getLng() == null && orgProfile.getLng() != null) {
@@ -840,8 +837,8 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         PetCreateResponse response = new PetCreateResponse();
         response.setId(pet.getId());
         response.setStatus(pet.getStatus());
-        response.setAuditStatus(pet.getAuditStatus());
         response.setCreateTime(pet.getCreateTime());
+        response.setPublishedTime(pet.getPublishedTime());
 
         return response;
     }
@@ -865,10 +862,9 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         pet.setSize(request.getSize());
         pet.setColor(request.getColor());
         pet.setAdoptRequirements(request.getAdoptRequirements());
-        
         // 计算总月龄
 
-            pet.setAgeMonth(request.getAgeMonth());
+            pet.setAgeMonth(request.getAgeMonths());
 
 
         // 设置健康信息
@@ -900,9 +896,9 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         // 设置机构用户ID
         pet.setOrgUserId(orgUserId);
 
-        // 设置状态（使用请求中的状态或默认为草稿）
-        pet.setStatus(request.getStatus() != null ? request.getStatus() : "DRAFT");
-        pet.setAuditStatus(request.getAuditStatus() != null ? request.getAuditStatus() : "NONE");
+        // 设置状态为已发布
+        pet.setStatus("PUBLISHED");
+        pet.setPublishedTime(java.time.LocalDateTime.now());
 
         // 设置默认位置（如果未提供，使用机构位置）
         if (pet.getLng() == null && orgProfile.getLng() != null) {
@@ -918,17 +914,19 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         this.save(pet);
 
         // 4. 处理标签关联
-        List<Long> tagIds = request.getPersonality().getTags();
-        if (tagIds != null && !tagIds.isEmpty()) {
-            savePetTags(pet.getId(), tagIds);
+        if (request.getPersonality() != null && request.getPersonality().getTags() != null) {
+            List<Long> tagIds = request.getPersonality().getTags();
+            if (!tagIds.isEmpty()) {
+                savePetTags(pet.getId(), tagIds);
+            }
         }
 
         // 5. 返回创建结果
         PetCreateResponse response = new PetCreateResponse();
         response.setId(pet.getId());
         response.setStatus(pet.getStatus());
-        response.setAuditStatus(pet.getAuditStatus());
         response.setCreateTime(pet.getCreateTime());
+        response.setPublishedTime(pet.getPublishedTime());
 
         return response;
     }
@@ -945,9 +943,9 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
             throw new BizException(ErrorCode.FORBIDDEN, "无权修改该宠物信息");
         }
 
-        // 2. 检查宠物状态,已发布的宠物不能直接修改
-        if ("PUBLISHED".equals(pet.getStatus())) {
-            throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "已发布的宠物不能直接修改，请先下架");
+        // 2. 检查宠物状态，已领养的宠物不能修改
+        if ("ADOPTED".equals(pet.getStatus())) {
+            throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "已领养的宠物不能修改");
         }
 
         // 3. 更新宠物信息
@@ -975,13 +973,15 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         if (pet == null || pet.getDeleted() == 1) {
             throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
         }
-        
+
         if (!pet.getOrgUserId().equals(orgUserId)) {
             throw new BizException(ErrorCode.FORBIDDEN, "无权删除该宠物");
         }
 
-        // 2. 检查是否有进行中的领养申请
-        // TODO: 可以在这里添加检查逻辑
+        // 2. 检查宠物状态，已领养的宠物不能删除
+        if ("ADOPTED".equals(pet.getStatus())) {
+            throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "已领养的宠物不能删除");
+        }
 
         // 3. 逻辑删除宠物
         this.removeById(petId);
@@ -999,11 +999,6 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         // 状态筛选
         if (StringUtils.hasText(request.getStatus())) {
             queryWrapper.eq(PetEntity::getStatus, request.getStatus());
-        }
-
-        // 审核状态筛选
-        if (StringUtils.hasText(request.getAuditStatus())) {
-            queryWrapper.eq(PetEntity::getAuditStatus, request.getAuditStatus());
         }
 
         // 排序
@@ -1158,25 +1153,25 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
     }
 
     @Override
-    public void submitPetAudit(Long orgUserId, Long petId) {
+    public void publishPet(Long orgUserId, Long petId) {
         // 1. 验证宠物是否存在且属于当前机构
         PetEntity pet = this.getById(petId);
         if (pet == null || pet.getDeleted() == 1) {
             throw new BizException(ErrorCode.NOT_FOUND, "宠物不存在");
         }
-        
+
         if (!pet.getOrgUserId().equals(orgUserId)) {
             throw new BizException(ErrorCode.FORBIDDEN, "无权操作该宠物");
         }
 
-        // 2. 检查宠物状态
-        if (!"DRAFT".equals(pet.getStatus())) {
-            throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "只有草稿状态的宠物才能提交审核");
+        // 2. 检查宠物状态，已领养的宠物不能重新发布
+        if ("ADOPTED".equals(pet.getStatus())) {
+            throw new BizException(ErrorCode.OPERATION_NOT_ALLOWED, "已领养的宠物不能重新发布");
         }
 
         // 3. 检查必填信息是否完整
-        if (!StringUtils.hasText(pet.getName()) || 
-            !StringUtils.hasText(pet.getSpecies()) || 
+        if (!StringUtils.hasText(pet.getName()) ||
+            !StringUtils.hasText(pet.getSpecies()) ||
             !StringUtils.hasText(pet.getBreed()) ||
             pet.getAgeMonth() == null ||
             !StringUtils.hasText(pet.getGender()) ||
@@ -1195,13 +1190,13 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         mediaWrapper.eq(PetMediaEntity::getPetId, petId)
                    .eq(PetMediaEntity::getDeleted, 0);
         long mediaCount = petMediaMapper.selectCount(mediaWrapper);
-        if (mediaCount < 3) {
-            throw new BizException(ErrorCode.PARAM_ERROR, "请至少上传3张宠物照片");
+        if (mediaCount < 1) {
+            throw new BizException(ErrorCode.PARAM_ERROR, "请至少上传1张宠物照片");
         }
 
-        // 6. 更新宠物状态
-        pet.setStatus("PENDING_AUDIT");
-        pet.setAuditStatus("PENDING");
+        // 6. 更新宠物状态为已发布
+        pet.setStatus("PUBLISHED");
+        pet.setPublishedTime(java.time.LocalDateTime.now());
         this.updateById(pet);
     }
 

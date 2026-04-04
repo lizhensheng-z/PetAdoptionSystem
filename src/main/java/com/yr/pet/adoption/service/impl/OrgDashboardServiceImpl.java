@@ -59,17 +59,17 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
 
         // 统计各状态宠物数量
         response.setTotalPets((int) orgPets.stream()
-                .filter(p -> List.of("PUBLISHED", "APPLYING").contains(p.getStatus()))
+                .filter(p -> "PUBLISHED".equals(p.getStatus()))
                 .count());
         response.setPublishedPets((int) orgPets.stream()
                 .filter(p -> "PUBLISHED".equals(p.getStatus()))
                 .count());
-        response.setDraftPets((int) orgPets.stream()
-                .filter(p -> "DRAFT".equals(p.getStatus()))
+        response.setAdoptedPets((int) orgPets.stream()
+                .filter(p -> "ADOPTED".equals(p.getStatus()))
                 .count());
-        response.setUnderReviewPets((int) orgPets.stream()
-                .filter(p -> "PENDING_AUDIT".equals(p.getStatus()))
-                .count());
+        // 草稿和审核中状态已删除，不再统计
+        response.setDraftPets(0);
+        response.setUnderReviewPets(0);
 
         // 物种分布统计
         response.setCatCount((int) orgPets.stream()
@@ -253,32 +253,7 @@ public class OrgDashboardServiceImpl implements OrgDashboardService {
             }
         }
 
-        // 2. 待审核的宠物
-        if (type == null || "audit".equals(type)) {
-            List<PetEntity> pendingAuditPets = petMapper.selectList(
-                    Wrappers.lambdaQuery(PetEntity.class)
-                            .eq(PetEntity::getOrgUserId, orgUserId)
-                            .eq(PetEntity::getStatus, "PENDING_AUDIT")
-                            .eq(PetEntity::getDeleted, 0)
-                            .orderByAsc(PetEntity::getUpdateTime)
-                            .last("LIMIT " + limit)
-            );
-
-            for (PetEntity pet : pendingAuditPets) {
-                TodoItemResponse item = new TodoItemResponse();
-                item.setId(pet.getId());
-                item.setType("audit");
-                item.setPetId(pet.getId());
-                item.setPetName(pet.getName());
-                item.setPetCoverUrl(pet.getCoverUrl());
-                item.setStatus("PENDING_AUDIT");
-                item.setSubmitTime(pet.getUpdateTime());
-                item.setPriority("medium");
-                item.setTitle("宠物\"" + pet.getName() + "\"等待审核发布");
-
-                todos.add(item);
-            }
-        }
+        // 2. 待审核的宠物 - 已删除审核流程，不再需要
 
         // 3. 需要回访的领养人
         if (type == null || "followup".equals(type)) {

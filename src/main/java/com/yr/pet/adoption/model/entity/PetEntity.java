@@ -109,16 +109,10 @@ public class PetEntity implements Serializable {
     private String adoptRequirements;
 
     /**
-     * 宠物状态：DRAFT/PENDING_AUDIT/PUBLISHED/APPLYING/ADOPTED/REMOVED
+     * 宠物状态：PUBLISHED(已发布)/ADOPTED(已领养)
      */
     @TableField("status")
     private String status;
-
-    /**
-     * 审核状态：NONE/PENDING/APPROVED/REJECTED
-     */
-    @TableField("audit_status")
-    private String auditStatus;
 
     /**
      * 经度（默认继承机构坐标）
@@ -289,14 +283,6 @@ public class PetEntity implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getAuditStatus() {
-        return auditStatus;
-    }
-
-    public void setAuditStatus(String auditStatus) {
-        this.auditStatus = auditStatus;
     }
 
     public BigDecimal getLng() {

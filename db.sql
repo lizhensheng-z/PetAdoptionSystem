@@ -20,8 +20,6 @@ DROP TABLE IF EXISTS user_favorite;
 DROP TABLE IF EXISTS adoption_flow_log;
 DROP TABLE IF EXISTS adoption_application;
 
-DROP TABLE IF EXISTS pet_audit;
-
 DROP TABLE IF EXISTS pet_tag;
 DROP TABLE IF EXISTS tag;
 DROP TABLE IF EXISTS pet_media;
@@ -155,8 +153,7 @@ CREATE TABLE pet (
                      health_desc VARCHAR(1000) NULL COMMENT '健康描述',
                      personality_desc VARCHAR(1000) NULL COMMENT '性格描述（文本）',
                      adopt_requirements VARCHAR(1000) NULL COMMENT '领养要求（文本）',
-                     status VARCHAR(16) NOT NULL DEFAULT 'DRAFT' COMMENT '宠物状态：DRAFT/PENDING_AUDIT/PUBLISHED/APPLYING/ADOPTED/REMOVED',
-                     audit_status VARCHAR(16) NOT NULL DEFAULT 'NONE' COMMENT '审核状态：NONE/PENDING/APPROVED/REJECTED',
+                     status VARCHAR(16) NOT NULL DEFAULT 'PUBLISHED' COMMENT '宠物状态：PUBLISHED(已发布)/ADOPTED(已领养)',
                      lng DECIMAL(10,6) NULL COMMENT '经度（默认继承机构坐标）',
                      lat DECIMAL(10,6) NULL COMMENT '纬度（默认继承机构坐标）',
                      cover_url VARCHAR(512) NULL COMMENT '封面URL',
@@ -166,8 +163,7 @@ CREATE TABLE pet (
                      update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
                      INDEX idx_org_status(org_user_id, status) COMMENT '机构与宠物状态索引',
                      INDEX idx_status_species(status, species) COMMENT '状态与物种索引',
-                     INDEX idx_audit_status(audit_status) COMMENT '审核状态索引',
-                     INDEX idx_published_time(published_time) COMMENT '发布时间索引',
+                                          INDEX idx_published_time(published_time) COMMENT '发布时间索引',
                      INDEX idx_lng_lat(lng, lat) COMMENT '经纬度索引'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宠物档案表';
 
@@ -205,27 +201,7 @@ CREATE TABLE pet_tag (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宠物-标签关联表';
 
 -- ============================================================
--- D. 宠物审核域（管理员审核发布）
--- ============================================================
-
-CREATE TABLE pet_audit (
-                           id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
-                           pet_id BIGINT NOT NULL COMMENT '宠物ID（pet.id）',
-                           org_user_id BIGINT NOT NULL COMMENT '提交审核的机构用户ID（sys_user.id）',
-                           status VARCHAR(16) NOT NULL DEFAULT 'PENDING' COMMENT '审核状态：PENDING/APPROVED/REJECTED',
-                           submit_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
-                           audit_time DATETIME NULL COMMENT '审核时间',
-                           auditor_id BIGINT NULL COMMENT '审核人用户ID（sys_user.id，role=ADMIN）',
-                           remark VARCHAR(255) NULL COMMENT '审核备注/驳回原因',
-                           deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0否1是',
-                           create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                           update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                           INDEX idx_pet_id(pet_id) COMMENT '宠物审核索引',
-                           INDEX idx_status_time(status, submit_time) COMMENT '状态与时间索引'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宠物发布审核记录表';
-
--- ============================================================
--- E. 领养流程域
+-- D. 领养流程域
 -- ============================================================
 
 CREATE TABLE adoption_application (

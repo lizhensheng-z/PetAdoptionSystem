@@ -34,10 +34,15 @@ public class OrgStatisticsResponse {
     @Schema(description = "已发布宠物数", example = "18")
     private Integer publishedPets;
 
-    @Schema(description = "草稿宠物数", example = "7")
+    @Schema(description = "已领养宠物数", example = "10")
+    private Integer adoptedPets;
+
+    @Schema(description = "草稿宠物数（已废弃）", example = "0")
+    @Deprecated
     private Integer draftPets;
 
-    @Schema(description = "审核中宠物数", example = "2")
+    @Schema(description = "审核中宠物数（已废弃）", example = "0")
+    @Deprecated
     private Integer underReviewPets;
 
     @Schema(description = "猫咪数量")

@@ -13,7 +13,6 @@ public class OrgPetListResponse {
     private String name;
     private String species;
     private String status;
-    private String auditStatus;
     private String coverUrl;
     private LocalDateTime createTime;
     private LocalDateTime publishedTime;
@@ -51,14 +50,6 @@ public class OrgPetListResponse {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getAuditStatus() {
-        return auditStatus;
-    }
-
-    public void setAuditStatus(String auditStatus) {
-        this.auditStatus = auditStatus;
     }
 
     public String getCoverUrl() {

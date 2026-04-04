@@ -111,10 +111,8 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
         flowLog.setCreateTime(LocalDateTime.now());
         adoptionFlowLogMapper.insert(flowLog);
 
-        // 更新宠物状态为申请中
-        pet.setStatus("APPLYING");
-        pet.setUpdateTime(LocalDateTime.now());
-        petMapper.updateById(pet);
+        // 注意：宠物状态保持 PUBLISHED，不再变为 APPLYING
+        // 申请状态由 AdoptionApplication 单独管理
 
         AdoptionApplicationResponse response = new AdoptionApplicationResponse();
         response.setApplicationId(application.getId());
@@ -231,16 +229,7 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
         // 扣减信用分
         creditAccountService.penalizeCancelApply(userId, applicationId);
 
-        // 检查是否还有其他进行中的申请
-        int activeCount = adoptionApplicationMapper.countActiveApplicationsByPetId(application.getPetId());
-        if (activeCount == 0) {
-            PetEntity pet = petMapper.selectById(application.getPetId());
-            if (pet != null) {
-                pet.setStatus("PUBLISHED");
-                pet.setUpdateTime(LocalDateTime.now());
-                petMapper.updateById(pet);
-            }
-        }
+        // 注意：宠物状态保持 PUBLISHED，无需恢复
     }
 
     @Override
@@ -407,15 +396,7 @@ public class AdoptionApplicationServiceImpl implements AdoptionApplicationServic
             }
         }
 
-        // 如果所有申请都被处理完，恢复宠物状态
-        if ("REJECTED".equals(newStatus) || "CANCELLED".equals(newStatus)) {
-            int activeCount = adoptionApplicationMapper.countActiveApplicationsByPetId(application.getPetId());
-            if (activeCount == 0) {
-                pet.setStatus("PUBLISHED");
-                pet.setUpdateTime(LocalDateTime.now());
-                petMapper.updateById(pet);
-            }
-        }
+        // 注意：拒绝或取消申请时，宠物状态保持 PUBLISHED，无需恢复
 
         StatusUpdateResponse response = new StatusUpdateResponse();
         response.setApplicationId(applicationId);

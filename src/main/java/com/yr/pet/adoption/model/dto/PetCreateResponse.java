@@ -11,8 +11,8 @@ public class PetCreateResponse {
 
     private Long id;
     private String status;
-    private String auditStatus;
     private LocalDateTime createTime;
+    private LocalDateTime publishedTime;
 
     // Getters and Setters
     public Long getId() {
@@ -31,19 +31,19 @@ public class PetCreateResponse {
         this.status = status;
     }
 
-    public String getAuditStatus() {
-        return auditStatus;
-    }
-
-    public void setAuditStatus(String auditStatus) {
-        this.auditStatus = auditStatus;
-    }
-
     public LocalDateTime getCreateTime() {
         return createTime;
     }
 
     public void setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
+    }
+
+    public LocalDateTime getPublishedTime() {
+        return publishedTime;
+    }
+
+    public void setPublishedTime(LocalDateTime publishedTime) {
+        this.publishedTime = publishedTime;
     }
 }
