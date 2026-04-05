@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * 申请详情VO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Data
 @Schema(description = "申请详情信息")

@@ -3,7 +3,7 @@ package com.yr.pet.adoption.model.dto;
 /**
  * 回访提醒项DTO
  * @author yr
- * @since 2024-02-15
+ * @since 2026-02-15
  */
 public class FollowupReminderItem {
 

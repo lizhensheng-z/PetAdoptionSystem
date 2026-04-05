@@ -19,7 +19,7 @@ Content-Type: application/json
     "dailyTime": "每天2-3小时",
     "reason": "希望给猫咪一个温暖的家",
     "contactPhone": "13800138000",
-    "contactWechat": "catlover2024"
+    "contactWechat": "catlover2026"
   }
 }
 ```
@@ -34,7 +34,7 @@ Content-Type: application/json
     "petId": 12345,
     "userId": 10001,
     "status": "SUBMITTED",
-    "submitTime": "2024-02-16T09:00:00",
+    "submitTime": "2026-02-16T09:00:00",
     "estimatedReviewTime": "3-7天内"
   }
 }
@@ -60,7 +60,7 @@ GET /api/adoption/applications/me?pageNo=1&pageSize=10&status=SUBMITTED&sortBy=c
         "petCoverUrl": "https://example.com/cat1.jpg",
         "status": "SUBMITTED",
         "statusDesc": "已提交",
-        "submitTime": "2024-02-16T09:00:00",
+        "submitTime": "2026-02-16T09:00:00",
         "canCancel": true,
         "canModify": true
       }
@@ -96,7 +96,7 @@ GET /api/adoption/applications/67890
     "userEmail": "zhangsan@example.com",
     "status": "SUBMITTED",
     "statusDesc": "已提交",
-    "submitTime": "2024-02-16T09:00:00",
+    "submitTime": "2026-02-16T09:00:00",
     "questionnaire": {
       "experience": "有养猫经验，曾养过2只猫",
       "housingType": "自有住房",
@@ -105,7 +105,7 @@ GET /api/adoption/applications/67890
       "dailyTime": "每天2-3小时",
       "reason": "希望给猫咪一个温暖的家",
       "contactPhone": "13800138000",
-      "contactWechat": "catlover2024"
+      "contactWechat": "catlover2026"
     },
     "canCancel": true,
     "canModify": true
@@ -156,7 +156,7 @@ GET /api/org/adoption/applications?petId=12345&status=SUBMITTED&keyword=张三&p
         "applicantPhone": "13800138000",
         "status": "SUBMITTED",
         "statusDesc": "已提交",
-        "submitTime": "2024-02-16T09:00:00"
+        "submitTime": "2026-02-16T09:00:00"
       }
     ],
     "total": 1,
@@ -190,7 +190,7 @@ GET /api/org/adoption/applications/67890
     "userEmail": "zhangsan@example.com",
     "status": "SUBMITTED",
     "statusDesc": "已提交",
-    "submitTime": "2024-02-16T09:00:00",
+    "submitTime": "2026-02-16T09:00:00",
     "questionnaire": {
       "experience": "有养猫经验，曾养过2只猫",
       "housingType": "自有住房",
@@ -199,7 +199,7 @@ GET /api/org/adoption/applications/67890
       "dailyTime": "每天2-3小时",
       "reason": "希望给猫咪一个温暖的家",
       "contactPhone": "13800138000",
-      "contactWechat": "catlover2024"
+      "contactWechat": "catlover2026"
     },
     "canCancel": false,
     "canModify": true
@@ -229,7 +229,7 @@ Content-Type: application/json
     "applicationId": 67890,
     "fromStatus": "SUBMITTED",
     "toStatus": "UNDER_REVIEW",
-    "updateTime": "2024-02-16T10:30:00"
+    "updateTime": "2026-02-16T10:30:00"
   }
 }
 ```
@@ -243,7 +243,7 @@ Content-Type: application/json
 
 {
   "toStatus": "INTERVIEW",
-  "interviewTime": "2024-02-20T14:00:00",
+  "interviewTime": "2026-02-20T14:00:00",
   "interviewLocation": "宠物之家领养中心",
   "remark": "材料审核通过，安排面谈了解详细情况"
 }
@@ -258,7 +258,7 @@ Content-Type: application/json
     "applicationId": 67890,
     "fromStatus": "UNDER_REVIEW",
     "toStatus": "INTERVIEW",
-    "updateTime": "2024-02-16T11:00:00"
+    "updateTime": "2026-02-16T11:00:00"
   }
 }
 ```
@@ -285,7 +285,7 @@ Content-Type: application/json
     "applicationId": 67890,
     "fromStatus": "INTERVIEW",
     "toStatus": "HOME_VISIT",
-    "updateTime": "2024-02-16T15:00:00"
+    "updateTime": "2026-02-16T15:00:00"
   }
 }
 ```
@@ -312,7 +312,7 @@ Content-Type: application/json
     "applicationId": 67890,
     "fromStatus": "HOME_VISIT",
     "toStatus": "APPROVED",
-    "updateTime": "2024-02-16T16:30:00"
+    "updateTime": "2026-02-16T16:30:00"
   }
 }
 ```
@@ -340,7 +340,7 @@ Content-Type: application/json
     "applicationId": 67890,
     "fromStatus": "UNDER_REVIEW",
     "toStatus": "REJECTED",
-    "updateTime": "2024-02-16T10:45:00"
+    "updateTime": "2026-02-16T10:45:00"
   }
 }
 ```

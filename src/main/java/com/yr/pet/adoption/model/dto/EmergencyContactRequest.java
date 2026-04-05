@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 /**
  * 紧急联系人DTO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 public class EmergencyContactRequest {
 

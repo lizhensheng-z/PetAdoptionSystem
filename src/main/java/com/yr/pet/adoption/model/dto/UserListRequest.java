@@ -30,10 +30,10 @@ public class UserListRequest {
     @Schema(description = "状态筛选：NORMAL/BANNED", example = "NORMAL")
     private String status;
 
-    @Schema(description = "创建开始时间（YYYY-MM-DD）", example = "2024-01-01")
+    @Schema(description = "创建开始时间（YYYY-MM-DD）", example = "2026-01-01")
     private String startDate;
 
-    @Schema(description = "创建结束时间（YYYY-MM-DD）", example = "2024-12-31")
+    @Schema(description = "创建结束时间（YYYY-MM-DD）", example = "2026-12-31")
     private String endDate;
 
     @Schema(description = "排序字段", example = "createTime")

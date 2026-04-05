@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 机构申请VO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Data
 @Schema(description = "机构申请列表项")

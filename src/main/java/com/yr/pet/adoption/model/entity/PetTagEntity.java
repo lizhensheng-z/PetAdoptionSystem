@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * 宠物-标签关联表
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @TableName("pet_tag")
 public class PetTagEntity implements Serializable {

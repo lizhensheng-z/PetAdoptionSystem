@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 宠物列表响应数据
  * @author yr
- * @since 2024-02-14
+ * @since 2026-02-14
  */
 @Data
 @Schema(description = "宠物列表响应数据")
@@ -67,7 +67,7 @@ public class PetListResponse {
     @Schema(description = "发布机构名称", example = "爱心救助站")
     private String orgName;
 
-    @Schema(description = "发布时间", example = "2024-01-20T10:00:00")
+    @Schema(description = "发布时间", example = "2026-01-20T10:00:00")
     private LocalDateTime publishedTime;
 
     @Schema(description = "距离（公里，当提供经纬度时计算）", example = "5.2")

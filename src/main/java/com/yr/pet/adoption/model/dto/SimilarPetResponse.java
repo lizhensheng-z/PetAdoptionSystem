@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 相似宠物响应DTO
  * @author yr
- * @since 2024-02-14
+ * @since 2026-02-14
  */
 @Data
 @Schema(description = "相似宠物响应数据")

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 创建宠物档案请求DTO V2 - 支持嵌套结构
  * @author yr
- * @since 2024-02-16
+ * @since 2026-02-16
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

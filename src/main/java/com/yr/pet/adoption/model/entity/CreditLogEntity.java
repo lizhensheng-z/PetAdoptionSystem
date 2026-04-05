@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * 对应数据库表：credit_log
  * 
  * @author 宗平
- * @since 2024-02-18
+ * @since 2026-02-18
  */
 @Data
 @TableName("credit_log")

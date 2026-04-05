@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 更新宠物档案请求DTO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

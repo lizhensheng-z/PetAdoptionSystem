@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * 申请状态流转日志表
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @TableName("adoption_flow_log")
 public class AdoptionFlowLogEntity implements Serializable {

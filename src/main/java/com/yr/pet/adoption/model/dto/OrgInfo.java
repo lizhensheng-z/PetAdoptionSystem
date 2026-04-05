@@ -5,7 +5,7 @@ import lombok.Data;
 /**
  * 机构信息DTO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Data
 public class OrgInfo {

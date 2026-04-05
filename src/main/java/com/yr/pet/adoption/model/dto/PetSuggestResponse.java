@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 宠物搜索建议响应数据
  * @author yr
- * @since 2024-02-14
+ * @since 2026-02-14
  */
 @Data
 @Schema(description = "宠物搜索建议响应数据")

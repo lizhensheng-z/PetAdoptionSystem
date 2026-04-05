@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * 最近申请列表响应DTO
  * @author yr
- * @since 2024-02-15
+ * @since 2026-02-15
  */
 public class RecentApplicationListResponse {
 

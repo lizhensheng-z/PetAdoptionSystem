@@ -3,7 +3,7 @@ package com.yr.pet.adoption.model.dto;
 /**
  * 机构首页统计数据响应DTO
  * @author yr
- * @since 2024-02-15
+ * @since 2026-02-15
  */
 public class DashboardStatisticsResponse {
 

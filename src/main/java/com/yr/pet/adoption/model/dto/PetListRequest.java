@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 /**
  * 宠物列表查询请求参数
  * @author yr
- * @since 2024-02-14
+ * @since 2026-02-14
  */
 @Data
 @Schema(description = "宠物列表查询请求参数")

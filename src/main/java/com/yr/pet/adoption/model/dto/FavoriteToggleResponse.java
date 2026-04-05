@@ -6,7 +6,7 @@ import lombok.Data;
 /**
  * 收藏切换响应DTO
  * @author yr
- * @since 2024-02-14
+ * @since 2026-02-14
  */
 @Data
 @Schema(description = "收藏切换响应")

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * 用于返回用户信用账户的摘要信息
  * 
  * @author 宗平
- * @since 2024-02-18
+ * @since 2026-02-18
  */
 @Data
 @AllArgsConstructor
@@ -66,7 +66,7 @@ public class UserCreditSummaryResponse {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate lastCheckinDate;
 
-    @Schema(description = "账户创建时间", example = "2024-01-15 10:00:00")
+    @Schema(description = "账户创建时间", example = "2026-01-15 10:00:00")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 

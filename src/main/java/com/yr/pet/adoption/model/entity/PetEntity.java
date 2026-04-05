@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * 宠物档案表
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @TableName("pet")
 public class PetEntity implements Serializable {

@@ -7,7 +7,7 @@ import com.yr.pet.adoption.model.vo.*;
 /**
  * 领养申请服务接口
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 public interface AdoptionApplicationService {
 

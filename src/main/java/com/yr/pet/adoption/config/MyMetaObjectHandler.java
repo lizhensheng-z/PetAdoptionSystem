@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * 用于自动填充实体类中的创建时间和更新时间字段
  *
  * @author yr
- * @since 2024-02-14
+ * @since 2026-02-14
  */
 @Slf4j
 @Component

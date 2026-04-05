@@ -3,7 +3,7 @@ package com.yr.pet.adoption.model.dto;
 /**
  * 机构宠物查询请求DTO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 public class OrgPetQueryRequest {
 

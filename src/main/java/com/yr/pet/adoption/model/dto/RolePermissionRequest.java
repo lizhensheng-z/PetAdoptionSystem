@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 角色权限分配请求DTO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 public class RolePermissionRequest {
 

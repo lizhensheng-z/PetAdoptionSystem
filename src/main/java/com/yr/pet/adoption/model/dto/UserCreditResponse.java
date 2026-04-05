@@ -3,7 +3,7 @@ package com.yr.pet.adoption.model.dto;
 /**
  * 用户信用响应DTO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 public class UserCreditResponse {
 

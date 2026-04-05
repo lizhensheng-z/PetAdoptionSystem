@@ -12,7 +12,7 @@ import java.util.Map;
  * 用于返回用户信用积分的变更记录
  * 
  * @author 宗平
- * @since 2024-02-18
+ * @since 2026-02-18
  */
 @Data
 @Schema(description = "信用日志响应")

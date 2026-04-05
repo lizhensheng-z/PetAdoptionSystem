@@ -292,7 +292,7 @@ public class PublicServiceImpl implements PublicService {
         NearbyOrgResponse.NearbyOrg org = new NearbyOrgResponse.NearbyOrg();
         org.setId(1002L);
         org.setOrgName("爱心救助站");
-        org.setLicenseNo("BJ20240001");
+        org.setLicenseNo("BJ20260001");
         org.setContactPhone("010-12345678");
         org.setAddress("北京市朝阳区xxx街xxx号");
         org.setLng(116.4);

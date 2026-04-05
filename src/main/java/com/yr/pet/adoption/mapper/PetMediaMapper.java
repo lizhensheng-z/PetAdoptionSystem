@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 宠物媒体Mapper接口
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Repository
 public interface PetMediaMapper extends BaseMapper<PetMediaEntity> {

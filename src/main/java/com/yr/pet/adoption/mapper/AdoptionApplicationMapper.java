@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 领养申请Mapper接口
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Mapper
 public interface AdoptionApplicationMapper extends BaseMapper<AdoptionApplicationEntity> {

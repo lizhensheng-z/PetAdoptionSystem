@@ -12,7 +12,7 @@ import java.io.Serializable;
 /**
  * 宠物媒体表（图/视频）
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Data
 @TableName("pet_media")

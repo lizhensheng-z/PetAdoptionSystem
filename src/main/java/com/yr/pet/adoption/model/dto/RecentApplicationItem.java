@@ -3,7 +3,7 @@ package com.yr.pet.adoption.model.dto;
 /**
  * 最近申请项DTO
  * @author yr
- * @since 2024-02-15
+ * @since 2026-02-15
  */
 public class RecentApplicationItem {
 

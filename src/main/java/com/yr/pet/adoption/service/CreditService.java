@@ -10,7 +10,7 @@ import com.yr.pet.adoption.model.dto.UserCreditSummaryResponse;
  * 提供用户信用相关的业务功能
  * 
  * @author 宗平
- * @since 2024-02-18
+ * @since 2026-02-18
  */
 public interface CreditService {
 

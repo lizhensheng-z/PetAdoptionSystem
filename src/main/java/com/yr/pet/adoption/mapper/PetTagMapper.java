@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 宠物-标签关联Mapper接口
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Repository
 public interface PetTagMapper extends BaseMapper<PetTagEntity> {

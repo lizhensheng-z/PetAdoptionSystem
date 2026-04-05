@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * 自定义用户详情类
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 public class CustomUserDetails implements UserDetails {
 

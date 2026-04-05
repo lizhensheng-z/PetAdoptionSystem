@@ -294,7 +294,7 @@ CREATE TABLE `credit_log` (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`),
   KEY `idx_user_time` (`user_id`,`create_time`) COMMENT '用户信用流水索引'
-) ENGINE=InnoDB AUTO_INCREMENT=2024344455440343042 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='信用分变更流水表';
+) ENGINE=InnoDB AUTO_INCREMENT=2026344455440343042 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='信用分变更流水表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -303,7 +303,7 @@ CREATE TABLE `credit_log` (
 
 LOCK TABLES `credit_log` WRITE;
 /*!40000 ALTER TABLE `credit_log` DISABLE KEYS */;
-INSERT INTO `credit_log` VALUES (2024059381583044610,3,2,'CHECKIN','checkin',13,'2026-02-18 17:52:16'),(2024344455440343041,4,2,'CHECKIN','checkin',14,'2026-02-19 12:45:03');
+INSERT INTO `credit_log` VALUES (2026059381583044610,3,2,'CHECKIN','checkin',13,'2026-02-18 17:52:16'),(2026344455440343041,4,2,'CHECKIN','checkin',14,'2026-02-19 12:45:03');
 /*!40000 ALTER TABLE `credit_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -347,7 +347,7 @@ CREATE TABLE `org_profile` (
 
 LOCK TABLES `org_profile` WRITE;
 /*!40000 ALTER TABLE `org_profile` DISABLE KEYS */;
-INSERT INTO `org_profile` VALUES (1,3,'爱心救助站','ORG20240001','王明','13800138001','北京市朝阳区建国路88号','北京市','北京市','朝阳区',116.480000,39.980000,'https://example.com/org-cover.jpg','APPROVED',NULL,0,'2026-02-15 16:46:27','2026-02-15 17:02:07'),(3,11,'11','123456789012345678','11','18767552635','湖北省武汉市青山区钢花村街道钢花村街110社区','湖北省','武汉市','青山区',114.393624,30.624557,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/avatar/20260217/150731_65def3f17b94426f812ca29430e90aa9.jpeg','APPROVED','资料完整，符合要求',0,'2026-02-17 14:03:39','2026-02-17 16:09:07'),(4,12,'2121','123456789012345678','qq','18768622827','湖北省武汉市青山区钢花村街道钢花村街110社区','湖北省','武汉市','青山区',114.393591,30.624379,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/avatar/20260219/125211_0643255d58264c82ba11eae9de7e4ef1.jpeg','APPROVED','资料完整，符合要求',0,'2026-02-19 12:51:16','2026-02-19 12:53:13');
+INSERT INTO `org_profile` VALUES (1,3,'爱心救助站','ORG20260001','王明','13800138001','北京市朝阳区建国路88号','北京市','北京市','朝阳区',116.480000,39.980000,'https://example.com/org-cover.jpg','APPROVED',NULL,0,'2026-02-15 16:46:27','2026-02-15 17:02:07'),(3,11,'11','123456789012345678','11','18767552635','湖北省武汉市青山区钢花村街道钢花村街110社区','湖北省','武汉市','青山区',114.393624,30.624557,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/avatar/20260217/150731_65def3f17b94426f812ca29430e90aa9.jpeg','APPROVED','资料完整，符合要求',0,'2026-02-17 14:03:39','2026-02-17 16:09:07'),(4,12,'2121','123456789012345678','qq','18768622827','湖北省武汉市青山区钢花村街道钢花村街110社区','湖北省','武汉市','青山区',114.393591,30.624379,'https://demo-lizhensheng.oss-cn-hangzhou.aliyuncs.com/avatar/20260219/125211_0643255d58264c82ba11eae9de7e4ef1.jpeg','APPROVED','资料完整，符合要求',0,'2026-02-19 12:51:16','2026-02-19 12:53:13');
 /*!40000 ALTER TABLE `org_profile` ENABLE KEYS */;
 UNLOCK TABLES;
 

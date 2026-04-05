@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * 领养申请表
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @TableName("adoption_application")
 public class AdoptionApplicationEntity implements Serializable {

@@ -3,7 +3,7 @@ package com.yr.pet.adoption.exception;
 /**
  * 业务异常类
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 public class BusinessException extends RuntimeException {
 

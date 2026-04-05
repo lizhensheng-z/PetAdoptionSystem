@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 系统配置VO
  * @author yr
- * @since 2024-01-01
+ * @since 2026-01-01
  */
 @Data
 @Schema(description = "系统配置信息")

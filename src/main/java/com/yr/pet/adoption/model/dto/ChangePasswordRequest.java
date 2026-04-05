@@ -8,7 +8,7 @@ import lombok.Data;
 /**
  * 修改密码请求DTO
  * @author yr
- * @since 2024-02-18
+ * @since 2026-02-18
  */
 @Data
 @Schema(description = "修改密码请求")

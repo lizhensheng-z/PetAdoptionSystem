@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 对应数据库表：credit_account
  * 
  * @author 宗平
- * @since 2024-02-18
+ * @since 2026-02-18
  */
 @Mapper
 public interface CreditAccountMapper extends BaseMapper<CreditAccountEntity> {

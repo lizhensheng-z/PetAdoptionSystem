@@ -45,7 +45,7 @@ SELECT @org_user_id, id FROM sys_role WHERE role_code='ORG';
 -- ============================================================
 INSERT INTO org_profile (user_id, org_name, license_no, contact_name, contact_phone, address, province, city, district, lng, lat, cover_url, verify_status, create_time, update_time)
 VALUES
-    (@org_user_id,'爱心救助站','ORG20240001','王明','13800138001','北京市朝阳区建国路88号','北京市','北京市','朝阳区',116.48,39.98,'https://example.com/org-cover.jpg','APPROVED',NOW(),NOW())
+    (@org_user_id,'爱心救助站','ORG20260001','王明','13800138001','北京市朝阳区建国路88号','北京市','北京市','朝阳区',116.48,39.98,'https://example.com/org-cover.jpg','APPROVED',NOW(),NOW())
 ON DUPLICATE KEY UPDATE
                      org_name=VALUES(org_name),
                      license_no=VALUES(license_no),

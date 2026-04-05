@@ -3,7 +3,7 @@ package com.yr.pet.adoption.model.dto;
 /**
  * 用户已领养宠物响应DTO
  * @author yr
- * @since 2024-02-18
+ * @since 2026-02-18
  */
 public class UserAdoptedPetResponse {
 
