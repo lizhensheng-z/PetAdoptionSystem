@@ -46,7 +46,7 @@ public class TagController {
     @Operation(summary = "获取标签列表", description = "获取标签字典列表，支持分页和条件筛选")
     public R<PageResult<TagDetailResponse>> getTagList(
             @Parameter(description = "页码，从1开始", example = "1")
-            @RequestParam(defaultValue = "1") @Min(1) Integer pageNo,
+            @RequestParam(defaultValue = "1") @Min(1) Integer page,
             
             @Parameter(description = "每页条数", example = "10")
             @RequestParam(defaultValue = "10") @Min(1) Integer pageSize,
@@ -76,8 +76,8 @@ public class TagController {
         
         wrapper.orderByAsc(TagEntity::getId);
         
-        Page<TagEntity> page = new Page<>(pageNo, pageSize);
-        IPage<TagEntity> result = tagService.page(page, wrapper);
+        Page<TagEntity> pageParam = new Page<>(page, pageSize);
+        IPage<TagEntity> result = tagService.page(pageParam, wrapper);
         
         List<TagDetailResponse> tagList = result.getRecords().stream()
             .map(this::convertToDetailResponse)
@@ -85,7 +85,7 @@ public class TagController {
         
         PageResult<TagDetailResponse> pageResult = new PageResult<>();
         pageResult.setList(tagList);
-        pageResult.setPageNo(pageNo);
+        pageResult.setPageNo(page);
         pageResult.setPageSize(pageSize);
         pageResult.setTotal(result.getTotal());
         pageResult.setTotalPages((int) result.getPages());
