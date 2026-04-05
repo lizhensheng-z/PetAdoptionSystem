@@ -119,11 +119,13 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
 
         // 排序
         if ("distance".equals(request.getSortBy())) {
-            // 距离排序需要用户位置，先查询再排序
+            // 距离排序需要用户位置,先查询再在内存中排序
+            // 注意:距离排序无法在SQL层直接排序,需要在内存中处理
             if (request.getLng() != null && request.getLat() != null) {
-                // 不在SQL层排序，在内存中排序
+                // 不在SQL层排序,后续在内存中按距离排序
                 queryWrapper.orderByDesc(PetEntity::getPublishedTime);
             } else {
+                // 如果没有提供位置信息,按发布时间排序
                 queryWrapper.orderByDesc(PetEntity::getPublishedTime);
             }
         } else if ("age_month".equals(request.getSortBy())) {
@@ -153,14 +155,42 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
             .map(pet -> convertToListResponse(pet, request.getLng(), request.getLat()))
             .collect(Collectors.toList());
 
-        // 距离排序：在内存中按距离升序排列
-        if ("distance".equals(request.getSortBy()) && request.getLng() != null && request.getLat() != null) {
-            petList.sort((a, b) -> {
-                if (a.getDistance() == null && b.getDistance() == null) return 0;
-                if (a.getDistance() == null) return 1;
-                if (b.getDistance() == null) return -1;
-                return a.getDistance().compareTo(b.getDistance());
-            });
+        // 距离筛选和排序
+        if (request.getLng() != null && request.getLat() != null) {
+            // 1. 距离筛选:只保留在maxDistance范围内的宠物
+            final Integer maxDistance = request.getMaxDistance();
+            if (maxDistance != null) {
+                petList = petList.stream()
+                    .filter(pet -> {
+                        if (pet.getDistance() == null) {
+                            return false;  // 没有距离信息的不显示
+                        }
+                        return pet.getDistance().compareTo(BigDecimal.valueOf(maxDistance)) <= 0;
+                    })
+                    .collect(Collectors.toList());
+            }
+
+            // 2. 距离排序:在内存中按距离排序
+            if ("distance".equals(request.getSortBy())) {
+                String order = request.getOrder();
+                if ("desc".equalsIgnoreCase(order)) {
+                    // 降序:从远到近
+                    petList.sort((a, b) -> {
+                        if (a.getDistance() == null && b.getDistance() == null) return 0;
+                        if (a.getDistance() == null) return 1;
+                        if (b.getDistance() == null) return -1;
+                        return b.getDistance().compareTo(a.getDistance());  // 降序
+                    });
+                } else {
+                    // 升序:从近到远(默认)
+                    petList.sort((a, b) -> {
+                        if (a.getDistance() == null && b.getDistance() == null) return 0;
+                        if (a.getDistance() == null) return 1;
+                        if (b.getDistance() == null) return -1;
+                        return a.getDistance().compareTo(b.getDistance());  // 升序
+                    });
+                }
+            }
         }
 
         return new PageResult<>(
@@ -995,6 +1025,16 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, PetEntity> implements
         // 只查询当前机构的宠物
         queryWrapper.eq(PetEntity::getOrgUserId, orgUserId)
                    .eq(PetEntity::getDeleted, 0);
+
+        // 关键词搜索（宠物名称、品种）
+        if (StringUtils.hasText(request.getKeyword())) {
+            String keyword = "%" + request.getKeyword() + "%";
+            queryWrapper.and(wrapper -> wrapper
+                .like(PetEntity::getName, keyword)
+                .or()
+                .like(PetEntity::getBreed, keyword)
+            );
+        }
 
         // 状态筛选
         if (StringUtils.hasText(request.getStatus())) {

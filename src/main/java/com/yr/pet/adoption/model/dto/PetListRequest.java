@@ -63,7 +63,7 @@ public class PetListRequest {
     @Schema(description = "最大距离（公里）", example = "50")
     @Min(value = 1, message = "最大距离必须大于等于1公里")
     @Max(value = 500, message = "最大距离不能超过500公里")
-    private Integer maxDistance = 50;
+    private Integer maxDistance;
 
     @Schema(description = "排序字段", example = "published_time")
     private String sortBy = "published_time";
