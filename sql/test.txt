@@ -1,0 +1,340 @@
+
+
+===================================================================================================
+
+【表1：用户表 t_user】
+表说明：存储系统注册用户的基本信息，包括手机号、邮箱、昵称等核心字段，是用户模块的核心实体表。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+create_time	BIGINT	20	是	创建时间戳
+update_time	BIGINT	20	是	更新时间戳
+third_uid	VARCHAR	50	是	第三方登录UID
+phone	VARCHAR	11	是	手机号
+email	VARCHAR	50	是	邮箱
+nick_name	VARCHAR	20	是	昵称
+bit_state	BIGINT	20	是	用户状态位
+sec_level	TINYINT	4	是	安全级别
+login_id	BIGINT	20	是	关联登录表ID
+
+===================================================================================================
+
+【表2：登录账号表 t_login】
+表说明：存储用户登录凭证信息，包括用户名、密码、账号状态等，支持前后台统一认证。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+username	VARCHAR	255	是	用户名
+password	VARCHAR	255	是	密码（加密存储）
+type	TINYINT	1	是	类型：0后台，1前台
+enabled	BIT	1	是	账号是否可用
+account_non_expired	BIT	1	是	账号是否未过期
+credentials_non_expired	BIT	1	是	凭证是否未过期
+account_non_locked	BIT	1	是	账号是否未锁定
+client_id	VARCHAR	255	是	OAuth2客户端ID
+client_secret	VARCHAR	255	是	OAuth2客户端密钥
+avatar	VARCHAR	255	是	头像URL
+
+===================================================================================================
+
+【表3：角色表 t_role】
+表说明：存储系统角色信息，用于RBAC权限模型中的角色定义。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+name	VARCHAR	255	是	角色名称
+sn	VARCHAR	255	是	角色编码
+
+===================================================================================================
+
+【表4：权限表 t_permission】
+表说明：存储系统权限信息，定义用户可访问的资源路径和操作权限。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+name	VARCHAR	255	是	权限名称
+resource	VARCHAR	255	否	资源路径
+state	INT	11	是	状态
+menu_id	BIGINT	20	是	关联菜单ID
+sn	VARCHAR	255	否	权限编码
+
+===================================================================================================
+
+【表5：课程表 t_course】
+表说明：存储课程基本信息，包括课程名称、状态、时间、封面等，是课程模块的核心实体表。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+name	VARCHAR	32	否	课程名称
+for_user	VARCHAR	500	是	适用人群
+course_type_id	BIGINT	32	否	课程分类ID
+grade_name	VARCHAR	255	是	课程等级名称
+grade_id	BIGINT	5	否	课程等级ID
+status	TINYINT	32	是	状态：0下线，1上线
+login_id	BIGINT	32	是	创建人ID
+login_user_name	VARCHAR	255	是	创建人姓名
+start_time	DATETIME	-	是	开课时间
+end_time	DATETIME	-	是	结课时间
+pic	VARCHAR	255	是	封面图片URL
+total_minute	INT	11	是	总时长（分钟）
+online_time	DATETIME	-	是	上线时间
+chapter_count	INT	11	是	章节数量
+teacher_names	VARCHAR	255	是	讲师名称（逗号分隔）
+
+===================================================================================================
+
+【表6：课程分类表 t_course_type】
+表说明：存储课程分类目录，通过自关联实现树形分类结构。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+create_time	BIGINT	20	是	创建时间戳
+update_time	BIGINT	20	是	更新时间戳
+name	VARCHAR	50	是	分类名称
+pid	BIGINT	20	是	父分类ID
+logo	VARCHAR	150	是	分类图标
+description	VARCHAR	255	是	分类描述
+sort_index	INT	11	是	排序索引
+path	VARCHAR	100	是	分类路径
+total_count	INT	20	是	课程数量
+
+===================================================================================================
+
+【表7：课程章节表 t_course_chapter】
+表说明：存储课程章节信息，一门课程包含多个章节，每个章节可包含多个视频。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+name	VARCHAR	255	是	章节名称
+number	INT	11	是	章节序号
+course_id	BIGINT	20	是	所属课程ID
+course_name	VARCHAR	255	是	课程名称（冗余）
+
+===================================================================================================
+
+【表8：课程营销表 t_course_market】
+表说明：存储课程营销信息，包括价格、收费规则、咨询方式等，与课程表一对一关联。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	32	否	主键ID（与课程ID相同）
+charge	TINYINT	32	否	收费规则：1免费，2收费
+qq	VARCHAR	32	否	咨询QQ
+price	DECIMAL	18,2	否	现价
+price_old	DECIMAL	18,2	是	原价
+valid_days	INT	11	是	有效天数
+
+===================================================================================================
+
+【表9：课程订单表 t_course_order】
+表说明：存储课程购买订单信息，记录用户购买课程的订单数据。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+create_time	DATETIME	-	否	创建时间
+update_time	DATETIME	-	是	更新时间
+order_no	VARCHAR	255	否	订单编号
+total_amount	DECIMAL	10,2	否	订单总金额
+total_count	TINYINT	4	否	课程数量
+status_order	TINYINT	4	否	订单状态
+user_id	BIGINT	20	否	用户ID
+title	VARCHAR	255	是	订单标题
+version	INT	11	否	乐观锁版本号
+pay_type	TINYINT	4	是	支付方式
+
+===================================================================================================
+
+【表10：订单明细表 t_course_order_item】
+表说明：存储订单包含的课程明细，一个订单可包含多门课程。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+order_id	BIGINT	255	否	订单ID
+amount	DECIMAL	10,2	否	课程金额
+count	TINYINT	4	否	数量
+create_time	DATETIME	-	否	创建时间
+update_time	DATETIME	-	是	更新时间
+course_id	BIGINT	20	否	课程ID
+course_name	VARCHAR	255	是	课程名称（冗余）
+course_pic	VARCHAR	255	是	课程封面（冗余）
+version	INT	11	是	乐观锁版本号
+order_no	VARCHAR	255	是	订单编号（冗余）
+
+===================================================================================================
+
+【表11：支付订单表 t_pay_order】
+表说明：存储支付订单信息，记录用户支付行为，支持多种支付方式。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+create_time	DATETIME	-	否	创建时间
+update_time	DATETIME	-	是	更新时间
+amount	DECIMAL	10,0	否	支付金额
+pay_type	TINYINT	4	否	支付方式
+relation_id	BIGINT	20	是	关联业务ID
+order_no	VARCHAR	255	否	订单号
+user_id	BIGINT	20	否	用户ID
+ext_params	VARCHAR	255	是	扩展参数
+subject	VARCHAR	255	否	支付描述
+pay_status	TINYINT	4	否	支付状态
+
+===================================================================================================
+
+【表12：支付流水表 t_pay_flow】
+表说明：存储支付回调流水信息，记录第三方支付平台的交易结果。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+notify_time	DATETIME	-	否	交易时间
+subject	VARCHAR	255	是	交易标题
+out_trade_no	VARCHAR	255	是	商户订单号
+total_amount	DECIMAL	10,0	是	交易金额
+trade_status	VARCHAR	255	是	交易状态
+code	VARCHAR	255	是	错误码
+msg	VARCHAR	255	是	错误信息
+passback_params	VARCHAR	255	是	回传参数
+pay_success	BIT	1	是	是否支付成功
+result_desc	VARCHAR	255	是	结果描述
+
+===================================================================================================
+
+【表13：秒杀活动表 t_kill_activity】
+表说明：存储秒杀活动信息，定义活动的开始结束时间及发布状态。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+name	VARCHAR	255	是	活动名称
+time_str	VARCHAR	100	是	时间描述
+begin_time	BIGINT	20	是	开始时间戳
+end_time	BIGINT	20	是	结束时间戳
+publish_status	TINYINT	4	是	发布状态
+publish_time	DATETIME	-	是	发布时间
+
+===================================================================================================
+
+【表14：秒杀课程表 t_kill_course】
+表说明：存储参与秒杀的课程信息，包括秒杀价格、库存、限购数量等。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+course_name	VARCHAR	50	否	课程名称
+course_id	BIGINT	20	否	关联课程ID
+kill_price	DECIMAL	10,2	否	秒杀价格
+kill_count	INT	6	否	秒杀库存
+kill_limit	TINYINT	4	否	每人限购数量
+kill_sort	INT	6	是	排序
+publish_status	TINYINT	4	否	秒杀状态
+course_pic	VARCHAR	255	否	课程封面
+start_time	BIGINT	20	是	开始时间戳
+end_time	BIGINT	20	是	结束时间戳
+create_time	DATETIME	-	否	创建时间
+publish_time	DATETIME	-	是	发布时间
+teacher_names	VARCHAR	255	是	讲师名称
+offline_time	DATETIME	-	是	下线时间
+activity_id	BIGINT	20	是	关联活动ID
+time_str	VARCHAR	255	是	时间描述
+
+===================================================================================================
+
+【表15：媒体文件表 t_media_file】
+表说明：存储视频文件信息，包括文件路径、处理状态、所属课程章节等。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+file_id	VARCHAR	255	是	文件唯一标识
+file_name	VARCHAR	255	是	文件名
+file_original_name	VARCHAR	255	是	原始文件名
+file_url	VARCHAR	255	是	文件访问URL
+file_path	VARCHAR	255	是	本地存储路径
+file_type	VARCHAR	255	是	文件类型
+file_status	TINYINT	4	是	处理状态
+file_size	BIGINT	20	是	文件大小（字节）
+mime_type	VARCHAR	255	是	MIME类型
+upload_time	DATETIME	-	是	上传时间
+chapter_id	BIGINT	20	是	所属章节ID
+course_id	BIGINT	20	是	所属课程ID
+number	INT	11	是	视频序号
+name	VARCHAR	255	是	视频名称
+course_name	VARCHAR	255	是	课程名称（冗余）
+chapter_name	VARCHAR	255	是	章节名称（冗余）
+time_minute	INT	10	是	视频时长（分钟）
+free	BIT	1	是	是否免费试看
+
+===================================================================================================
+
+【表16：员工表 t_employee】
+表说明：存储平台和机构员工信息，用于后台管理系统的人员管理。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+real_name	VARCHAR	255	是	真实姓名
+tel	VARCHAR	255	是	电话
+email	VARCHAR	255	是	邮箱
+input_time	DATE	-	是	入职时间
+state	INT	11	是	状态：0正常，1锁定，2注销
+dept_id	BIGINT	20	是	所属部门ID
+type	TINYINT	1	是	员工类型
+login_id	BIGINT	20	是	关联登录表ID
+
+===================================================================================================
+
+【表17：部门表 t_department】
+表说明：存储组织架构部门信息，通过自关联实现树形部门结构。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+sn	VARCHAR	255	否	部门编号
+name	VARCHAR	255	否	部门名称
+dir_path	VARCHAR	255	是	上级分类层级路径
+state	INT	20	是	状态：0正常，1禁用
+manager_id	BIGINT	20	是	部门管理员ID
+parent_id	BIGINT	20	是	上级部门ID
+tenant_id	BIGINT	20	是	所属机构（租户）ID
+
+===================================================================================================
+
+【表18：用户账户表 t_user_account】
+表说明：存储用户资金账户信息，包括可用余额和冻结金额，与用户表一对一关联。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID（与用户ID相同）
+usable_amount	DECIMAL	10,0	是	可用余额
+frozen_amount	DECIMAL	10,0	是	冻结金额
+create_time	BIGINT	20	是	创建时间戳
+update_time	BIGINT	20	是	更新时间戳
+password	VARCHAR	255	是	支付密码
+
+===================================================================================================
+
+【表19：购物车表 t_course_cart】
+表说明：存储用户购物车信息，记录用户待购买的课程。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+course_name	VARCHAR	255	是	课程名称
+course_pic	VARCHAR	255	是	课程封面
+course_price	DECIMAL	10,2	是	课程价格
+count	INT	11	是	数量
+create_time	DATETIME	-	是	创建时间
+update_time	DATETIME	-	是	更新时间
+status	INT	11	是	状态
+course_note	VARCHAR	255	是	备注
+course_id	BIGINT	20	是	课程ID
+login_id	BIGINT	20	是	用户ID
+grade_name	VARCHAR	255	是	课程等级名称
+old_course_price	DECIMAL	10,2	是	原价
+
+===================================================================================================
+
+【表20：菜单表 t_menu】
+表说明：存储系统菜单信息，通过自关联实现树形菜单结构，用于后台权限控制。
+
+列名	数据类型	长度	允许空	说明
+id	BIGINT	20	否	主键ID，自增
+sn	VARCHAR	255	否	菜单编码
+name	VARCHAR	255	否	菜单名称
+icon	VARCHAR	255	是	图标
+url	VARCHAR	255	是	访问路径
+intro	VARCHAR	255	是	介绍
+parent_id	BIGINT	20	是	父菜单ID
+
+===================================================================================================
